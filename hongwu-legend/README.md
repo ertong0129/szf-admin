@@ -19,17 +19,11 @@ node server.js
 
 ## 直接下载
 
-国内 Windows：
-
-https://cdn.jsdelivr.net/gh/ertong0129/szf-admin@cursor/hongwu-offline-legend-f2d5/hongwu-windows.zip
-
-国内 Mac：
+国内 Mac（新包，含原作式 HUD 和点任务寻路）：
 
 https://cdn.jsdelivr.net/gh/ertong0129/szf-admin@cursor/hongwu-offline-legend-f2d5/hongwu-mac.zip
 
 备用：
-
-https://gh-proxy.com/https://github.com/ertong0129/szf-admin/raw/cursor/hongwu-offline-legend-f2d5/hongwu-windows.zip
 
 https://gh-proxy.com/https://github.com/ertong0129/szf-admin/raw/cursor/hongwu-offline-legend-f2d5/hongwu-mac.zip
 

@@ -18,13 +18,16 @@ WIN="$ROOT/洪武风云录-Windows.zip"
 MAC="$ROOT/洪武风云录-Mac.zip"
 rm -f "$WIN" "$MAC"
 
-zip -r "$WIN" $FILES \
-  -x "tests/*" -x "*.zip" -x "data/*"
-cp -f "$WIN" "$ROOT/hongwu-windows.zip"
-
 zip -r "$MAC" $FILES \
-  -x "tests/*" -x "*.zip" -x "data/*"
+  -x "tests/*" -x "*.zip" -x "data/*" -x "__pycache__/*" -x "*/__pycache__/*"
 cp -f "$MAC" "$ROOT/hongwu-mac.zip"
+
+if [ "${MAC_ONLY:-0}" != "1" ]; then
+  zip -r "$WIN" $FILES \
+    -x "tests/*" -x "*.zip" -x "data/*" -x "__pycache__/*" -x "*/__pycache__/*"
+  cp -f "$WIN" "$ROOT/hongwu-windows.zip"
+  echo "wrote $WIN"
+fi
 
 echo "wrote $WIN"
 echo "wrote $MAC"
