@@ -1,6 +1,6 @@
 /**
- * 洪武风云录 — 原创贴图与 2.5D 精灵
- * 角色与登录切图来自用户许可使用的 Main.swf 同目录公开资源。
+ * 洪武风云录 — 局内贴图
+ * 立绘 / 半身像 / 头像 / 地砖取自用户指出的 MingGame.swf 同目录公开资源。
  */
 (function (root) {
   var A = {
@@ -8,38 +8,96 @@
     imgs: {},
     variants: {},
     src: {
-      title: 'assets/official/loading-bg.jpg',
-      warrior: 'assets/official/sprites/warrior.png',
-      archer: 'assets/official/sprites/archer.png',
-      wanderer: 'assets/official/sprites/wanderer.png',
-      healer: 'assets/official/sprites/healer.png',
-      elder: 'assets/official/sprites/npc.png',
-      manIdle: 'assets/official/sprites/man_idle.png',
-      womanIdle: 'assets/official/sprites/woman_idle.png',
-      boar: 'assets/mob-boar.jpg',
-      wolf: 'assets/mob-wolf.jpg',
-      bandit: 'assets/mob-bandit.jpg',
-      boss: 'assets/mob-boss.jpg',
+      warrior: 'assets/ingame/sprites/warrior.png',
+      dao: 'assets/ingame/sprites/dao.png',
+      spear: 'assets/ingame/sprites/spear.png',
+      archer: 'assets/ingame/sprites/spear.png',
+      wanderer: 'assets/ingame/sprites/wing.png',
+      healer: 'assets/ingame/sprites/fairy.png',
+      elder: 'assets/ingame/sprites/officer.png',
+      guard: 'assets/ingame/sprites/guard.png',
+      redguard: 'assets/ingame/sprites/redguard.png',
+      smith: 'assets/ingame/sprites/smith.png',
+      officer: 'assets/ingame/sprites/officer.png',
+      tiger: 'assets/ingame/sprites/tiger.png',
+      fox: 'assets/ingame/sprites/fox.png',
+      water: 'assets/ingame/sprites/water.png',
+      wing: 'assets/ingame/sprites/wing.png',
+      fairy: 'assets/ingame/sprites/fairy.png',
+      boss: 'assets/ingame/sprites/boss.png',
+      cart: 'assets/ingame/sprites/cart.png',
       house: 'assets/prop-house.jpg',
       tree: 'assets/prop-tree.jpg',
-      grass: 'assets/tile-grass.jpg',
-      stone: 'assets/tile-stone.jpg',
-      water: 'assets/tile-water.jpg'
+      grass: 'assets/ingame/tile/grass.jpg',
+      stone: 'assets/ingame/tile/stone.jpg',
+      waterTile: 'assets/ingame/tile/water.jpg',
+      dirtTile: 'assets/ingame/tile/dirt.jpg',
+      worldMap: 'assets/ingame/map/world.jpg',
+      countryMap: 'assets/ingame/map/country.jpg',
+      towerBg: 'assets/ingame/map/tower.jpg',
+      radar: 'assets/ingame/map/radar.jpg',
+      roleBg: 'assets/ingame/ui/rolebg.png',
+      forgeBg: 'assets/ingame/ui/forge.jpg',
+      portraitCun: 'assets/ingame/portrait/xs_tai_ping_cun_zhi_shi.png',
+      portraitShop: 'assets/ingame/portrait/xs_za_huo_dian_lao_ban.png',
+      portraitLady: 'assets/ingame/portrait/xs_chen_yuan_yuan.png',
+      portraitMaster: 'assets/ingame/portrait/xs_ji_neng_da_shi.png',
+      headWarrior: 'assets/ingame/head/m4.png',
+      headArcher: 'assets/ingame/head/m2.png',
+      headWanderer: 'assets/ingame/head/m1.png',
+      headHealer: 'assets/ingame/head/f3.png',
+      iconCun: 'assets/ingame/icon/xs_tai_ping_cun_zhi_shi.png',
+      iconSmith: 'assets/ingame/icon/tie_jiang.png',
+      iconShop: 'assets/ingame/icon/xs_za_huo_dian_lao_ban.png',
+      iconFarmer: 'assets/ingame/icon/tian_yuan_nong_fu.png',
+      iconCart: 'assets/ingame/icon/che_fu.png',
+      iconElder: 'assets/ingame/icon/zong_zu_zhang_lao.png',
+      iconMaster: 'assets/ingame/icon/xs_ji_neng_da_shi.png',
+      iconBoat: 'assets/ingame/icon/xs_chuan_song_1.png'
     }
   };
 
   var TILE_SRC = {
-    grass: 'grass', moss: 'grass', dirt: 'grass',
+    grass: 'grass', moss: 'grass', dirt: 'dirtTile',
     stone: 'stone', arena: 'stone', dock: 'stone', wall: 'stone', rock: 'stone',
-    water: 'water', house: 'stone', roof: 'stone', tree: 'grass'
+    water: 'waterTile', house: 'stone', roof: 'stone', tree: 'grass'
+  };
+
+  var CLASS_SRC = {
+    warrior: 'dao', archer: 'spear', wanderer: 'wanderer', healer: 'healer'
+  };
+
+  var CLASS_HEAD = {
+    warrior: 'headWarrior', archer: 'headArcher', wanderer: 'headWanderer', healer: 'headHealer'
   };
 
   var MOB_SRC = {
-    boar: 'boar', boar_boss: 'boar',
-    wolf: 'wolf', snake: 'wolf',
-    bandit: 'bandit', escort: 'bandit', sailor: 'bandit', cannon: 'bandit', tower: 'bandit', spirit: 'bandit',
-    lake_boss: 'boss', world_boss: 'boss'
+    boar: 'tiger', boar_boss: 'tiger',
+    wolf: 'tiger', snake: 'fox',
+    bandit: 'redguard', escort: 'redguard',
+    sailor: 'officer', cannon: 'officer',
+    tower: 'guard', spirit: 'water',
+    lake_boss: 'water', world_boss: 'boss'
   };
+
+  var NPC_SRC = {
+    cunzheng: 'officer', tiesmith: 'smith', yaopu: 'fairy', xunshou: 'fox',
+    chefu: 'officer', bagong: 'smith', yabiao: 'guard', shilian: 'dao', chuansong: 'wanderer'
+  };
+
+  var NPC_PORTRAIT = {
+    cunzheng: 'portraitCun', yaopu: 'portraitShop', xunshou: 'portraitLady',
+    chefu: 'portraitCun', bagong: 'portraitMaster', yabiao: 'portraitCun',
+    shilian: 'portraitMaster', chuansong: 'portraitLady', tiesmith: 'portraitCun'
+  };
+
+  var NPC_ICON = {
+    cunzheng: 'iconCun', tiesmith: 'iconSmith', yaopu: 'iconShop', xunshou: 'iconFarmer',
+    chefu: 'iconCart', bagong: 'iconElder', yabiao: 'iconMaster', shilian: 'iconMaster',
+    chuansong: 'iconBoat'
+  };
+
+  var PET_SRC = { wolf: 'tiger', crane: 'water', fox: 'fox', ape: 'tiger' };
 
   function loadImage(src) {
     return new Promise(function (resolve) {
@@ -71,7 +129,7 @@
         if (img) A.imgs[k] = img;
         left -= 1;
         if (left <= 0) {
-          if (A.imgs.grass) A.variants.dirt = tintCanvas(A.imgs.grass, 90, 50, 10, 0.38);
+          if (A.imgs.grass) A.variants.dirt = A.imgs.dirtTile || tintCanvas(A.imgs.grass, 90, 50, 10, 0.38);
           if (A.imgs.grass) A.variants.moss = tintCanvas(A.imgs.grass, 10, 50, 40, 0.28);
           if (A.imgs.stone) A.variants.dock = tintCanvas(A.imgs.stone, 80, 50, 10, 0.32);
           if (A.imgs.stone) A.variants.arena = tintCanvas(A.imgs.stone, 40, 10, 50, 0.25);
@@ -83,11 +141,38 @@
   };
 
   A.classKey = function (cls) {
-    return ({ warrior: 'warrior', archer: 'archer', wanderer: 'wanderer', healer: 'healer' })[cls] || 'warrior';
+    return CLASS_SRC[cls] || 'dao';
+  };
+
+  A.classHead = function (cls) {
+    var k = CLASS_HEAD[cls];
+    return k && A.src[k] ? A.src[k] : A.src.headWarrior;
+  };
+
+  A.npcKey = function (id) {
+    return NPC_SRC[id] || 'officer';
+  };
+
+  A.npcPortrait = function (id) {
+    var k = NPC_PORTRAIT[id];
+    return k && A.src[k] ? A.src[k] : A.src.portraitCun;
+  };
+
+  A.npcIcon = function (id) {
+    var k = NPC_ICON[id];
+    return k && A.src[k] ? A.src[k] : A.src.iconCun;
+  };
+
+  A.mobKey = function (kind) {
+    return MOB_SRC[kind] || 'guard';
+  };
+
+  A.petKey = function (id) {
+    return PET_SRC[id] || 'tiger';
   };
 
   A.tileImg = function (type) {
-    if (type === 'dirt') return A.imgs.dirt || A.variants.dirt || A.imgs.grass;
+    if (type === 'dirt') return A.imgs.dirtTile || A.variants.dirt || A.imgs.grass;
     if (type === 'moss') return A.variants.moss || A.imgs.grass;
     if (type === 'dock') return A.variants.dock || A.imgs.stone;
     if (type === 'arena') return A.variants.arena || A.imgs.stone;
@@ -167,7 +252,7 @@
     var flip = Math.cos(p.facing) < 0;
     var bob = Math.sin(time * 8) * (p._moving ? 2 : 0.4);
     A.drawAura(ctx, screen.x, screen.y, 'rgba(255,200,80,0.55)', time, 1);
-    if (!billboard(ctx, img, screen.x, screen.y + 10, 54, 72, flip, bob)) {
+    if (!billboard(ctx, img, screen.x, screen.y + 10, 48, 96, flip, bob)) {
       return false;
     }
     return true;
@@ -175,7 +260,8 @@
 
   A.drawNpc = function (ctx, n, screen, time) {
     A.drawAura(ctx, screen.x, screen.y, 'rgba(255,210,80,0.4)', time, 0.85);
-    billboard(ctx, A.imgs.elder, screen.x, screen.y + 8, 46, 62, false, Math.sin(time * 2) * 0.6);
+    var img = A.imgs[A.npcKey(n.id)] || A.imgs.officer;
+    billboard(ctx, img, screen.x, screen.y + 8, 48, 96, false, Math.sin(time * 2) * 0.6);
     ctx.fillStyle = '#ffd36a';
     ctx.font = 'bold 16px serif';
     ctx.textAlign = 'center';
@@ -184,31 +270,30 @@
   };
 
   A.drawMob = function (ctx, e, screen, time) {
-    var key = MOB_SRC[e.kind] || 'bandit';
+    var key = A.mobKey(e.kind);
     var img = A.imgs[key];
     var scale = e.boss ? 1.35 : 1;
-    var w = (key === 'boar' || key === 'wolf' ? 56 : 48) * scale;
-    var h = (key === 'boar' || key === 'wolf' ? 48 : 68) * scale;
+    var w = (key === 'tiger' || key === 'fox' ? 56 : 48) * scale;
+    var h = (key === 'tiger' ? 88 : 96) * scale;
     A.drawAura(ctx, screen.x, screen.y, e.boss ? 'rgba(255,80,40,0.45)' : 'rgba(80,20,20,0.3)', time, scale);
     billboard(ctx, img, screen.x, screen.y + 8, w, h, false, Math.sin(time * 6 + e.x) * 1.2);
     return !!img;
   };
 
   A.drawPet = function (ctx, pet, screen, time) {
-    var img = A.imgs.wolf;
+    var img = A.imgs[A.petKey(pet.id)] || A.imgs.tiger;
     A.drawAura(ctx, screen.x, screen.y, 'rgba(160,200,255,0.35)', time, 0.7);
-    billboard(ctx, img, screen.x, screen.y + 6, 36, 32, false, Math.sin(time * 7) * 1);
+    billboard(ctx, img, screen.x, screen.y + 6, 40, 56, false, Math.sin(time * 7) * 1);
     A.drawNameplate(ctx, screen.x, screen.y + 14, '', pet.name, '#c8e6ff');
   };
 
   A.drawCart = function (ctx, screen) {
+    if (A.imgs.cart) {
+      ctx.drawImage(A.imgs.cart, screen.x - 28, screen.y - 36, 56, 48);
+      return;
+    }
     ctx.fillStyle = '#6a3a18';
     ctx.fillRect(screen.x - 18, screen.y - 8, 36, 16);
-    ctx.fillStyle = '#c4a060';
-    ctx.fillRect(screen.x - 14, screen.y - 18, 28, 12);
-    ctx.fillStyle = '#2a1a10';
-    ctx.beginPath(); ctx.arc(screen.x - 10, screen.y + 8, 5, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(screen.x + 10, screen.y + 8, 5, 0, Math.PI * 2); ctx.fill();
   };
 
   root.Art = A;

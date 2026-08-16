@@ -247,12 +247,14 @@ html, body {
   width: 74px;
   height: 74px;
   border: 2px solid #2ec4c8;
-  background: #071214 center/contain no-repeat;
+  border-radius: 6px;
+  background: #071214 center/cover no-repeat;
   display: grid;
   place-items: center;
   font-size: 28px;
   pointer-events: auto;
-  box-shadow: 0 0 0 1px #3a2508, 0 0 12px rgba(212, 175, 55, 0.25);
+  box-shadow: 0 0 0 1px #3a2508, 0 0 12px rgba(46, 196, 200, 0.25);
+  overflow: hidden;
 }
 .bars { width: 240px; }
 .who { font-size: 14px; letter-spacing: 2px; margin-bottom: 4px; }
@@ -309,11 +311,23 @@ html, body {
   flex-direction: column;
   gap: 8px;
 }
+.minimap-wrap { position: relative; }
 #minimap {
   width: 196px;
   height: 132px;
-  border: 1px solid var(--gold);
-  background: #0a0806;
+  border: 1px solid #2ec4c8;
+  background: #071214;
+}
+.map-name {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  background: rgba(6, 12, 14, 0.72);
+  color: #ffe7a0;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-align: center;
+  padding: 2px 0;
+  pointer-events: none;
 }
 .quest-box, .log-box {
   background: var(--panel);
@@ -389,6 +403,18 @@ html, body {
   padding: 16px 18px 20px;
 }
 .panel.open { display: block; }
+#panel-char.open {
+  background:
+    linear-gradient(90deg, rgba(8, 22, 24, 0.55), rgba(8, 16, 18, 0.92) 42%),
+    url('../assets/ingame/ui/rolebg.png') left 18px center / 200px auto no-repeat,
+    linear-gradient(180deg, rgba(8, 22, 24, 0.88), rgba(8, 16, 18, 0.94));
+  padding-left: 230px;
+}
+#panel-forge.open {
+  background:
+    linear-gradient(180deg, rgba(8, 22, 24, 0.82), rgba(8, 16, 18, 0.92)),
+    url('../assets/ingame/ui/forge.jpg') center/cover;
+}
 .panel h3 {
   color: var(--gold);
   letter-spacing: 4px;
@@ -405,7 +431,10 @@ html, body {
   font-size: 18px;
 }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-@media (max-width: 720px) { .grid-2 { grid-template-columns: 1fr; } }
+@media (max-width: 720px) {
+  .grid-2 { grid-template-columns: 1fr; }
+  #panel-char.open { padding-left: 18px; background-image: none; }
+}
 
 .stat-line { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; border-bottom: 1px dashed rgba(212, 175, 55, 0.15); }
 .plus {
@@ -443,18 +472,30 @@ html, body {
 
 .dialog {
   position: absolute;
-  left: 50%;
-  bottom: 92px;
-  transform: translateX(-50%);
-  width: min(640px, 90vw);
-  background: var(--panel);
-  border: 1px solid var(--gold);
-  padding: 14px 16px;
+  left: 16px;
+  right: 220px;
+  bottom: 10px;
+  max-width: 720px;
+  background: rgba(8, 16, 18, 0.92);
+  border: 1px solid #2ec4c8;
+  padding: 10px 12px;
   display: none;
 }
 .dialog.open { display: block; }
-.dialog .who { color: var(--gold); margin-bottom: 6px; }
+.dialog-body { display: flex; gap: 12px; align-items: flex-end; }
+.npc-face {
+  width: 112px;
+  height: 132px;
+  object-fit: contain;
+  object-position: bottom center;
+  flex: 0 0 auto;
+  background: transparent;
+}
+.dialog-text { flex: 1; min-width: 0; }
+.dialog .who { color: var(--gold); margin-bottom: 6px; letter-spacing: 2px; }
 .dialog .opts { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
+.q-item { display: flex; gap: 8px; align-items: flex-start; }
+.q-item img { width: 36px; height: 36px; object-fit: contain; flex: 0 0 auto; }
 
 .toast {
   position: absolute;

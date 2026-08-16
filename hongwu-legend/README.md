@@ -33,7 +33,7 @@ https://github.com/ertong0129/szf-admin/raw/cursor/hongwu-offline-legend-f2d5/�
 
 ## 画面说明
 
-登录壳、加载海报、底栏和角色立绘来自用户提供的 `Main.swf` 同目录公开资源（见 `assets/official/`）。地砖与部分怪物仍用本目录重绘贴图。SWF 整包没有打进仓库。
+**局内**立绘、对话半身像、头像、世界/国家地图和地砖取样，来自用户提供的 `MingGame.swf` 同目录公开资源（`com/ui/npc/`、`com/npcs/`、`com/maps/`，见 `assets/ingame/`）。登录壳仍用 `Main.swf` 同目录切图。SWF 整包没有打进仓库。
 
 ## 原作简析
 

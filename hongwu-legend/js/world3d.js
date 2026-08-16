@@ -117,16 +117,41 @@
     return t;
   }
 
-  function bakeGround(grid) {
+  function spriteSize(key, boss) {
+    var map = {
+      tiger: [1.35, 2.05], fox: [1.3, 2.4], water: [1.4, 2.25],
+      wing: [1.75, 2.2], fairy: [1.7, 1.95], boss: [2.35, 2.85],
+      dao: [1.28, 2.6], spear: [1.2, 2.5], officer: [1.4, 2.35],
+      smith: [1.25, 2.3], redguard: [1.3, 2.2], cart: [1.05, 1.05]
+    };
+    var s = map[key] || [1.25, 2.4];
+    if (boss) return [s[0] * 1.28, s[1] * 1.18];
+    return s;
+  }
+
+  function bakeGround(grid, mapId) {
     var gh = grid.length, gw = grid[0].length;
     var c = document.createElement('canvas');
     c.width = gw * 32;
     c.height = gh * 32;
     var ctx = c.getContext('2d');
     var art = root.Art;
+    if (mapId === 'tower' && art && art.imgs && art.imgs.towerBg) {
+      ctx.drawImage(art.imgs.towerBg, 0, 0, c.width, c.height);
+    } else if ((mapId === 'capital' || mapId === 'road') && art && art.imgs && art.imgs.countryMap) {
+      ctx.globalAlpha = 0.55;
+      ctx.drawImage(art.imgs.countryMap, 0, 0, c.width, c.height);
+      ctx.globalAlpha = 1;
+    }
     for (var y = 0; y < gh; y++) {
       for (var x = 0; x < gw; x++) {
         var type = grid[y][x];
+        if (mapId === 'tower' && type !== 'wall' && type !== 'rock' && type !== 'arena') {
+          if (type === 'water') ctx.fillStyle = 'rgba(20,40,80,0.28)';
+          else continue;
+          ctx.fillRect(x * 32, y * 32, 32, 32);
+          continue;
+        }
         var img = art && art.tileImg ? art.tileImg(type) : null;
         if (img) ctx.drawImage(img, x * 32, y * 32, 32, 32);
         else {
@@ -216,8 +241,9 @@
     propGroup.add(box);
   }
 
-  W.rebuild = function (grid) {
+  W.rebuild = function (grid, mapId) {
     if (!W.ready || !grid) return;
+    W.mapId = mapId || W.mapId;
     if (ground) {
       scene.remove(ground);
       ground.geometry.dispose();
@@ -230,7 +256,20 @@
       propGroup.remove(ch);
       if (ch.geometry) ch.geometry.dispose();
     }
-    var baked = bakeGround(grid);
+    if (mapId === 'poyang') {
+      scene.background = new THREE.Color(0x4a6a88);
+      scene.fog = new THREE.Fog(0x4a6a88, 18, 52);
+    } else if (mapId === 'tower') {
+      scene.background = new THREE.Color(0x2a1838);
+      scene.fog = new THREE.Fog(0x2a1838, 16, 48);
+    } else if (mapId === 'capital') {
+      scene.background = new THREE.Color(0x8aa0a8);
+      scene.fog = new THREE.Fog(0x8aa0a8, 24, 60);
+    } else {
+      scene.background = new THREE.Color(0x7ea4b8);
+      scene.fog = new THREE.Fog(0x7ea4b8, 22, 58);
+    }
+    var baked = bakeGround(grid, mapId || W.mapId);
     var geo = new THREE.PlaneGeometry(baked.gw, baked.gh, 1, 1);
     var mat = new THREE.MeshStandardMaterial({ map: baked.tex, roughness: 0.96 });
     ground = new THREE.Mesh(geo, mat);
@@ -420,47 +459,55 @@
     camera.lookAt(follow.x, 0.45, follow.z);
 
     var art = root.Art;
-    var heroImg = art && art.imgs ? art.imgs[art.classKey(p.cls)] : null;
+    var heroKey = art && art.classKey ? art.classKey(p.cls) : 'dao';
+    var heroImg = art && art.imgs ? art.imgs[heroKey] : null;
+    var hs = spriteSize(heroKey, false);
     var hero = ensureActor('hero', heroImg, {
-      sx: 1.65, sy: 2.05, label: p.name, labelColor: '#ffe7a0', bar: true
+      sx: hs[0], sy: hs[1], label: p.name, labelColor: '#ffe7a0', bar: true
     });
     var bob = Math.sin((state.time || 0) * 8) * (p._moving ? 0.05 : 0.012);
-    placeActor(hero, px0, pz0, 0.98, bob);
+    placeActor(hero, px0, pz0, 1.15, bob);
     paintBar(hero.bar, p.hp / Math.max(1, (state.maxHp || p.hp)), '#c8312a');
 
     var alive = { hero: 1 };
     (state.npcs || []).forEach(function (n) {
       var id = 'npc-' + n.id;
-      var a = ensureActor(id, art && art.imgs && art.imgs.elder, {
-        sx: 1.45, sy: 1.85, label: n.name, labelColor: '#ffe7a0'
+      var nkey = art && art.npcKey ? art.npcKey(n.id) : 'officer';
+      var nimg = art && art.imgs ? (art.imgs[nkey] || art.imgs.officer) : null;
+      var ns = spriteSize(nkey, false);
+      var a = ensureActor(id, nimg, {
+        sx: ns[0], sy: ns[1], label: n.name, labelColor: '#ffe7a0'
       });
-      placeActor(a, px(n.x), px(n.y), 0.9, Math.sin((state.time || 0) * 2) * 0.02);
+      placeActor(a, px(n.x), px(n.y), 1.05, Math.sin((state.time || 0) * 2) * 0.02);
       alive[id] = 1;
     });
 
-    var targetId = state.target && state.target.uid;
     (state.entities || []).forEach(function (e) {
-      var key = ({ boar: 'boar', boar_boss: 'boar', wolf: 'wolf', snake: 'wolf', lake_boss: 'boss', world_boss: 'boss' })[e.kind] || 'bandit';
+      var key = art && art.mobKey ? art.mobKey(e.kind) : 'guard';
       var img = art && art.imgs ? art.imgs[key] : null;
       var id = 'm-' + e.uid;
+      var ms = spriteSize(key, !!e.boss);
       var a = ensureActor(id, img, {
-        sx: e.boss ? 2.05 : 1.35,
-        sy: e.boss ? 2.25 : 1.65,
+        sx: ms[0],
+        sy: ms[1],
         label: e.name,
         labelColor: e.boss ? '#ff8a6a' : '#e8f6c8',
         bar: true,
         color: 0xaa4444
       });
-      placeActor(a, px(e.x), px(e.y), e.boss ? 1.15 : 0.82);
+      placeActor(a, px(e.x), px(e.y), e.boss ? 1.25 : 1.0);
       paintBar(a.bar, e.hp / Math.max(1, e.maxHp), e.boss ? '#ff6b4a' : '#c8312a');
       alive[id] = 1;
     });
 
     if (state.pet) {
-      var ps = ensureActor('pet', art && art.imgs && art.imgs.wolf, {
-        sx: 1.0, sy: 0.9, label: state.pet.name, labelColor: '#c8e6ff'
+      var pkey = art && art.petKey ? art.petKey(state.pet.id) : 'tiger';
+      var pimg = art && art.imgs ? (art.imgs[pkey] || art.imgs.tiger) : null;
+      var psz = spriteSize(pkey, false);
+      var ps = ensureActor('pet', pimg, {
+        sx: psz[0] * 0.85, sy: psz[1] * 0.85, label: state.pet.name, labelColor: '#c8e6ff'
       });
-      placeActor(ps, px(state.pet.x), px(state.pet.y), 0.5);
+      placeActor(ps, px(state.pet.x), px(state.pet.y), 0.7);
       alive.pet = 1;
     }
     hideUnused(actors, alive);

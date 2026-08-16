@@ -395,7 +395,7 @@
     G.grid = g;
     G.mapId = id;
     spawnMapContent(id);
-    if (window.World3D && World3D.ready) World3D.rebuild(G.grid);
+    if (window.World3D && World3D.ready) World3D.rebuild(G.grid, G.mapId);
   }
 
   function worldSize() {
@@ -840,7 +840,10 @@
     var extra = '';
     if (q.kill) extra = '（' + (G.player.quests.progress[q.id] || 0) + '/' + q.kill.n + '）';
     if (q.gather) extra = '（' + countItem(G.player, q.gather.id) + '/' + q.gather.n + '）';
-    el.innerHTML = '<div class="q-item">' + q.name + extra + '<small>' + q.text + '<br/>地点：' + D.MAP_META[q.map].name + '</small></div>';
+    var icon = '';
+    if (q.talk && window.Art && Art.npcIcon) icon = Art.npcIcon(q.talk);
+    el.innerHTML = '<div class="q-item">' + (icon ? '<img src="' + icon + '" alt="" />' : '') +
+      '<div>' + q.name + extra + '<small>' + q.text + '<br/>地点：' + D.MAP_META[q.map].name + '</small></div></div>';
   }
 
   /* ========== 灵宠 ========== */
@@ -1370,36 +1373,46 @@
 
   function drawMinimap() {
     var w = mini.width, h = mini.height;
-    mctx.fillStyle = '#0a0806';
+    mctx.fillStyle = '#071214';
     mctx.fillRect(0, 0, w, h);
     if (!G.grid) return;
     var gw = G.grid[0].length, gh = G.grid.length;
     var sx = w / gw, sy = h / gh;
     for (var y = 0; y < gh; y++) {
       for (var x = 0; x < gw; x++) {
-        mctx.fillStyle = TILE_COLOR[G.grid[y][x]] || '#333';
-        mctx.fillRect(x * sx, y * sy, sx + 0.5, sy + 0.5);
+        var t = G.grid[y][x];
+        if (t === 'water') mctx.fillStyle = 'rgba(42,110,150,0.55)';
+        else if (t === 'wall' || t === 'rock' || t === 'house' || t === 'roof') mctx.fillStyle = 'rgba(20,16,12,0.55)';
+        else if (t === 'tree') mctx.fillStyle = 'rgba(30,70,40,0.35)';
+        else mctx.fillStyle = 'rgba(46,90,70,0.22)';
+        mctx.fillRect(x * sx, y * sy, sx + 0.4, sy + 0.4);
       }
     }
+    G.npcs.forEach(function (n) {
+      mctx.fillStyle = '#ffe7a0';
+      mctx.fillRect(n.x / TILE * sx - 1.5, n.y / TILE * sy - 1.5, 3, 3);
+    });
     G.entities.forEach(function (e) {
       mctx.fillStyle = e.boss ? '#ffd36a' : '#c8312a';
       mctx.fillRect(e.x / TILE * sx - 1, e.y / TILE * sy - 1, 3, 3);
     });
     mctx.fillStyle = '#6fdf7a';
     mctx.fillRect(G.player.x / TILE * sx - 2, G.player.y / TILE * sy - 2, 4, 4);
+    var nameEl = document.getElementById('map-name');
+    if (nameEl && D.MAP_META[G.mapId]) nameEl.textContent = D.MAP_META[G.mapId].name;
   }
 
   function drawHud() {
     var p = G.player, st = stats(p);
     document.getElementById('who-line').textContent = p.name + ' · ' + D.CLASSES[p.cls].name + '  ' + p.level + '级';
     var port = document.getElementById('portrait');
-    var pk = window.Art ? Art.classKey(p.cls) : p.cls;
-    if (window.Art && Art.imgs[pk]) {
+    var head = window.Art && Art.classHead ? Art.classHead(p.cls) : '';
+    if (head) {
       port.textContent = '';
-      port.style.backgroundImage = 'url(' + Art.src[pk] + ')';
-      port.style.backgroundSize = 'contain';
+      port.style.backgroundImage = 'url(' + head + ')';
+      port.style.backgroundSize = 'cover';
       port.style.backgroundRepeat = 'no-repeat';
-      port.style.backgroundPosition = 'center bottom';
+      port.style.backgroundPosition = 'center top';
     } else {
       port.textContent = D.CLASSES[p.cls].name[0];
       port.style.color = D.CLASSES[p.cls].accent;
@@ -1583,7 +1596,11 @@
     if (def.escort) opts += '<button class="btn" data-escort="1">接下押镖（押金20两）</button>';
     if (def.tower) opts += '<button class="btn" data-tower="1">进入试炼</button>';
     if (n.id === 'xunshou' && !G.player.pet) opts += '<button class="btn" data-buypet="1">以 80 两请一只幼兽</button>';
-    el.innerHTML = '<div class="who">' + n.name + '</div><div>' + (def.lines[0] || '') + '</div><div class="opts">' + opts + '</div>';
+    var face = (window.Art && Art.npcPortrait) ? Art.npcPortrait(n.id) : '';
+    el.innerHTML = '<div class="dialog-body">' +
+      (face ? '<img class="npc-face" src="' + face + '" alt="" />' : '') +
+      '<div class="dialog-text"><div class="who">' + n.name + '</div><div>' + (def.lines[0] || '') +
+      '</div><div class="opts">' + opts + '</div></div></div>';
     el.classList.add('open');
     G.dialogNpc = n;
     maybeCompleteTalk(n.id);
@@ -2020,7 +2037,7 @@
       resize();
       if (World3D.init(canvas3d)) {
         canvas.style.display = 'none';
-        if (G.grid) World3D.rebuild(G.grid);
+        if (G.grid) World3D.rebuild(G.grid, G.mapId);
       } else {
         canvas3d.style.display = 'none';
         canvas.style.display = 'block';

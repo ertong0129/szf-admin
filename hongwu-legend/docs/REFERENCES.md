@@ -56,6 +56,7 @@
 
 - 登录页：http://s297.mccq.91wan.com/user/game.php（未登录会 302 到 91wan 登录壳）
 - 客户端加载器：http://mccq.static.mingchao.com/55598/Main.swf?v=55598
+- **局内主包：** http://mccq.static.mingchao.com/55598/MingGame.swf
 
 `Main.swf` 是 **Flex 4 压缩加载器**（约 110KB），不是整包游戏。解压后能看到它再去拉：
 
@@ -70,6 +71,6 @@
 | `com/assets/viewUI/viewUI.swf` | 底栏 / 面板 / 标题 | 200 |
 | `com/ui/role/man.swf` `woman.swf` | 预渲染角色立绘帧 | 200 |
 
-本目录只用了其中**已经公开的图片**（登录切图、加载海报、底栏、创角按钮、角色帧），没有把 SWF 整包打进仓库，也没有去解协议或加密模块。
+局内用的是 `MingGame.swf` 再去拉的公开位图：`com/ui/npc/{id}.swf` 预渲染立绘帧、`com/npcs/` 头像与半身像、`com/maps/world.swf` `country.swf`、`com/assets/headImage/`、`com/assets/role/jiaosebg.png`。没有把 SWF 整包打进仓库，也没有去解协议或加密模块。
 
 未找到《明朝传奇》官方完整 Flash 场景源码的其它合法公开包。
