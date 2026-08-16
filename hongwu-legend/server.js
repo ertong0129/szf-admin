@@ -14,7 +14,9 @@ var ROOT = path.resolve(__dirname);
 var DATA = path.join(ROOT, 'data');
 var PORT = parseInt(process.env.PORT || '8088', 10);
 var STORE = path.join(DATA, 'store.json');
-var VERSION = '20260816e';
+var VERSION = '20260816f';
+var WorldHub = require('./js/worldhub.js');
+var HOST = process.env.HOST || '0.0.0.0';
 
 function hash(s) {
   return crypto.createHash('sha256').update(String(s)).digest('hex');
@@ -26,7 +28,8 @@ function defaultStore() {
       demo: { pass: hash('123456'), roles: {}, created: Date.now() }
     },
     tokens: {},
-    chat: [{ who: '系统', text: '欢迎来到洪武风云录。测试号 demo / 123456', t: Date.now() }]
+    chat: [{ who: '系统', text: '欢迎来到洪武风云录。测试号 demo / 123456', t: Date.now() }],
+    social: { friends: {}, clans: {}, clanOf: {} }
   };
 }
 
@@ -177,6 +180,37 @@ function serveStatic(req, res, pathname) {
   });
 }
 
+var hub = WorldHub.create({
+  persist: function (social) {
+    var db = load();
+    db.social = social;
+    save(db);
+  }
+});
+(function bootSocial() {
+  try {
+    var db = load();
+    hub.loadSocial(db.social || {});
+  } catch (e) { /* ignore */ }
+})();
+
+function lanIps() {
+  var nets = os.networkInterfaces();
+  var out = [];
+  Object.keys(nets).forEach(function (name) {
+    (nets[name] || []).forEach(function (n) {
+      if (n.family === 'IPv4' && !n.internal) out.push(n.address);
+    });
+  });
+  return out;
+}
+
+function sidOf(req, u, body) {
+  if (body && body.server) return String(body.server);
+  if (u && u.query && u.query.server) return String(u.query.server);
+  return 's1';
+}
+
 var SERVERS = [
   { id: 's1', name: '双线1服 · 洪武风云', status: '火爆' },
   { id: 's2', name: '双线2服 · 永乐新章', status: '畅通' },
@@ -201,7 +235,9 @@ function handleRequest(req, res) {
   }
   var p = u.pathname || '/';
 
-  if (p === '/api/ping') return json(res, 200, { ok: true, v: VERSION });
+  if (p === '/api/ping') {
+    return json(res, 200, { ok: true, v: VERSION, lan: true, ips: lanIps() });
+  }
 
   if (p === '/api/register' && req.method === 'POST') {
     return readBody(req, function (b) {
@@ -289,6 +325,35 @@ function handleRequest(req, res) {
     });
   }
 
+  if (p === '/api/world' && req.method === 'POST') {
+    return readBody(req, function (b) {
+      var db = load();
+      var name = userOf(req, db);
+      if (!name) return json(res, 401, { error: '请先登录' });
+      var sid = sidOf(req, u, b);
+      json(res, 200, hub.upsert(sid, name, b || {}));
+    });
+  }
+
+  if (p === '/api/world' && req.method === 'GET') {
+    var dbw = load();
+    var nw = userOf(req, dbw);
+    if (!nw) return json(res, 401, { error: '请先登录' });
+    return json(res, 200, hub.snapshot(sidOf(req, u, null), nw));
+  }
+
+  if (p === '/api/social' && req.method === 'POST') {
+    return readBody(req, function (b) {
+      var db = load();
+      var name = userOf(req, db);
+      if (!name) return json(res, 401, { error: '请先登录' });
+      var sid = sidOf(req, u, b);
+      var out = hub.social(sid, name, String(b.op || ''), b);
+      if (out && out.error) return json(res, 400, out);
+      json(res, 200, out);
+    });
+  }
+
   if (p.indexOf('/api/') === 0) return json(res, 404, { error: '未知接口' });
 
   serveStatic(req, res, p);
@@ -336,6 +401,10 @@ function tryListen(port, last) {
     server.removeListener('error', onError);
     var href = 'http://127.0.0.1:' + port + '/';
     console.log('洪武风云录服务端 ' + href);
+    lanIps().forEach(function (ip) {
+      console.log('局域网请打开 http://' + ip + ':' + port + '/');
+    });
+    console.log('朋友用同一局域网地址，各自注册账号后选同一服务器。');
     console.log('版本 ' + VERSION);
     console.log('测试账号 demo / 123456');
     console.log('关闭本窗口即停止服务。');
@@ -343,11 +412,11 @@ function tryListen(port, last) {
   }
   server.once('error', onError);
   server.once('listening', onListen);
-  server.listen(port, '127.0.0.1');
+  server.listen(port, HOST);
 }
 
 if (typeof module !== 'undefined') {
-  module.exports = { safeFile: safeFile, ROOT: ROOT, VERSION: VERSION };
+  module.exports = { safeFile: safeFile, ROOT: ROOT, VERSION: VERSION, hub: hub };
 }
 
 if (require.main === module) {

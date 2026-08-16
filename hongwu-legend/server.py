@@ -22,7 +22,80 @@ ROOT = os.path.abspath(os.path.dirname(__file__))
 DATA = os.path.join(ROOT, "data")
 STORE = os.path.join(DATA, "store.json")
 PORT = int(os.environ.get("PORT") or "8088")
-VERSION = "20260816e"
+VERSION = "20260816f"
+HOST = os.environ.get("HOST") or "0.0.0.0"
+WORLD = {}
+CHAT = {}
+EVENTS = {}
+PARTY_OF = {}
+PARTIES = {}
+
+
+def lan_ips():
+    ips = []
+    try:
+        import socket
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ips.append(s.getsockname()[0])
+        s.close()
+    except Exception:
+        pass
+    return ips
+
+
+def _user_of(handler, db):
+    token = handler.headers.get("X-Token") or ""
+    return db.get("tokens", {}).get(token)
+
+
+def world_upsert(server, user, body):
+    WORLD.setdefault(server, {})
+    slot = {
+        "user": user,
+        "name": str(body.get("name") or user)[:8],
+        "cls": body.get("cls") or "warrior",
+        "level": body.get("level") or 1,
+        "mapId": body.get("mapId") or "taiping",
+        "x": float(body.get("x") or 0),
+        "y": float(body.get("y") or 0),
+        "hp": float(body.get("hp") or 0),
+        "maxHp": float(body.get("maxHp") or 1),
+        "mp": float(body.get("mp") or 0),
+        "pkMode": body.get("pkMode") or "peace",
+        "pkValue": int(body.get("pkValue") or 0),
+        "nation": "yuan" if body.get("nation") == "yuan" else "ming",
+        "sit": bool(body.get("sit")),
+        "facing": float(body.get("facing") or 0),
+        "t": time.time(),
+    }
+    WORLD[server][user] = slot
+    return world_snap(server, user)
+
+
+def world_snap(server, user):
+    now = time.time()
+    others = []
+    for u, s in list(WORLD.get(server, {}).items()):
+        if now - s.get("t", 0) > 4:
+            WORLD[server].pop(u, None)
+            continue
+        if u == user:
+            continue
+        others.append(dict(s, red=s.get("pkValue", 0) >= 18, stall=s.get("stall")))
+    ev = EVENTS.pop(user, [])
+    return {
+        "me": WORLD.get(server, {}).get(user),
+        "players": others,
+        "chat": CHAT.get(server, [])[-50:],
+        "events": ev,
+        "invites": [],
+        "friends": [],
+        "party": PARTIES.get(PARTY_OF.get(user)),
+        "clan": None,
+        "trade": None,
+        "online": len(WORLD.get(server, {})),
+    }
 
 
 def hash_pass(s):
@@ -190,7 +263,7 @@ class Handler(BaseHTTPRequestHandler):
         q = parse_qs(u.query)
 
         if p == "/api/ping":
-            return self._json(200, {"ok": True, "v": VERSION})
+            return self._json(200, {"ok": True, "v": VERSION, "lan": True, "ips": lan_ips()})
         if p == "/api/servers":
             return self._json(200, {"servers": SERVERS})
         if p == "/api/register" and method == "POST":
@@ -252,6 +325,57 @@ class Handler(BaseHTTPRequestHandler):
             save(db)
             return self._json(200, {"ok": True})
 
+        if p == "/api/world" and method == "POST":
+            b = self._body()
+            db = load()
+            name = self._user(db)
+            if not name:
+                return self._json(401, {"error": "请先登录"})
+            sid = str(b.get("server") or "s1")
+            return self._json(200, world_upsert(sid, name, b or {}))
+        if p == "/api/world" and method == "GET":
+            db = load()
+            name = self._user(db)
+            if not name:
+                return self._json(401, {"error": "请先登录"})
+            sid = (q.get("server") or ["s1"])[0]
+            return self._json(200, world_snap(sid, name))
+        if p == "/api/social" and method == "POST":
+            b = self._body()
+            db = load()
+            name = self._user(db)
+            if not name:
+                return self._json(401, {"error": "请先登录"})
+            sid = str(b.get("server") or "s1")
+            op = str(b.get("op") or "")
+            if op == "say":
+                CHAT.setdefault(sid, []).append({
+                    "who": name, "user": name, "text": str(b.get("text") or "")[:80],
+                    "chan": b.get("chan") or "near", "t": int(time.time() * 1000),
+                    "mapId": (WORLD.get(sid) or {}).get(name, {}).get("mapId") or "",
+                    "x": (WORLD.get(sid) or {}).get(name, {}).get("x") or 0,
+                    "y": (WORLD.get(sid) or {}).get(name, {}).get("y") or 0,
+                })
+                CHAT[sid] = CHAT[sid][-80:]
+                return self._json(200, {"ok": True})
+            if op == "hit":
+                tgt = str(b.get("target") or b.get("user") or "")
+                shop = (WORLD.get(sid) or {}).get(tgt)
+                me = (WORLD.get(sid) or {}).get(name)
+                if not shop or not me:
+                    return self._json(400, {"error": "目标不在线"})
+                if b.get("safe") or me.get("pkMode") == "peace":
+                    return self._json(400, {"error": "当前 PK 模式不能攻击"})
+                dmg = max(1, int(b.get("dmg") or 1))
+                shop["hp"] = max(0, shop.get("hp", 0) - dmg)
+                EVENTS.setdefault(tgt, []).append({"kind": "pvp_hurt", "from": name, "name": me.get("name"), "dmg": dmg, "hp": shop["hp"]})
+                return self._json(200, {"ok": True, "hp": shop["hp"], "killed": shop["hp"] <= 0})
+            if op == "leave":
+                if sid in WORLD:
+                    WORLD[sid].pop(name, None)
+                return self._json(200, {"ok": True})
+            return self._json(400, {"error": "请用 Node 服务端以启用组队/交易/摆摊（python 仅同步与 PK）"})
+
         if p in ("/", ""):
             p = "/index.html"
         if p == "/favicon.ico":
@@ -286,7 +410,7 @@ def serve(port):
     last = port + 12
     while port <= last:
         try:
-            httpd = ThreadingHTTPServer(("127.0.0.1", port), Handler)
+            httpd = ThreadingHTTPServer((HOST, port), Handler)
             return httpd, port
         except OSError as e:
             if port >= last:
@@ -305,6 +429,9 @@ def main():
     httpd, port = serve(PORT)
     href = "http://127.0.0.1:%s/" % port
     print("洪武风云录服务端 " + href)
+    for ip in lan_ips():
+        print("局域网请打开 http://%s:%s/" % (ip, port))
+    print("朋友用同一局域网地址，各自注册账号后选同一服务器。")
     print("版本 " + VERSION)
     print("测试账号 demo / 123456")
     print("关闭本窗口即停止服务。")

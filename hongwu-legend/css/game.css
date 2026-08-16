@@ -412,12 +412,24 @@ html, body {
 .pk-mode.party { color: #6fdf7a; border-color: #2a8f4a; }
 .pk-mode.clan { color: #c089ff; border-color: #6b3fa0; }
 .pk-mode.karma { color: #ffd36a; border-color: #d4af37; }
-#energy-line {
+#energy-line, #online-line {
   margin-top: 2px;
   font-size: 11px;
   color: #8ad4d6;
   letter-spacing: 1px;
 }
+.nation-pick { display: flex; gap: 8px; justify-content: center; margin: 8px 0; }
+.nation-pick button {
+  background: rgba(8,28,30,0.85);
+  border: 1px solid #2ec4c8;
+  color: #8ad4d6;
+  padding: 4px 14px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.nation-pick button.selected { color: #ffe7a0; border-color: #ffe7a0; }
+.chat-tabs span { cursor: pointer; }
+.chat-tabs span.on { color: #ffe7a0; }
 .char-tabs {
   display: flex;
   gap: 8px;

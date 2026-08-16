@@ -83,5 +83,16 @@
     return req('GET', '/api/chat');
   };
 
+  API.worldTick = function (body) {
+    if (!API.online || !API.token) return Promise.resolve(null);
+    return req('POST', '/api/world', body);
+  };
+
+  API.social = function (op, extra) {
+    if (!API.online || !API.token) return Promise.resolve({ error: '离线' });
+    var body = Object.assign({ op: op }, extra || {});
+    return req('POST', '/api/social', body);
+  };
+
   root.GameAPI = API;
 })(typeof window !== 'undefined' ? window : global);

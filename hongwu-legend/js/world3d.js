@@ -539,6 +539,22 @@
       alive[id] = 1;
     });
 
+    (state.peers || []).forEach(function (o) {
+      var id = 'peer-' + o.user;
+      var pkey = art && art.classKey ? art.classKey(o.cls) : 'dao';
+      var pimg = art && art.imgs ? art.imgs[pkey] : null;
+      var psz = spriteSize(pkey, false);
+      var a = ensureActor(id, pimg, {
+        sx: psz[0], sy: psz[1],
+        label: o.name,
+        labelColor: o.red ? '#ff8a6a' : '#8ad4d6',
+        bar: true
+      });
+      placeActor(a, px(o.x), px(o.y), 1.12);
+      paintBar(a.bar, (o.hp || 0) / Math.max(1, o.maxHp || 1), '#c8312a');
+      alive[id] = 1;
+    });
+
     if (state.pet) {
       var pkey = art && art.petKey ? art.petKey(state.pet.id) : 'tiger';
       var pimg = art && art.imgs ? (art.imgs[pkey] || art.imgs.tiger) : null;

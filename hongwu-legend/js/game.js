@@ -37,6 +37,7 @@
     last: 0,
     log: [],
     selectedClass: 'warrior',
+    selectedNation: 'ming',
     dialogNpc: null,
     toastT: 0,
     escort: null,
@@ -47,7 +48,15 @@
     towerAuto: false,
     towerDmg: 0,
     towerT0: 0,
-    deathKind: 'village'
+    deathKind: 'village',
+    peers: [],
+    chatChan: 'near',
+    chatTo: '',
+    hidePeers: false,
+    followUser: '',
+    netAcc: 0,
+    tradeOffer: { items: [], silver: 0 },
+    onlineN: 0
   };
 
   function uid() { return 'id' + Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-3); }
@@ -144,7 +153,9 @@
       dungeon: { day: '', poyang: 0, tower: 0 },
       warehouse: { tabs: 1, items: [[], [], [], []] },
       mount: { owned: false, riding: false, rarity: 'white' },
-      merit: { day: '', count: 0, active: false, kill: null, need: 0, got: 0 }
+      merit: { day: '', count: 0, active: false, kill: null, need: 0, got: 0 },
+      nation: G.selectedNation || 'ming',
+      pkValue: 0
     };
     D.SKILLS[cls].forEach(function (s) {
       if (s.unlock <= 1) p.skills[s.id] = 1;
@@ -736,7 +747,11 @@
     var def = magic ? 0 : p.target.level * 1.2;
     var crit = F.critRoll(st.crit);
     var dmg = F.calcDamage(atk, def, 1, crit, rand(-0.08, 0.08));
-    hurtMonster(p.target, dmg, crit);
+    if (p.target.isPeer) {
+      hitPeer(p.target, dmg, crit);
+    } else {
+      hurtMonster(p.target, dmg, crit);
+    }
     p.atkCd = 1 / Math.max(0.45, st.aspd);
     beep(220, 0.03);
   }
@@ -781,6 +796,9 @@
       G.entities.forEach(function (e) {
         if (dist(p, e) <= (sk.range || 80)) hitTarget(p, e, mul, magic, sk);
       });
+      (G.peers || []).forEach(function (o) {
+        if (dist(p, o) <= (sk.range || 80)) hitTarget(p, asPeerTarget(o), mul, magic, sk);
+      });
       burst(p.x, p.y, D.CLASSES[p.cls].color, 18);
     } else if (sk.kind === 'pierce') {
       fireBolt(p, sk, mul, magic, true);
@@ -811,7 +829,11 @@
     var st = stats(p);
     var atk = magic ? st.matk : st.patk;
     var crit = F.critRoll(st.crit + (sk && sk.crit ? sk.crit : 0));
-    var dmg = F.calcDamage(atk, e.level, mul, crit, rand(-0.05, 0.05));
+    var dmg = F.calcDamage(atk, e.level != null ? e.level : 1, mul, crit, rand(-0.05, 0.05));
+    if (e.isPeer) {
+      hitPeer(e, dmg, crit);
+      return;
+    }
     if (sk && sk.stun) e.stun = Math.max(e.stun, sk.stun);
     if (sk && sk.debuff) e.debuff = Object.assign({ t: sk.debuff.dur }, sk.debuff);
     hurtMonster(e, dmg, crit);
@@ -1336,11 +1358,15 @@
 
   function showNearby() {
     var names = G.npcs.map(function (n) { return n.name; });
+    (G.peers || []).forEach(function (o) {
+      if (!o.mapId || o.mapId === G.mapId) names.push(o.name);
+    });
     G.entities.slice(0, 4).forEach(function (e) { names.push(e.name); });
     toast('附近：' + (names.join('、') || '无人'));
   }
 
   function npcTravel(spec) {
+    if ((p.pkValue || 0) >= 18) { toast('红名不能使用车夫'); return; }
     var parts = (spec || '').split(':');
     if (parts.length < 3) return;
     closeDialog();
@@ -1774,6 +1800,16 @@
           if (!pr.pierce) return false;
         }
       }
+      for (var j = 0; j < (G.peers || []).length; j++) {
+        var o = G.peers[j];
+        if (!o || (o.mapId && o.mapId !== G.mapId)) continue;
+        if (pr.hit['p-' + o.user]) continue;
+        if (Math.hypot(pr.x - o.x, pr.y - o.y) < 22) {
+          pr.hit['p-' + o.user] = true;
+          hitTarget(G.player, asPeerTarget(o), pr.mul, pr.magic, pr.skill);
+          if (!pr.pierce) return false;
+        }
+      }
       return true;
     });
   }
@@ -1842,9 +1878,17 @@
       if (btn) btn.textContent = '返回入口';
     } else {
       G.deathKind = 'village';
-      p.silver = Math.max(0, Math.floor(p.silver * 0.9));
-      if (title) title.textContent = '身死道消';
-      if (text) text.textContent = '银两略有折损，将在太平村回魂。';
+      p.silver = Math.max(0, Math.floor(p.silver * ((p.pkValue || 0) >= 18 ? 0.75 : 0.9)));
+      if ((p.pkValue || 0) >= 30) {
+        if (title) title.textContent = '入狱示众';
+        if (text) text.textContent = 'PK 值过高，复活后押回太平村。';
+      } else if ((p.pkValue || 0) >= 18) {
+        if (title) title.textContent = '红名身死';
+        if (text) text.textContent = '红名死亡掉落加重，银两折损更多。';
+      } else {
+        if (title) title.textContent = '身死道消';
+        if (text) text.textContent = '银两略有折损，将在太平村回魂。';
+      }
       if (btn) btn.textContent = '回 村 再 战';
     }
     document.getElementById('death').classList.add('open');
@@ -1883,6 +1927,7 @@
         maxHp: stats(G.player).maxHp,
         npcs: G.npcs,
         entities: G.entities,
+        peers: G.hidePeers ? [] : (G.peers || []).filter(function (o) { return !o.mapId || o.mapId === G.mapId; }),
         pet: G.player.pet && G.player.pet.hp > 0 ? G.player.pet : null,
         click: G.clickFx,
         target: G.player.target,
@@ -1988,6 +2033,12 @@
       }
     });
     G.entities.forEach(function (e) { drawMonster(e); });
+    if (!G.hidePeers) {
+      (G.peers || []).forEach(function (o) {
+        if (o.mapId && o.mapId !== G.mapId) return;
+        drawPeer(o);
+      });
+    }
     if (G.escort && G.mapId === 'road') {
       var cs = worldToScreen(G.escort.x, G.escort.y);
       if (window.Art && Art.ready) Art.drawCart(ctx, cs);
@@ -2089,6 +2140,29 @@
     }
   }
 
+  function drawPeer(o) {
+    var s = worldToScreen(o.x, o.y);
+    var fake = { cls: o.cls || 'warrior', name: o.name, x: o.x, y: o.y, facing: o.facing || 0, sit: o.sit, _moving: true };
+    if (!(window.Art && Art.ready && Art.drawHero(ctx, fake, s, G.time))) {
+      drawActor(o.x, o.y, '#6cb6ff', 12, o.stall ? '摊' : '');
+    }
+    var col = o.red ? '#ff6a6a' : (o.nation === 'yuan' ? '#c089ff' : '#8ad4d6');
+    if (window.Art && Art.ready) Art.drawNameplate(ctx, s.x, s.y + 22, (D.CLASSES[o.cls] ? D.CLASSES[o.cls].name : ''), o.name, col);
+    else {
+      ctx.fillStyle = col;
+      ctx.font = '11px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(o.name, s.x, s.y - 22);
+    }
+    drawBar(s.x - 18, s.y - 58, 36, (o.hp || 0) / Math.max(1, o.maxHp || 1), '#c8312a');
+    if (o.stall) {
+      ctx.fillStyle = '#ffd36a';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(o.stall.title || '摊位', s.x, s.y + 34);
+    }
+  }
+
   function drawMonster(e) {
     var s = worldToScreen(e.x, e.y);
     if (!(window.Art && Art.ready && Art.drawMob(ctx, e, s, G.time))) {
@@ -2158,6 +2232,11 @@
     G.entities.forEach(function (e) {
       ctx.fillStyle = e.boss ? '#ffd36a' : '#c8312a';
       ctx.fillRect(e.x / TILE * sx - 1, e.y / TILE * sy - 1, 3, 3);
+    });
+    (G.peers || []).forEach(function (o) {
+      if (o.mapId && o.mapId !== G.mapId) return;
+      ctx.fillStyle = o.red ? '#ff6a6a' : '#6fdf7a';
+      ctx.fillRect(o.x / TILE * sx - 2, o.y / TILE * sy - 2, 4, 4);
     });
     if (G.player) {
       ctx.fillStyle = '#1e4a8a';
@@ -2514,6 +2593,8 @@
         '<div class="stat-line"><span>名号</span><span>' + p.name + '</span></div>' +
         '<div class="stat-line"><span>职业</span><span>' + D.CLASSES[p.cls].name + '</span></div>' +
         '<div class="stat-line"><span>等级</span><span>' + p.level + '</span></div>' +
+        '<div class="stat-line"><span>阵营 / PK</span><span>' + (p.nation === 'yuan' ? '北元' : '大明') +
+        '　' + (p.pkValue || 0) + ((p.pkValue || 0) >= 18 ? ' 红名' : '') + '</span></div>' +
         '<div class="stat-line"><span>银两 / 金锭</span><span>' + p.silver + ' / ' + p.gold + '</span></div>' +
         '<div class="stat-line"><span>精力</span><span>' + (p.energy || 0) + ' / ' + (D.ENERGY_MAX || 4000) + '</span></div>' +
         '<div class="stat-line"><span>可分配属性</span><span>' + p.unspentAttr + '</span></div>' +
@@ -2591,6 +2672,26 @@
         D.HELP.map(function (h) { return '<p style="margin:6px 0;color:#d8c8a0">' + h + '</p>'; }).join('');
     } else if (id === 'warehouse') {
       paintWarehouse();
+    } else if (id === 'social') {
+      var invs = (G.pendingInvites || []).map(function (inv, i) {
+        return '<div class="stat-line"><span>' + inv.from + '　' + inv.kind + '</span>' +
+          '<button class="btn" data-inv-accept="' + i + '">接受</button></div>';
+      }).join('') || '<p style="color:#b8a57a">暂无邀请</p>';
+      var fl = (G.netFriends || []).map(function (u) { return '<div>' + u + '</div>'; }).join() || '无';
+      var pt = G.netParty ? ('队长 ' + G.netParty.leader + '　' + (G.netParty.members || []).join('、')) : '未组队';
+      var cl = G.netClan ? (G.netClan.name + '　' + (G.netClan.members || []).join('、')) : '无宗族';
+      document.getElementById('panel-social').innerHTML = header('社交') +
+        '<p>在线 ' + (G.onlineN || 0) + '　PK 值 ' + (G.player.pkValue || 0) +
+        ((G.player.pkValue || 0) >= 18 ? '　红名' : '') + '</p>' +
+        '<h4 style="color:#d4af37;margin:8px 0 4px">邀请</h4>' + invs +
+        '<h4 style="color:#d4af37;margin:8px 0 4px">好友</h4><p>' + fl + '</p>' +
+        '<h4 style="color:#d4af37;margin:8px 0 4px">队伍</h4><p>' + pt + '</p>' +
+        (G.netParty ? '<button class="btn ghost" data-party-leave="1">离队</button>' : '') +
+        '<h4 style="color:#d4af37;margin:8px 0 4px">宗族</h4><p>' + cl + '</p>' +
+        (G.netClan
+          ? '<button class="btn ghost" data-clan-leave="1">退出宗族</button>'
+          : '<button class="btn" data-clan-create="1">创建宗族</button>') +
+        '<p style="color:#b8a57a;margin-top:8px">点其他玩家：组队 / 交易 / 加好友 / 密聊 / 跟随。K 摆摊。G 跟随。H 隐藏玩家。</p>';
     }
   }
 
@@ -2776,6 +2877,8 @@
     G.player.target = null;
     G.player.auto = false;
     G.player.pkMode = G.player.pkMode || 'peace';
+    G.player.nation = G.player.nation || 'ming';
+    G.player.pkValue = G.player.pkValue || 0;
     G.player.towerUnlock = G.player.towerUnlock || 1;
     ensureDaily(G.player);
     G.log = data.log || [];
@@ -2827,6 +2930,13 @@
     var p = G.player;
     for (var i = 0; i < G.npcs.length; i++) {
       if (dist(wpos, G.npcs[i]) < 28) { talkNpc(G.npcs[i]); return; }
+    }
+    var peer = findPeerAt(wpos, 32);
+    if (peer) {
+      p.target = asPeerTarget(peer);
+      closeDialog();
+      talkPeer(peer);
+      return;
     }
     var nearest = null, nd = 40;
     G.entities.forEach(function (e) {
@@ -2963,6 +3073,274 @@
     paintPanel('forge');
   }
 
+  function asPeerTarget(o) {
+    return {
+      isPeer: true,
+      user: o.user,
+      name: o.name,
+      x: o.x,
+      y: o.y,
+      hp: o.hp,
+      maxHp: o.maxHp,
+      level: o.level || 1,
+      r: 14,
+      pkMode: o.pkMode,
+      pkValue: o.pkValue,
+      nation: o.nation,
+      red: o.red,
+      stall: o.stall,
+      cls: o.cls,
+      mapId: o.mapId
+    };
+  }
+
+  function findPeerAt(wpos, rad) {
+    rad = rad || 32;
+    var best = null, bd = rad;
+    (G.peers || []).forEach(function (o) {
+      if (o.mapId && o.mapId !== G.mapId) return;
+      var d = dist(wpos, o);
+      if (d < bd) { bd = d; best = o; }
+    });
+    return best;
+  }
+
+  function hitPeer(t, dmg, crit) {
+    var p = G.player;
+    var safe = !!(D.MAP_META[G.mapId] && D.MAP_META[G.mapId].safe);
+    floatText(t.x, t.y - 18, (crit ? '暴 ' : '') + dmg, crit ? '#ffd36a' : '#ff8a6a');
+    if (!window.GameAPI || !GameAPI.online) {
+      toast('需要连接服务端才能 PK');
+      return;
+    }
+    GameAPI.social('hit', {
+      server: currentServer(),
+      target: t.user,
+      dmg: dmg,
+      safe: safe
+    }).then(function (j) {
+      if (j.pkValue != null) p.pkValue = j.pkValue;
+      if (j.killed) toast('击败 ' + t.name);
+    }).catch(function (e) {
+      toast((e && e.message) || '无法攻击');
+    });
+  }
+
+  function netTick() {
+    if (G.mode !== 'play' || !G.player) return;
+    if (!window.GameAPI || !GameAPI.online || !GameAPI.token) return;
+    var p = G.player;
+    var st = stats(p);
+    GameAPI.worldTick({
+      server: currentServer(),
+      name: p.name,
+      cls: p.cls,
+      level: p.level,
+      mapId: G.mapId,
+      x: p.x,
+      y: p.y,
+      hp: p.hp,
+      maxHp: st.maxHp,
+      mp: p.mp,
+      pkMode: p.pkMode,
+      pkValue: p.pkValue || 0,
+      nation: p.nation || 'ming',
+      sit: !!p.sit,
+      facing: p.facing || 0
+    }).then(applyNet).catch(function () {});
+  }
+
+  function applyNet(snap) {
+    if (!snap || !G.player) return;
+    G.peers = snap.players || [];
+    G.onlineN = snap.online || G.peers.length;
+    G.netParty = snap.party || null;
+    G.netClan = snap.clan || null;
+    G.netFriends = snap.friends || [];
+    G.netTrade = snap.trade || null;
+    if (snap.me && snap.me.pkValue != null) G.player.pkValue = snap.me.pkValue;
+    if (G.player.target && G.player.target.isPeer) {
+      var keep = null;
+      G.peers.forEach(function (o) {
+        if (o.user === G.player.target.user) keep = asPeerTarget(o);
+      });
+      G.player.target = keep;
+    }
+    if (G.followUser) {
+      var fu = null;
+      G.peers.forEach(function (o) { if (o.user === G.followUser) fu = o; });
+      if (fu && G.mapId === fu.mapId) setDest(fu.x, fu.y);
+    }
+    (snap.chat || []).forEach(function (l) {
+      ingestChat(l);
+    });
+    (snap.events || []).forEach(applyNetEvent);
+    (snap.invites || []).forEach(applyInvite);
+    refreshOnlineHud();
+    if (document.getElementById('panel-social') && document.getElementById('panel-social').classList.contains('open')) {
+      paintPanel('social');
+    }
+    if (G.netTrade) paintTrade();
+  }
+
+  var chatSeen = {};
+  function ingestChat(l) {
+    var key = (l.t || 0) + ':' + l.user + ':' + l.text;
+    if (chatSeen[key]) return;
+    chatSeen[key] = 1;
+    var tag = l.chan === 'world' ? '世界' : l.chan === 'party' ? '队伍' : l.chan === 'clan' ? '宗族' : '附近';
+    G.log.unshift('[' + tag + '] ' + l.who + '：' + l.text);
+    if (G.log.length > 40) G.log.pop();
+    renderLog();
+  }
+
+  function applyNetEvent(ev) {
+    var p = G.player;
+    if (!ev || !p) return;
+    if (ev.kind === 'pvp_hurt') {
+      p.hp = Math.max(0, ev.hp != null ? ev.hp : p.hp - (ev.dmg || 0));
+      floatText(p.x, p.y - 18, '-' + ev.dmg, '#ff6a6a');
+      log(ev.name + ' 对你造成 ' + ev.dmg + ' 伤害');
+      if (p.hp <= 0) die();
+    } else if (ev.kind === 'pvp_dead') {
+      toast(ev.name + ' 将你击倒');
+    } else if (ev.kind === 'pvp_kill') {
+      p.pkValue = ev.pkValue || p.pkValue;
+      toast('击败 ' + ev.name + '　PK ' + p.pkValue);
+    } else if (ev.kind === 'whisper') {
+      log('[密] ' + ev.name + '：' + ev.text);
+    } else if (ev.kind === 'party') {
+      toast(ev.text || '队伍变动');
+    } else if (ev.kind === 'trade_open') {
+      toast('开始交易');
+      paintTrade();
+    } else if (ev.kind === 'trade_done') {
+      (ev.give && ev.give.items || []).forEach(function () { /* already removed locally */ });
+      (ev.take && ev.take.items || []).forEach(function (it) { addItem(p, it); });
+      if (ev.take && ev.take.silver) p.silver += ev.take.silver | 0;
+      G.tradeOffer = { items: [], silver: 0 };
+      toast('交易完成');
+      closePanels();
+    } else if (ev.kind === 'trade_cancel') {
+      (ev.offer && ev.offer.items || []).forEach(function (it) { addItem(p, it); });
+      if (ev.offer && ev.offer.silver) p.silver += ev.offer.silver | 0;
+      G.tradeOffer = { items: [], silver: 0 };
+      toast('交易取消，物品已退回');
+    } else if (ev.kind === 'stall_got') {
+      if (p.silver < (ev.price || 0)) { toast('银两不足（摊主已下架请刷新）'); return; }
+      p.silver -= ev.price || 0;
+      if (ev.item) addItem(p, ev.item);
+      toast('购得摊货');
+    } else if (ev.kind === 'stall_sold') {
+      p.silver += ev.price || 0;
+      toast('摊位售出 ' + (ev.price || 0) + ' 两');
+    }
+  }
+
+  function applyInvite(inv) {
+    if (!inv) return;
+    var from = inv.from;
+    if (inv.kind === 'party') toast(from + ' 邀请你组队，按 R 打开社交接受');
+    else if (inv.kind === 'friend') toast(from + ' 想加你为好友，按 R 打开社交');
+    else if (inv.kind === 'clan') toast(from + ' 邀请你入宗族，按 R 打开社交');
+    else if (inv.kind === 'trade') toast(from + ' 请求交易，按 R 打开社交');
+    G.pendingInvites = G.pendingInvites || [];
+    G.pendingInvites.push(inv);
+  }
+
+  function talkPeer(o) {
+    var el = document.getElementById('dialog');
+    var who = o.name + '　Lv.' + (o.level || 1) + (o.red ? '　红名' : '');
+    var opts = '<button class="btn ghost" data-bye="1">告辞</button>' +
+      '<button class="btn" data-soc="party_invite" data-who="' + o.user + '">组队</button>' +
+      '<button class="btn" data-soc="trade_ask" data-who="' + o.user + '">交易</button>' +
+      '<button class="btn" data-soc="friend_add" data-who="' + o.user + '">加好友</button>' +
+      '<button class="btn ghost" data-whisper="' + o.user + '">密聊</button>' +
+      '<button class="btn ghost" data-follow="' + o.user + '">跟随</button>' +
+      '<button class="btn" data-soc="clan_invite" data-who="' + o.user + '">邀入宗族</button>';
+    if (o.stall) opts += '<button class="btn" data-look-stall="' + o.user + '">看摊</button>';
+    el.innerHTML = '<div class="dialog-body"><div class="dialog-text"><div class="who">' + who +
+      '</div><div>阵营 ' + (o.nation === 'yuan' ? '北元' : '大明') +
+      '　PK ' + (o.pkMode || '和平') + '</div><div class="opts">' + opts + '</div></div></div>';
+    el.classList.add('open');
+    G.dialogNpc = null;
+    G.peerFocus = o.user;
+  }
+
+  function doSocial(op, who, extra) {
+    if (!window.GameAPI || !GameAPI.online) { toast('需要连接服务端'); return; }
+    extra = extra || {};
+    extra.server = currentServer();
+    extra.user = who;
+    extra.target = who;
+    GameAPI.social(op, extra).then(function () {
+      toast('已发送');
+      netTick();
+    }).catch(function (e) { toast((e && e.message) || '失败'); });
+  }
+
+  function refreshOnlineHud() {
+    var el = document.getElementById('online-line');
+    if (!el) return;
+    var n = G.onlineN || 0;
+    el.textContent = n ? ('在线 ' + n) : '离线单人';
+  }
+
+  function paintTrade() {
+    var box = document.getElementById('panel-trade');
+    if (!box) return;
+    var tr = G.netTrade;
+    if (!tr) { box.classList.remove('open'); return; }
+    box.classList.add('open');
+    var mine = (tr.mine && tr.mine.items) || G.tradeOffer.items || [];
+    var theirs = (tr.theirs && tr.theirs.items) || [];
+    box.innerHTML = header('交易') +
+      '<div class="grid-2"><div><h4 style="color:#d4af37">我出</h4>' +
+      mine.map(function (it) { return '<div>' + itemName(it) + '</div>'; }).join('') +
+      '<p>银两 ' + ((tr.mine && tr.mine.silver) || G.tradeOffer.silver || 0) + '</p>' +
+      '<p>' + (tr.myLock ? '已锁定' : '') + (tr.myOk ? ' 已确认' : '') + '</p></div>' +
+      '<div><h4 style="color:#d4af37">对方</h4>' +
+      theirs.map(function (it) { return '<div>' + itemName(it) + '</div>'; }).join('') +
+      '<p>银两 ' + ((tr.theirs && tr.theirs.silver) || 0) + '</p>' +
+      '<p>' + (tr.theirLock ? '已锁定' : '未锁定') + '</p></div></div>' +
+      '<p style="color:#b8a57a">背包左键物品可放入（先点背包）。</p>' +
+      '<button class="btn" data-trade-lock="1">锁定</button> ' +
+      '<button class="btn" data-trade-ok="1">确认</button> ' +
+      '<button class="btn ghost" data-trade-cancel="1">取消</button>';
+  }
+
+  function openStall() {
+    var p = G.player;
+    if (G.mapId !== 'capital' && G.mapId !== 'taiping') { toast('请在城镇摆摊'); return; }
+    var goods = p.bag.filter(function (it) { return it; }).slice(0, 6).map(function (it) {
+      return { item: it, price: 20 };
+    });
+    if (!goods.length) { toast('背包空，摆不出摊'); return; }
+    goods.forEach(function (g) {
+      var idx = p.bag.indexOf(g.item);
+      if (idx >= 0) p.bag.splice(idx, 1);
+    });
+    doSocial('stall_open', '', { title: p.name + '的摊', goods: goods });
+    G.stalling = true;
+    toast('开始摆摊（K 收摊）');
+    p.sit = true;
+  }
+
+  function lookStall(user) {
+    var o = null;
+    (G.peers || []).forEach(function (x) { if (x.user === user) o = x; });
+    if (!o || !o.stall) { toast('摊位已收'); return; }
+    var el = document.getElementById('dialog');
+    var rows = (o.stall.goods || []).map(function (g, i) {
+      return '<div class="stat-line"><span>' + itemName(g.item) + '　' + (g.price || 0) + ' 两</span>' +
+        '<button class="btn" data-stall-buy="' + user + '" data-idx="' + i + '">购</button></div>';
+    }).join('') || '<p>暂无货物</p>';
+    el.innerHTML = '<div class="dialog-body"><div class="dialog-text"><div class="who">' +
+      (o.stall.title || '摊位') + '</div>' + rows +
+      '<div class="opts"><button class="btn ghost" data-bye="1">离开</button></div></div></div>';
+    el.classList.add('open');
+  }
+
   function bindPlayEvents() {
     function bindCanvas(el) {
       if (!el) return;
@@ -3011,7 +3389,29 @@
       if (ev.code === 'KeyA') { ev.preventDefault(); playerAttack(); }
       if (ev.code === 'KeyN' || ev.code === 'Slash') openPanel('help');
       if (ev.code === 'KeyF') showNearby();
-      if (ev.code === 'KeyR') toast('单机无好友列表');
+      if (ev.code === 'KeyR') openPanel('social');
+      if (ev.code === 'KeyK') {
+        ev.preventDefault();
+        if (G.stalling) {
+          G.stalling = false;
+          if (G.player) G.player.sit = false;
+          if (window.GameAPI && GameAPI.online) GameAPI.social('stall_close', { server: currentServer() });
+          toast('收摊');
+        } else openStall();
+      }
+      if (ev.code === 'KeyG') {
+        if (G.player.target && G.player.target.isPeer) {
+          G.followUser = G.player.target.user;
+          toast('跟随 ' + G.player.target.name);
+        } else {
+          G.followUser = '';
+          toast('取消跟随');
+        }
+      }
+      if (ev.code === 'KeyH') {
+        G.hidePeers = !G.hidePeers;
+        toast(G.hidePeers ? '隐藏其他玩家' : '显示其他玩家');
+      }
       if (ev.code === 'Backquote') { ev.preventDefault(); selectNearestMob(); }
       if (ev.code === 'KeyZ') {
         G.player.sit = false;
@@ -3050,8 +3450,21 @@
         var text = (input.value || '').trim();
         if (!text) return;
         input.value = '';
-        log((window.GameAPI && GameAPI.user ? GameAPI.user : '我') + '：' + text);
-        if (window.GameAPI && GameAPI.online) GameAPI.chatSend(text).catch(function () {});
+        if (window.GameAPI && GameAPI.online) {
+          var chan = G.chatChan || 'near';
+          var to = G.chatTo || '';
+          if (text.charAt(0) === '/' && text.indexOf(' ') > 0) {
+            var sp = text.indexOf(' ');
+            to = text.slice(1, sp);
+            chan = 'whisper';
+            text = text.slice(sp + 1);
+          }
+          GameAPI.social('say', { server: currentServer(), text: text, chan: chan, to: to }).catch(function () {
+            GameAPI.chatSend(text).catch(function () {});
+          });
+        } else {
+          log('我：' + text);
+        }
       });
     }
     document.getElementById('skill-bar').addEventListener('click', function (ev) {
@@ -3082,7 +3495,22 @@
         G.player.unspentSkill -= 1;
         paintPanel('skills');
       }
-      if (ev.target.dataset.bag != null) useBagItem(+ev.target.dataset.bag, false);
+      if (ev.target.dataset.bag != null) {
+        var bi = +ev.target.dataset.bag;
+        if (G.netTrade) {
+          var it = G.player.bag[bi];
+          if (it) {
+            G.player.bag.splice(bi, 1);
+            G.tradeOffer.items.push(it);
+            GameAPI.social('trade_put', {
+              server: currentServer(),
+              offer: { items: G.tradeOffer.items, silver: G.tradeOffer.silver }
+            }).then(function () { paintTrade(); paintPanel('bag'); }).catch(function () {});
+          }
+          return;
+        }
+        useBagItem(bi, false);
+      }
       if (ev.target.dataset.en) enhanceSlot(ev.target.dataset.en);
       if (ev.target.dataset.so) socketSlot(ev.target.dataset.so);
       if (ev.target.dataset.gem) inlayGem(ev.target.dataset.gem);
@@ -3125,7 +3553,29 @@
           paintPanel('char');
         }
       }
-      if (ev.target.dataset.mountUp) upgradeMount();
+      if (ev.target.dataset.tradeLock) doSocial('trade_lock', '');
+      if (ev.target.dataset.tradeOk) doSocial('trade_ok', '');
+      if (ev.target.dataset.tradeCancel) doSocial('trade_cancel', '');
+      if (ev.target.dataset.invAccept) {
+        var inv = (G.pendingInvites || [])[+ev.target.dataset.invAccept];
+        if (inv) {
+          var op = inv.kind === 'party' ? 'party_accept' : inv.kind === 'clan' ? 'clan_accept' : inv.kind === 'trade' ? 'trade_accept' : 'friend_add';
+          doSocial(op, inv.from);
+          G.pendingInvites.splice(+ev.target.dataset.invAccept, 1);
+        }
+      }
+      if (ev.target.dataset.clanCreate) {
+        var nm = window.prompt('宗族名称', '洪武');
+        if (nm) doSocial('clan_create', '', { name: nm });
+      }
+      if (ev.target.dataset.partyLeave) doSocial('party_leave', '');
+      if (ev.target.dataset.clanLeave) doSocial('clan_leave', '');
+      if (ev.target.dataset.chan) {
+        G.chatChan = ev.target.dataset.chan;
+        document.querySelectorAll('.chat-tabs span').forEach(function (s) {
+          s.classList.toggle('on', s.dataset.chan === G.chatChan);
+        });
+      }
       var whIn = ev.target.closest && ev.target.closest('[data-wh-in]');
       if (whIn) stashIn(+whIn.dataset.whIn);
       var whOut = ev.target.closest && ev.target.closest('[data-wh-out]');
@@ -3152,6 +3602,28 @@
     });
     document.getElementById('dialog').addEventListener('click', function (ev) {
       if (ev.target.dataset.bye) closeDialog();
+      if (ev.target.dataset.soc) {
+        doSocial(ev.target.dataset.soc, ev.target.dataset.who);
+        closeDialog();
+      }
+      if (ev.target.dataset.whisper) {
+        G.chatChan = 'whisper';
+        G.chatTo = ev.target.dataset.whisper;
+        toast('密聊 ' + G.chatTo + '，输入内容回车。或 /账号 内容');
+        closeDialog();
+        var inp = document.getElementById('chat-input');
+        if (inp) inp.focus();
+      }
+      if (ev.target.dataset.follow) {
+        G.followUser = ev.target.dataset.follow;
+        toast('跟随中');
+        closeDialog();
+      }
+      if (ev.target.dataset.lookStall) lookStall(ev.target.dataset.lookStall);
+      if (ev.target.dataset.stallBuy) {
+        doSocial('stall_buy', ev.target.dataset.stallBuy, { idx: +ev.target.dataset.idx });
+        closeDialog();
+      }
       if (ev.target.dataset.openshop) { closeDialog(); openShop(ev.target.dataset.openshop); }
       if (ev.target.dataset.openforge) { closeDialog(); openPanel('forge'); }
       if (ev.target.dataset.openwh) { closeDialog(); openPanel('warehouse'); }
@@ -3262,6 +3734,13 @@
       updateProjectiles(dt);
       updateEscort(dt);
       tickInstance(dt);
+      G.netAcc = (G.netAcc || 0) + dt;
+      if (G.netAcc > 0.28) { G.netAcc = 0; netTick(); }
+      if (G.followUser && !G.player._moving) {
+        var fu = null;
+        (G.peers || []).forEach(function (o) { if (o.user === G.followUser) fu = o; });
+        if (fu && G.mapId === fu.mapId && dist(G.player, fu) > 48) setDest(fu.x, fu.y);
+      }
       updateFx(dt);
       G.saveAcc = (G.saveAcc || 0) + dt;
       if (G.saveAcc > 15) { G.saveAcc = 0; saveSilent(); }
@@ -3291,6 +3770,8 @@
     refreshQuestUI();
     renderLog();
     saveSilent();
+    netTick();
+    log('局域网联机：朋友打开同一地址、选同一服务器。点其他玩家可组队、交易、PK。');
   }
 
   function paintClasses() {
@@ -3317,6 +3798,24 @@
   function boot() {
     if (!document.getElementById('play-screen')) return;
     localStorage.setItem('hongwu-server', currentServer());
+    var nationBox = document.getElementById('nation-pick');
+    if (nationBox) {
+      nationBox.addEventListener('click', function (ev) {
+        var b = ev.target.closest('[data-nation]');
+        if (!b) return;
+        G.selectedNation = b.dataset.nation;
+        nationBox.querySelectorAll('[data-nation]').forEach(function (x) {
+          x.classList.toggle('selected', x.dataset.nation === G.selectedNation);
+        });
+      });
+    }
+    window.addEventListener('beforeunload', function () {
+      if (window.GameAPI && GameAPI.online && GameAPI.token) {
+        try {
+          GameAPI.social('leave', { server: currentServer() });
+        } catch (e) { /* ignore */ }
+      }
+    });
     var grid = document.getElementById('class-grid');
     if (grid) {
       grid.addEventListener('click', function (ev) {

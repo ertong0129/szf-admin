@@ -19,7 +19,7 @@ assert.strictEqual(D.WAREHOUSE.maxTabs, 4);
 assert.strictEqual(D.WAREHOUSE.unlock[0], 0);
 
 var help = D.HELP.join('\n');
-['Q 任务', '空格拾取', 'D 打坐', '精力', '坐骑', '建功立业', '91wan'].forEach(function (k) {
+['Q 任务', '空格拾取', 'D 打坐', '精力', '坐骑', '建功立业', '91wan', '局域网', '组队'].forEach(function (k) {
   assert.ok(help.indexOf(k) >= 0, 'HELP missing ' + k);
 });
 
