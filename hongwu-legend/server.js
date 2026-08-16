@@ -57,7 +57,12 @@ function save(db) {
   fs.writeFileSync(STORE, JSON.stringify(db, null, 2));
 }
 
+function canWrite(res) {
+  return res && !res.headersSent && !res.writableEnded && !res.destroyed;
+}
+
 function json(res, code, obj) {
+  if (!canWrite(res)) return;
   res.writeHead(code, {
     'Content-Type': 'application/json; charset=utf-8',
     'Access-Control-Allow-Origin': '*',
@@ -115,17 +120,24 @@ function safeFile(pathname) {
   return file;
 }
 
+function sendText(res, code, text, type) {
+  if (!canWrite(res)) return;
+  res.writeHead(code, { 'Content-Type': type || 'text/plain; charset=utf-8' });
+  res.end(text);
+}
+
 function serveStatic(req, res, pathname) {
   if (pathname === '/' || pathname === '') pathname = '/index.html';
   if (pathname === '/favicon.ico') {
-    res.writeHead(204); res.end(); return;
+    sendText(res, 204, '');
+    return;
   }
   var file = safeFile(pathname);
   if (!file) return json(res, 403, { error: '禁止' });
   fs.stat(file, function (err, st) {
-    if (err || !st.isFile()) {
-      res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-      res.end('Not found: ' + pathname);
+    if (!canWrite(res)) return;
+    if (err || !st || !st.isFile()) {
+      sendText(res, 404, 'Not found: ' + pathname);
       return;
     }
     var ext = path.extname(file).toLowerCase();
@@ -135,9 +147,13 @@ function serveStatic(req, res, pathname) {
     });
     var stream = fs.createReadStream(file);
     stream.on('error', function () {
-      if (!res.headersSent) res.writeHead(500);
-      res.end();
+      try {
+        stream.destroy();
+        if (canWrite(res)) sendText(res, 500, 'read error');
+        else if (!res.writableEnded) res.end();
+      } catch (e) { /* ignore */ }
     });
+    req.on('close', function () { stream.destroy(); });
     stream.pipe(res);
   });
 }
@@ -148,8 +164,9 @@ var SERVERS = [
   { id: 's3', name: '双线3服 · 万历征途', status: '新服' }
 ];
 
-var server = http.createServer(function (req, res) {
+function handleRequest(req, res) {
   if (req.method === 'OPTIONS') {
+    if (!canWrite(res)) return;
     res.writeHead(204, {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Headers': 'Content-Type, X-Token',
@@ -161,7 +178,7 @@ var server = http.createServer(function (req, res) {
   try {
     u = url.parse(req.url, true);
   } catch (e) {
-    res.writeHead(400); res.end('bad url'); return;
+    return sendText(res, 400, 'bad url');
   }
   var p = u.pathname || '/';
 
@@ -203,7 +220,7 @@ var server = http.createServer(function (req, res) {
     var name = userOf(req, db);
     if (!name) return json(res, 401, { error: '请先登录' });
     var sid = String(u.query.server || 's1');
-    json(res, 200, { role: db.users[name].roles[sid] || null });
+    return json(res, 200, { role: db.users[name].roles[sid] || null });
   }
 
   if (p === '/api/role' && req.method === 'POST') {
@@ -220,7 +237,7 @@ var server = http.createServer(function (req, res) {
 
   if (p === '/api/chat' && req.method === 'GET') {
     var dbc = load();
-    json(res, 200, { lines: (dbc.chat || []).slice(-40) });
+    return json(res, 200, { lines: (dbc.chat || []).slice(-40) });
   }
 
   if (p === '/api/chat' && req.method === 'POST') {
@@ -237,7 +254,21 @@ var server = http.createServer(function (req, res) {
     });
   }
 
+  if (p.indexOf('/api/') === 0) return json(res, 404, { error: '未知接口' });
+
   serveStatic(req, res, p);
+}
+
+var server = http.createServer(function (req, res) {
+  try {
+    handleRequest(req, res);
+  } catch (e) {
+    console.error('请求处理失败：', e && e.stack ? e.stack : e);
+    try { json(res, 500, { error: '服务器内部错误' }); } catch (e2) { /* ignore */ }
+  }
+});
+server.on('clientError', function (err, socket) {
+  try { socket.end('HTTP/1.1 400 Bad Request\r\n\r\n'); } catch (e) { /* ignore */ }
 });
 
 function openBrowser(href) {
@@ -279,6 +310,12 @@ if (typeof module !== 'undefined') {
 }
 
 if (require.main === module) {
+  process.on('uncaughtException', function (err) {
+    console.error('未捕获错误（服务继续运行）：', err && err.stack ? err.stack : err);
+  });
+  process.on('unhandledRejection', function (err) {
+    console.error('未处理 Promise（服务继续运行）：', err && err.stack ? err.stack : err);
+  });
   ensure();
   tryListen(PORT);
 }
