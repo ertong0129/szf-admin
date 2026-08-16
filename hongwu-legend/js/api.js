@@ -94,5 +94,15 @@
     return req('POST', '/api/social', body);
   };
 
+  API.bosses = function () {
+    if (!API.online) return Promise.resolve({ bosses: null, local: true });
+    return req('GET', '/api/bosses');
+  };
+
+  API.bossOp = function (op, extra) {
+    if (!API.online || !API.token) return Promise.resolve({ local: true });
+    return req('POST', '/api/bosses', Object.assign({ op: op }, extra || {}));
+  };
+
   root.GameAPI = API;
 })(typeof window !== 'undefined' ? window : global);

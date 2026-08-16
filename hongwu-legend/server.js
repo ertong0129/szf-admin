@@ -14,8 +14,11 @@ var ROOT = path.resolve(__dirname);
 var DATA = path.join(ROOT, 'data');
 var PORT = parseInt(process.env.PORT || '8088', 10);
 var STORE = path.join(DATA, 'store.json');
-var VERSION = '20260816i';
+var VERSION = '20260816j';
 var WorldHub = require('./js/worldhub.js');
+var GameData = require('./js/data.js');
+var Formulas = require('./js/formulas.js');
+var BossLogic = require('./js/bosses.js');
 var HOST = process.env.HOST || '0.0.0.0';
 
 function hash(s) {
@@ -29,7 +32,8 @@ function defaultStore() {
     },
     tokens: {},
     chat: [{ who: '系统', text: '欢迎来到大明传说。测试号 demo / 123456', t: Date.now() }],
-    social: { friends: {}, clans: {}, clanOf: {} }
+    social: { friends: {}, clans: {}, clanOf: {} },
+    bosses: { field: {}, world: null }
   };
 }
 
@@ -322,6 +326,33 @@ function handleRequest(req, res) {
       if (db.chat.length > 80) db.chat = db.chat.slice(-80);
       save(db);
       json(res, 200, { ok: true });
+    });
+  }
+
+  if (p === '/api/bosses' && req.method === 'GET') {
+    var dbb = load();
+    dbb.bosses = BossLogic.ensureWorld(dbb.bosses || { field: {}, world: null }, GameData, Formulas);
+    save(dbb);
+    return json(res, 200, { bosses: dbb.bosses });
+  }
+
+  if (p === '/api/bosses' && req.method === 'POST') {
+    return readBody(req, function (b) {
+      var db = load();
+      var name = userOf(req, db) || String(b.name || '').trim();
+      db.bosses = BossLogic.ensureWorld(db.bosses || { field: {}, world: null }, GameData, Formulas);
+      var op = String(b.op || '');
+      if (op === 'field_kill' && b.id) {
+        BossLogic.markFieldDead(db.bosses, String(b.id));
+        save(db);
+        return json(res, 200, { ok: true, bosses: db.bosses });
+      }
+      if (op === 'world_hit') {
+        var hit = BossLogic.hitWorld(db.bosses, name || '过客', b.dmg, b.nation || 'ming');
+        save(db);
+        return json(res, 200, { ok: hit.ok, world: db.bosses.world, killed: hit.killed });
+      }
+      return json(res, 400, { error: '未知操作' });
     });
   }
 

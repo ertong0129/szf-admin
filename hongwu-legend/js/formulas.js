@@ -185,6 +185,13 @@
     return Math.floor((6 + level * 0.8) * (party ? 1.4 : 1));
   };
 
+  F.lootByLevelGap = function (playerLevel, monsterLevel) {
+    var gap = (playerLevel || 0) - (monsterLevel || 0);
+    if (gap < 25) return 1;
+    if (gap < 50) return 0.55;
+    return 0.12;
+  };
+
   F.VIP_NEED = [0, 10, 50, 120, 300, 600, 1200, 2500, 5000, 10000, 20000];
 
   F.vipLevel = function (exp) {

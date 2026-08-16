@@ -37,10 +37,14 @@
   }
 
   H.hurtMonster = function (e, dmg, crit) {
-    e.hp -= dmg;
     e.aggro = 4;
     H.floatText(e.x, e.y - 18, (crit ? '暴 ' : '') + dmg, crit ? '#ffd36a' : '#ffe8c8');
     H.burst(e.x, e.y, e.color, crit ? 14 : 7);
+    if (e.worldBoss && H.onWorldBossHit) {
+      H.onWorldBossHit(e, dmg);
+    } else {
+      e.hp -= dmg;
+    }
     if (e.hp <= 0) H.killMonster(e);
   }
 
@@ -60,7 +64,10 @@
     H.noteKill(e.kind);
     if (H.noteDailyKill) H.noteDailyKill(e.kind);
     if (H.noteAchieve) H.noteAchieve('kill');
+    if (e.kind === 'chenyouliang') { p.flags.chen_dead = true; H.questCheck(); }
     if (e.kind === 'lake_boss') { p.flags.poyang_clear = true; H.questCheck(); }
+    if (e.fieldId && H.onFieldBossKill) H.onFieldBossKill(e);
+    if (e.worldBoss && H.onWorldBossKill) H.onWorldBossKill(e);
     if (e.kind === 'spirit' && !p.pet && Math.random() < 0.45) H.grantPet();
     if (e.kind === 'spirit' && !p.pet) {
       /* extra chance already handled */
@@ -75,13 +82,20 @@
       p.arenaScore = (p.arenaScore || 0) + 8;
       H.toast('竞技积分 +8');
     }
-    if (G.mapId === 'wild' && e.kind !== 'world_boss' && G.entities.filter(function (x) { return !x.boss; }).length < 8) {
-      H.spawnPack(e.kind, 1, e.level);
+    var meta = D.MAP_META[G.mapId];
+    if (meta && !meta.instance && !meta.safe && !e.boss && !e.fieldBoss && !e.worldBoss) {
+      if (G.entities.filter(function (x) { return !x.boss; }).length < 8) {
+        H.spawnPack(e.kind, 1, e.level);
+      }
     }
   }
 
   H.dropLoot = function (e) {
     var p = G.player;
+    if (e.boss && F.lootByLevelGap && Math.random() > F.lootByLevelGap(p.level, e.level)) {
+      H.toast('等级差过大，本次几乎没有掉落');
+      return;
+    }
     if (Math.random() < (e.boss || e.elite ? 0.95 : 0.28)) {
       var eq = H.rollEquip(D.SLOTS[H.irand(0, D.SLOTS.length - 1)].id, e.level, null, p.cls);
       G.drops.push({ x: e.x + H.rand(-12, 12), y: e.y + H.rand(-12, 12), item: eq });

@@ -134,11 +134,6 @@
     }
     H.closeMapOverlay();
     G.guide = null;
-    if (id === 'poyang') {
-      H.travel('capital', 36, 22);
-      H.toast('找明军水兵进入鄱阳湖大战');
-      return;
-    }
     if (id === 'fish' || id === 'treasure' || id === 'arena') {
       H.travel('capital', 18, 22);
       H.toast('找沐英进入' + node.name);

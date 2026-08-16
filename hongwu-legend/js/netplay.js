@@ -248,7 +248,7 @@
 
   H.openStall = function () {
     var p = G.player;
-    if (G.mapId !== 'capital' && G.mapId !== 'taiping') { H.toast('请在城镇摆摊'); return; }
+    if (G.mapId !== 'capital' && G.mapId !== 'taiping' && G.mapId !== 'kaifeng') { H.toast('请在城镇摆摊'); return; }
     var goods = p.bag.filter(function (it) { return it; }).slice(0, 6).map(function (it) {
       return { item: it, price: 20 };
     });

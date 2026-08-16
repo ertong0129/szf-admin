@@ -445,18 +445,23 @@
       H.takeItem(p, 'badge', 1);
       H.addExp(p, 80);
       H.toast('缴上腰牌，经验 +80');
+    } else if (it.id === 'zodiac') {
+      H.takeItem(p, 'zodiac', 1);
+      H.addExp(p, 150);
+      p.silver += 80;
+      H.toast('兑出生肖残页：经验 +150，银两 +80');
     } else if (it.id === 'hero_pack' || it.kind === 'pack') {
       H.takeItem(p, it.id, 1);
       if (Math.random() < 0.45) {
         var gdef = D.GEMS[H.irand(0, D.GEMS.length - 1)];
         H.addItem(p, { uid: H.uid(), type: 'gem', id: gdef.id, name: gdef.name, kind: gdef.kind, grade: 1 });
-        H.toast('打开英雄礼包：' + gdef.name);
+        H.toast('打开礼包：' + gdef.name);
       } else if (Math.random() < 0.5) {
         H.addItem(p, { id: 'stone', n: 2 });
-        H.toast('打开英雄礼包：强化石×2');
+        H.toast('打开礼包：强化石×2');
       } else {
         H.addItem(p, { id: 'hp2', n: 2 });
-        H.toast('打开英雄礼包：大型金创药×2');
+        H.toast('打开礼包：大型金创药×2');
       }
     } else if (it.id === 'skill_book') {
       H.takeItem(p, 'skill_book', 1);

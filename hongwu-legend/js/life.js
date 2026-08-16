@@ -31,6 +31,133 @@
     }
     H.refreshOffice(p, true);
     H.ensureVip(p);
+    p.wbClaim = p.wbClaim || { day: '', first: false, last: false, rank: false, luck: false, top3: false };
+    if (p.wbClaim.day !== day) p.wbClaim = { day: day, first: false, last: false, rank: false, luck: false, top3: false };
+  };
+
+  H.bossWho = function () {
+    return (window.GameAPI && GameAPI.user) || (G.player && G.player.name) || '我';
+  };
+
+  H.ensureBossState = function () {
+    var B = window.BossLogic;
+    if (!B) return null;
+    if (!G.bossState) {
+      try { G.bossState = JSON.parse(localStorage.getItem('hongwu-boss-state') || 'null'); } catch (err) { G.bossState = null; }
+    }
+    G.bossState = B.ensureWorld(G.bossState || { field: {}, world: null }, D, F);
+    return G.bossState;
+  };
+
+  H.persistBossState = function () {
+    try { localStorage.setItem('hongwu-boss-state', JSON.stringify(G.bossState || {})); } catch (err) { /* ignore */ }
+  };
+
+  H.pullBossState = function (done) {
+    H.ensureBossState();
+    if (!window.GameAPI || !GameAPI.online || !GameAPI.bosses) {
+      if (done) done();
+      return;
+    }
+    GameAPI.bosses().then(function (j) {
+      if (j && j.bosses) G.bossState = j.bosses;
+      H.persistBossState();
+      if (done) done();
+    }).catch(function () { if (done) done(); });
+  };
+
+  H.onFieldBossKill = function (e) {
+    var B = window.BossLogic;
+    if (!B || !e.fieldId) return;
+    H.ensureBossState();
+    B.markFieldDead(G.bossState, e.fieldId);
+    H.persistBossState();
+    var def = B.fieldDef(D, e.fieldId);
+    H.toast(e.name + '已倒下，约 ' + ((def && def.respawnH) || 2) + ' 时辰后刷新');
+    if (window.GameAPI && GameAPI.online && GameAPI.bossOp) {
+      GameAPI.bossOp('field_kill', { id: e.fieldId }).catch(function () {});
+    }
+  };
+
+  H.onWorldBossHit = function (e, dmg) {
+    var B = window.BossLogic;
+    H.ensureBossState();
+    var r = B.hitWorld(G.bossState, H.bossWho(), dmg, (G.player && G.player.nation) || 'ming');
+    if (r.ok && r.world) {
+      e.hp = r.world.hp;
+      e.maxHp = r.world.maxHp;
+    }
+    H.persistBossState();
+    if (window.GameAPI && GameAPI.online && GameAPI.bossOp) {
+      GameAPI.bossOp('world_hit', { dmg: dmg, nation: (G.player && G.player.nation) || 'ming', name: H.bossWho() }).then(function (j) {
+        if (j && j.world) {
+          G.bossState.world = j.world;
+          e.hp = j.world.hp;
+          e.maxHp = j.world.maxHp;
+          H.persistBossState();
+        }
+      }).catch(function () {});
+    }
+  };
+
+  H.onWorldBossKill = function (e) {
+    var w = G.bossState && G.bossState.world;
+    var nation = w && w.nation === 'yuan' ? '北元' : '大明';
+    H.log('世界 BOSS 已击毙。最后一刀所在阵营为归属国：' + nation);
+    H.toast('世界 BOSS 已击毙，打开 U 日常领奖');
+    H.pushMail(G.player, '世界 BOSS', '已被击毙', '请各路英雄打开日常面板领取伤害榜与幸运奖。归属国：' + nation, true);
+    H.persistBossState();
+  };
+
+  H.claimWorldBoss = function (kind) {
+    var B = window.BossLogic;
+    var p = G.player;
+    H.ensureLife(p);
+    H.ensureBossState();
+    var w = G.bossState && G.bossState.world;
+    if (!w || !w.dead) { H.toast('今日世界 BOSS 尚未击毙'); return; }
+    var me = H.bossWho();
+    var c = p.wbClaim;
+    if (kind === 'first') {
+      if (w.first !== me) { H.toast('第一刀不是你'); return; }
+      if (c.first) { H.toast('已领取'); return; }
+      c.first = true;
+      H.addItem(p, { id: 'zodiac', n: 1 });
+      H.addExp(p, 200);
+      H.toast('领取第一刀奖励：生肖残页');
+    } else if (kind === 'last') {
+      if (w.last !== me) { H.toast('最后一刀不是你'); return; }
+      if (c.last) { H.toast('已领取'); return; }
+      c.last = true;
+      H.addItem(p, { id: 'zodiac', n: 1 });
+      p.silver += 200;
+      H.toast('领取最后一刀奖励。归属国：' + (w.nation === 'yuan' ? '北元' : '大明'));
+    } else if (kind === 'rank') {
+      var rank = B.rankOf(w, me);
+      if (!B.rankReward(rank, D)) { H.toast('你的名次不在领奖名单（1/2/3/5/8/11/15/19）'); return; }
+      if (c.rank) { H.toast('已领取'); return; }
+      c.rank = true;
+      H.addItem(p, { id: 'socket', n: 1 });
+      p.bindGold = (p.bindGold || 0) + Math.max(1, 6 - Math.min(5, rank));
+      H.toast('领取第 ' + rank + ' 名奖励');
+    } else if (kind === 'top3') {
+      var r2 = B.rankOf(w, me);
+      if (r2 < 1 || r2 > 3) { H.toast('伤害前三才能领神器礼包'); return; }
+      if (c.top3) { H.toast('已领取'); return; }
+      c.top3 = true;
+      H.addItem(p, { id: 'boss_pack', n: 1 });
+      H.toast('领取神器礼包');
+    } else if (kind === 'luck') {
+      if (!B.luckOk(w, me, D)) { H.toast('造成伤害不足，无法抽奖'); return; }
+      if (c.luck) { H.toast('已抽过'); return; }
+      c.luck = true;
+      var silver = H.irand(80, 240);
+      p.silver += silver;
+      H.addExp(p, 120);
+      H.toast('幸运抽奖：银两 +' + silver);
+    }
+    H.saveSilent();
+    if (H.paintDaily) H.paintDaily();
   };
 
   H.bagCap = function (p) {
@@ -587,7 +714,45 @@
       '　英雄副本 ' + ((p.dungeon && p.dungeon.tower) || 0) + '/' + (D.INSTANCES.tower.daily || 10) +
       '　捕鱼儿海 ' + ((p.dungeon && p.dungeon.fish) || 0) + '/' + (D.INSTANCES.fish.daily || 5) +
       '　大明宝藏 ' + ((p.dungeon && p.dungeon.treasure) || 0) + '/' + (D.INSTANCES.treasure.daily || 3) +
-      '　师徒同心 ' + ((p.dungeon && p.dungeon.mentor) || 0) + '/' + ((D.INSTANCES.mentor && D.INSTANCES.mentor.daily) || 3) + '</p>';
+      '　师徒同心 ' + ((p.dungeon && p.dungeon.mentor) || 0) + '/' + ((D.INSTANCES.mentor && D.INSTANCES.mentor.daily) || 3) + '</p>' +
+      H.worldBossDailyHtml();
+  };
+
+  H.worldBossDailyHtml = function () {
+    var B = window.BossLogic;
+    H.ensureBossState();
+    var w = G.bossState && G.bossState.world;
+    var mapName = (w && D.MAP_META[w.map] && D.MAP_META[w.map].name) || '浙东';
+    var html = '<h4 style="color:#d4af37;margin:12px 0 4px">世界 BOSS</h4>';
+    if (!w) return html + '<p>正在读取…</p>';
+    html += '<p>今日世界将出现在 <b>' + mapName + '</b>。' +
+      (w.dead ? '已被击毙，请各路英雄前往领奖。' : '请各路英雄前往缉拿。') + '</p>';
+    if (w.dead) {
+      html += '<p>最后一刀所在阵营为归属国：' + (w.nation === 'yuan' ? '北元' : '大明') + '</p>';
+      var ranks = B.rankList(w).slice(0, 8).map(function (r, i) {
+        return (i + 1) + '. ' + r.user + '　伤害 ' + r.dmg;
+      }).join('<br>');
+      html += '<p>我的伤害排名：' + (B.rankOf(w, H.bossWho()) || '未上榜') + '</p>';
+      html += '<p style="color:#b8a57a">' + (ranks || '暂无伤害记录') + '</p>';
+      html += '<p><button class="btn ghost" data-wb-claim="first">第一刀</button> ' +
+        '<button class="btn ghost" data-wb-claim="last">最后一刀</button> ' +
+        '<button class="btn ghost" data-wb-claim="rank">排名奖</button> ' +
+        '<button class="btn ghost" data-wb-claim="top3">前三礼包</button> ' +
+        '<button class="btn" data-wb-claim="luck">幸运抽奖</button></p>';
+    } else {
+      html += '<p>剩余气血 ' + Math.floor(w.hp) + ' / ' + Math.floor(w.maxHp) +
+        '　<button class="btn ghost" data-wb-go="1">寻路前往</button></p>';
+    }
+    html += '<h4 style="color:#d4af37;margin:12px 0 4px">野外 BOSS</h4><p>';
+    html += (D.FIELD_BOSSES || []).map(function (b) {
+      var alive = B.fieldAlive(G.bossState, b);
+      var mn = D.MONSTERS[b.monster];
+      var mp = D.MAP_META[b.map];
+      return (mn ? mn.name : b.id) + ' · ' + (mp ? mp.name : b.map) +
+        ' Lv.' + (mn ? mn.level : '?') + '　' + (alive ? '在场' : '冷却中') +
+        '（' + b.respawnH + ' 时）';
+    }).join('<br>') + '</p>';
+    return html;
   };
 
   H.paintMarket = function () {

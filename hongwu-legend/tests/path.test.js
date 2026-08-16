@@ -32,25 +32,31 @@ assert.strictEqual(route[1].portal.to, 'c');
 assert.strictEqual(PathFind.mapRoute(portals, 'a', 'z'), null);
 
 var D = require('../js/data.js');
-var toPoyang = PathFind.mapRoute(D.PORTALS, 'taiping', 'poyang');
-assert.ok(toPoyang && toPoyang.length >= 2, 'taiping should reach poyang');
-assert.strictEqual(toPoyang[0].from, 'taiping');
-assert.strictEqual(toPoyang[toPoyang.length - 1].portal.to, 'poyang');
+var toBoyang = PathFind.mapRoute(D.PORTALS, 'taiping', 'boyang');
+assert.ok(toBoyang && toBoyang.length >= 1, 'taiping should reach 鄱阳湖野外');
+assert.strictEqual(toBoyang[toBoyang.length - 1].portal.to, 'boyang');
+var toKaifeng = PathFind.mapRoute(D.PORTALS, 'taiping', 'kaifeng');
+assert.ok(toKaifeng && toKaifeng.length >= 2, 'taiping should reach 开封 via 边城');
 var toSelf = PathFind.mapRoute(D.PORTALS, 'capital', 'capital');
 assert.deepStrictEqual(toSelf, []);
 
-assert.ok(Array.isArray(D.WORLD_NODES) && D.WORLD_NODES.length >= 5, 'world nodes');
+assert.ok(Array.isArray(D.WORLD_NODES) && D.WORLD_NODES.length >= 16, 'world nodes');
 D.WORLD_NODES.forEach(function (n) {
   assert.ok(D.MAP_META[n.id], n.id + ' should exist in MAP_META');
   assert.strictEqual(typeof n.tx, 'number');
   assert.strictEqual(typeof n.ty, 'number');
   assert.ok(n.left && n.top, n.id + ' needs pin position');
+  assert.ok(!D.MAP_META[n.id].instance, n.id + ' world pin should be overworld');
 });
 var ids = D.WORLD_NODES.map(function (n) { return n.id; });
 assert.ok(ids.indexOf('taiping') >= 0 && ids.indexOf('capital') >= 0);
+assert.ok(ids.indexOf('pingjiang') >= 0 && ids.indexOf('kaifeng') >= 0);
+assert.ok(ids.indexOf('shennong') >= 0 && ids.indexOf('boyang') >= 0);
 
 assert.ok(D.INSTANCES && D.INSTANCES.poyang && D.INSTANCES.tower);
 assert.strictEqual(D.MONSTERS.lake_boss.name, '张定边');
+assert.strictEqual(D.MONSTERS.chenyouliang.name, '陈友谅');
+assert.strictEqual(D.MONSTERS.wangzhen.name, '王振');
 assert.strictEqual(D.NPCS.shuibing.map, 'capital');
 assert.strictEqual(D.NPCS.xuda.map, 'capital');
 assert.strictEqual(D.NPCS.chefu.map, 'taiping');
@@ -64,6 +70,10 @@ assert.ok(D.HELP.join('').indexOf('空格拾取') >= 0);
 assert.ok(D.INSTANCES.poyang.diffs.length >= 3);
 assert.strictEqual(D.MAP_META.poyang.instance, true);
 assert.strictEqual(D.MAP_META.tower.instance, true);
+assert.ok(!D.MAP_META.boyang.instance);
+assert.ok(D.MAP_META.kaifeng.safe);
+assert.ok(D.FIELD_BOSSES.length >= 7);
+assert.strictEqual(D.WORLD_BOSS.monster, 'yibang');
 Object.keys(D.INSTANCES).forEach(function (id) {
   if (id === 'road') return;
   assert.ok(D.MAP_META[id], id + ' instance needs MAP_META');

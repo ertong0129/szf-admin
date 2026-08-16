@@ -286,6 +286,13 @@
       if (ev.target.dataset.panelPaint) H.paintPanel(ev.target.dataset.panelPaint);
       if (ev.target.dataset.rankTab) H.paintRank(ev.target.dataset.rankTab);
       if (ev.target.dataset.chueTake) H.takeDailyChue();
+      if (ev.target.dataset.wbClaim && H.claimWorldBoss) H.claimWorldBoss(ev.target.dataset.wbClaim);
+      if (ev.target.dataset.wbGo) {
+        H.closePanels();
+        H.ensureBossState();
+        var wm = G.bossState && G.bossState.world && G.bossState.world.map;
+        if (wm && H.worldJump) H.worldJump(wm);
+      }
       if (ev.target.dataset.buyGold) H.buyGoldItem(ev.target.dataset.buyGold);
       if (ev.target.dataset.recharge) H.rechargePack(ev.target.dataset.recharge);
       if (ev.target.dataset.vipGift) H.claimVipGift();

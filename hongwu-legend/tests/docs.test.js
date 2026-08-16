@@ -32,7 +32,8 @@ assert.strictEqual(D.WAREHOUSE.unlock[0], 0);
 
 var help = D.HELP.join('\n');
 ['Q 任务', '空格拾取', 'D 打坐', '精力', '坐骑', '建功立业', '91wan', '局域网', '组队',
-  '信件', '传奇目标', '除恶令', '捕鱼儿海', '大明宝藏', '洗灵', '篝火', '元宝', '明朝贵族'].forEach(function (k) {
+  '信件', '传奇目标', '除恶令', '捕鱼儿海', '大明宝藏', '洗灵', '篝火', '元宝', '明朝贵族',
+  '野外 BOSS', '世界 BOSS', '平江', '神农架'].forEach(function (k) {
   assert.ok(help.indexOf(k) >= 0, 'HELP missing ' + k);
 });
 

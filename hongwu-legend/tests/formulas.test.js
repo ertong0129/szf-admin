@@ -66,5 +66,8 @@ assert.strictEqual(F.vipLevel(10), 1);
 assert.ok(F.vipLevel(20000) >= 10);
 assert.strictEqual(F.yuanbaoBuyCost(2), 200);
 assert.strictEqual(F.yuanbaoSellGain(2), 160);
+assert.strictEqual(F.lootByLevelGap(40, 40), 1);
+assert.strictEqual(F.lootByLevelGap(70, 40), 0.55);
+assert.strictEqual(F.lootByLevelGap(100, 40), 0.12);
 
 console.log('formulas.test.js ok');

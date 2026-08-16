@@ -256,15 +256,18 @@
       propGroup.remove(ch);
       if (ch.geometry) ch.geometry.dispose();
     }
-    if (mapId === 'poyang') {
+    if (mapId === 'poyang' || mapId === 'boyang' || mapId === 'quanzhou' || mapId === 'zhedong' || mapId === 'fish') {
       scene.background = new THREE.Color(0x4a6a88);
       scene.fog = new THREE.Fog(0x4a6a88, 18, 52);
     } else if (mapId === 'tower') {
       scene.background = new THREE.Color(0x2a1838);
       scene.fog = new THREE.Fog(0x2a1838, 16, 48);
-    } else if (mapId === 'capital') {
+    } else if (mapId === 'capital' || mapId === 'kaifeng') {
       scene.background = new THREE.Color(0x8aa0a8);
       scene.fog = new THREE.Fog(0x8aa0a8, 24, 60);
+    } else if (mapId === 'desert' || mapId === 'tumu' || mapId === 'xiliang') {
+      scene.background = new THREE.Color(0xc4a070);
+      scene.fog = new THREE.Fog(0xc4a070, 20, 56);
     } else {
       scene.background = new THREE.Color(0x7ea4b8);
       scene.fog = new THREE.Fog(0x7ea4b8, 22, 58);

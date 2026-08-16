@@ -92,7 +92,9 @@
     sailor: 'officer', cannon: 'officer',
     xianfeng: 'redguard', gongshou: 'spear', fujiang: 'guard',
     tower: 'guard', spirit: 'water',
-    lake_boss: 'boss', world_boss: 'boss',
+    lake_boss: 'boss', mammoth20: 'boss', mammoth30: 'boss', mammoth40: 'boss',
+    chenyouliang: 'boss', zhangshicheng: 'boss', wala_chief: 'boss', wangzhen: 'boss',
+    yibang: 'boss', wala: 'redguard', wokou: 'officer', yuanbing: 'guard', nuzhen: 'tiger',
     fishman: 'officer', shark: 'water', fish_boss: 'boss',
     boxguard: 'guard', box_boss: 'boss', coach: 'dao'
   };
@@ -103,7 +105,9 @@
     shuibing: 'guard', chuansong: 'wanderer',
     xuda: 'officer', lishizhen: 'healer', shenwansan: 'elder', zhangsanfeng: 'elder',
     muying: 'guard', limengyang: 'officer', yuelao: 'elder', yushi: 'officer',
-    shichang: 'smith', yufu: 'wanderer', baoku: 'guard', jiaochang: 'dao', tongxin: 'elder'
+    shichang: 'smith', yufu: 'wanderer', baoku: 'guard', jiaochang: 'dao', tongxin: 'elder',
+    liubowen: 'elder', zhuwenzheng: 'guard', pingzhi: 'officer', lanyu: 'guard',
+    zhusu: 'officer', wangyangming: 'elder'
   };
 
   var NPC_PORTRAIT = {

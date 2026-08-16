@@ -40,7 +40,7 @@
 
   H.blockedTile = function (t, mapId) {
     if (t === 'wall' || t === 'tree' || t === 'house' || t === 'roof' || t === 'rock') return true;
-    if (t === 'water' && mapId !== 'poyang' && mapId !== 'fish') return true;
+    if (t === 'water' && mapId !== 'poyang' && mapId !== 'fish' && mapId !== 'boyang' && mapId !== 'quanzhou' && mapId !== 'zhedong') return true;
     return false;
   }
 
@@ -124,11 +124,47 @@
       }
       w = 24; h = 24;
       g = g.slice(0, 24).map(function (row) { return row.slice(0, 24); });
+    } else {
+      H.paintOverworld(g, id);
     }
     G.grid = g;
     G.mapId = id;
     H.spawnMapContent(id);
     if (window.World3D && World3D.ready) World3D.rebuild(G.grid, G.mapId);
+  }
+
+  H.paintOverworld = function (g, id) {
+    var theme = (D.MAP_META[id] && D.MAP_META[id].theme) || 'grass';
+    if (theme === 'water') {
+      H.fill(g, 'water');
+      H.rect(g, 4, 12, 42, 12, 'dock');
+      H.rect(g, 16, 8, 18, 20, 'dock');
+      H.scatter(g, 'rock', 10, function (t) { return t === 'dock'; });
+    } else if (theme === 'city') {
+      H.fill(g, 'stone');
+      var x, y;
+      for (x = 0; x < 50; x++) { H.setTile(g, x, 0, 'wall'); H.setTile(g, x, 35, 'wall'); }
+      for (y = 0; y < 36; y++) { H.setTile(g, 0, y, 'wall'); H.setTile(g, 49, y, 'wall'); }
+      H.rect(g, 8, 8, 8, 6, 'house'); H.rect(g, 8, 7, 8, 1, 'roof');
+      H.rect(g, 22, 10, 10, 6, 'house'); H.rect(g, 22, 9, 10, 1, 'roof');
+      H.rect(g, 36, 8, 8, 6, 'house'); H.rect(g, 36, 7, 8, 1, 'roof');
+      H.rect(g, 8, 18, 34, 4, 'dirt');
+      H.rect(g, 22, 4, 4, 28, 'dirt');
+    } else if (theme === 'sand') {
+      H.fill(g, 'dirt');
+      H.rect(g, 18, 14, 14, 8, 'stone');
+      H.scatter(g, 'rock', 28, function (t) { return t === 'dirt'; });
+    } else if (theme === 'moss') {
+      H.fill(g, 'moss');
+      H.scatter(g, 'tree', 80, function (t) { return t === 'moss'; });
+      H.scatter(g, 'water', 14, function (t) { return t === 'moss'; });
+      H.rect(g, 20, 14, 10, 8, 'dirt');
+    } else {
+      H.fill(g, 'grass');
+      H.rect(g, 1, 16, 48, 4, 'dirt');
+      H.scatter(g, 'tree', 56, function (t) { return t === 'grass'; });
+      H.scatter(g, 'dirt', 24, function (t) { return t === 'grass'; });
+    }
   }
 
   H.worldSize = function () {
@@ -198,17 +234,7 @@
         G.npcs.push({ id: n.id, name: n.name, title: n.title || '', x: pos.x, y: pos.y });
       }
     });
-    if (id === 'wild') {
-      H.spawnPack('boar', 10, 2);
-      H.spawnPack('wolf', 7, 5);
-      H.spawnPack('bandit', 5, 8);
-      if (G.player && G.player.level >= 16) H.spawnOne('world_boss', 40 * TILE, 26 * TILE);
-      H.scatterHerbs(12);
-    } else if (id === 'shennong') {
-      H.spawnPack('snake', 8, 7);
-      H.spawnPack('spirit', 5, 11);
-      H.scatterHerbs(16);
-    } else if (id === 'poyang') {
+    if (id === 'poyang') {
       H.spawnPoyangWave();
     } else if (id === 'tower') {
       H.startTowerFloor(G.towerFloor || 1);
@@ -234,6 +260,12 @@
     } else if (id === 'mentor') {
       H.spawnPack('bandit', 6, 10);
       H.spawnAt('fujiang', 12, 12, 14);
+    } else {
+      var packs = (D.MAP_SPAWNS && D.MAP_SPAWNS[id]) || [];
+      packs.forEach(function (s) { H.spawnPack(s.kind, s.n, s.lv); });
+      if (packs.length) H.scatterHerbs(id === 'shennong' ? 16 : 10);
+      H.spawnFieldBosses(id);
+      H.spawnWorldBoss(id);
     }
     G.fires = [];
     if (id === 'taiping') G.fires = [{ x: 24.5 * TILE, y: 18.5 * TILE }];
@@ -277,7 +309,13 @@
       yufu: [8 * TILE, 16 * TILE],
       baoku: [8 * TILE, 12 * TILE],
       jiaochang: [6 * TILE, 12 * TILE],
-      tongxin: [6 * TILE, 12 * TILE]
+      tongxin: [6 * TILE, 12 * TILE],
+      liubowen: [28 * TILE, 14 * TILE],
+      zhuwenzheng: [10 * TILE, 16 * TILE],
+      pingzhi: [12 * TILE, 16 * TILE],
+      lanyu: [12 * TILE, 18 * TILE],
+      zhusu: [24 * TILE, 16 * TILE],
+      wangyangming: [22 * TILE, 16 * TILE]
     };
     var p = table[id] || [10 * TILE, 10 * TILE];
     return { x: p[0], y: p[1] };
@@ -307,10 +345,40 @@
       maxHp: F.monsterHp(level, def.boss),
       atk: F.monsterAtk(level, def.boss),
       stun: 0, atkCd: 0, aggro: 0,
-      ranged: !!def.ranged, range: def.range || 0, elite: !!def.elite
+      ranged: !!def.ranged, range: def.range || 0, elite: !!def.elite,
+      fieldBoss: !!def.fieldBoss, worldBoss: !!def.worldBoss, fieldId: def.fieldId || ''
     };
     G.entities.push(e);
     return e;
+  }
+
+  H.spawnFieldBosses = function (mapId) {
+    var B = window.BossLogic;
+    if (!B || !H.ensureBossState) return;
+    H.ensureBossState();
+    B.fieldsOnMap(D, mapId).forEach(function (def) {
+      if (!B.fieldAlive(G.bossState, def)) return;
+      var e = H.spawnAt(def.monster, def.x, def.y, D.MONSTERS[def.monster] && D.MONSTERS[def.monster].level);
+      if (e) { e.fieldBoss = true; e.fieldId = def.id; e.boss = true; }
+    });
+  }
+
+  H.spawnWorldBoss = function (mapId) {
+    var B = window.BossLogic;
+    if (!B || !H.ensureBossState) return;
+    H.ensureBossState();
+    var w = G.bossState && G.bossState.world;
+    if (!w || w.dead || w.map !== mapId) return;
+    var already = G.entities.some(function (e) { return e.worldBoss; });
+    if (already) return;
+    var e = H.spawnAt(D.WORLD_BOSS.monster, 32, 18, D.WORLD_BOSS.level);
+    if (e) {
+      e.worldBoss = true;
+      e.boss = true;
+      e.hp = w.hp;
+      e.maxHp = w.maxHp;
+      e.name = w.name || e.name;
+    }
   }
 
   H.scatterHerbs = function (n) {

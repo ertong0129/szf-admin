@@ -185,6 +185,8 @@
     train_pai: { id: 'train_pai', name: '训练牌', kind: 'mat', desc: '宠物训练升星。' },
     chue_ling: { id: 'chue_ling', name: '除恶令', kind: 'mat', desc: '日常除恶令。交给徐达或自行猎杀指定目标。' },
     yibao: { id: 'yibao', name: '天降异宝', kind: 'mat', desc: '京城夺宝采集。可换经验与银两。' },
+    zodiac: { id: 'zodiac', name: '生肖残页', kind: 'mat', desc: '世界 BOSS 奖励。集齐可换时装外形（学习服用经验银两兑）。' },
+    boss_pack: { id: 'boss_pack', name: '神器礼包', kind: 'pack', desc: '世界 BOSS 伤害前三奖励。打开可得镶嵌符或技能书。' },
     flower: { id: 'flower', name: '玫瑰花', kind: 'mat', desc: '赠予好友可增加亲密度与魅力。' },
     wine: { id: 'wine', name: '烧酒', kind: 'mat', desc: '篝火旁打坐时饮用，额外获得经验。' },
     pet_stone: { id: 'pet_stone', name: '宠物灵石', kind: 'mat', desc: '捕鱼儿海产出，可换洗灵丹或直接强化宠物。' },
@@ -223,7 +225,18 @@
     tower: { id: 'tower', name: '本关守将', color: '#4a4a8a', level: 10, radius: 12, speed: 88, loot: ['stone', 'gem'] },
     boar_boss: { id: 'boar_boss', name: '獠牙王', color: '#4a2010', level: 6, radius: 18, speed: 64, boss: true, loot: ['stone', 'socket'] },
     lake_boss: { id: 'lake_boss', name: '张定边', color: '#102040', level: 18, radius: 20, speed: 70, boss: true, loot: ['badge', 'stone', 'socket', 'gem'] },
-    world_boss: { id: 'world_boss', name: '残元先锋', color: '#3a1020', level: 22, radius: 22, speed: 76, boss: true, loot: ['gem', 'socket'] },
+    mammoth20: { id: 'mammoth20', name: '猛犸象', color: '#6a4a30', level: 20, radius: 22, speed: 52, boss: true, fieldBoss: true, loot: ['skill_book', 'stone', 'hp2'] },
+    mammoth30: { id: 'mammoth30', name: '猛犸象', color: '#5a3a24', level: 30, radius: 24, speed: 54, boss: true, fieldBoss: true, loot: ['skill_book', 'socket', 'hp2'] },
+    mammoth40: { id: 'mammoth40', name: '猛犸象', color: '#4a2a18', level: 40, radius: 26, speed: 56, boss: true, fieldBoss: true, loot: ['skill_book', 'pet_book', 'gem'] },
+    chenyouliang: { id: 'chenyouliang', name: '陈友谅', color: '#102848', level: 40, radius: 22, speed: 72, boss: true, fieldBoss: true, loot: ['skill_book', 'yinpiao', 'socket', 'hp2'] },
+    zhangshicheng: { id: 'zhangshicheng', name: '张士诚', color: '#402010', level: 45, radius: 22, speed: 74, boss: true, fieldBoss: true, loot: ['skill_book', 'yinpiao', 'socket', 'gem'] },
+    wala_chief: { id: 'wala_chief', name: '瓦剌劫匪头目', color: '#5a4020', level: 55, radius: 22, speed: 78, boss: true, fieldBoss: true, loot: ['yinpiao', 'skill_book', 'stone'] },
+    wangzhen: { id: 'wangzhen', name: '王振', color: '#3a1028', level: 90, radius: 24, speed: 80, boss: true, fieldBoss: true, loot: ['skill_book', 'yinpiao', 'socket', 'gem', 'hero_pack'] },
+    yibang: { id: 'yibang', name: '异邦武士', color: '#201028', level: 60, radius: 24, speed: 82, boss: true, worldBoss: true, loot: ['zodiac', 'boss_pack', 'socket', 'gem'] },
+    wala: { id: 'wala', name: '瓦剌散兵', color: '#6a5030', level: 18, radius: 12, speed: 86, loot: ['stone', 'hp1'] },
+    wokou: { id: 'wokou', name: '倭寇', color: '#203040', level: 16, radius: 12, speed: 88, loot: ['stone', 'hp1'] },
+    yuanbing: { id: 'yuanbing', name: '元兵', color: '#3a3048', level: 14, radius: 12, speed: 84, loot: ['stone', 'hp1'] },
+    nuzhen: { id: 'nuzhen', name: '女真部众', color: '#4a3828', level: 17, radius: 12, speed: 86, loot: ['herb_wu', 'stone'] },
     fishman: { id: 'fishman', name: '渔寇', color: '#2a5a6a', level: 14, radius: 12, speed: 80, loot: ['pet_stone', 'hp1'] },
     shark: { id: 'shark', name: '海鲨', color: '#1a3a5a', level: 16, radius: 14, speed: 92, loot: ['pet_stone', 'wash_dan'] },
     fish_boss: { id: 'fish_boss', name: '陈友谅残部', color: '#102840', level: 20, radius: 20, speed: 72, boss: true, loot: ['pet_stone', 'pet_book', 'socket'] },
@@ -234,15 +247,15 @@
 
   D.QUESTS = [
     { id: 'q1', name: '初入洪武', talk: 'cunzheng', map: 'taiping', text: '与太平村村正交谈，问明身在何处。', reward: { exp: 40, silver: 20 } },
-    { id: 'q2', name: '村外野猪', kill: { id: 'boar', n: 6 }, map: 'wild', text: '前往野猪林，清除 6 头山野猪。', reward: { exp: 90, silver: 40, items: [{ id: 'hp1', n: 3 }] } },
+    { id: 'q2', name: '村外野猪', kill: { id: 'boar', n: 6 }, map: 'wild', text: '前往横涧山，清除 6 头山野猪。', reward: { exp: 90, silver: 40, items: [{ id: 'hp1', n: 3 }] } },
     { id: 'q3', name: '采药济世', gather: { id: 'herb_san', n: 5 }, map: 'wild', text: '采集 5 株三七，交给村中备用。', reward: { exp: 80, silver: 30, items: [{ id: 'hp1', n: 2 }] } },
-    { id: 'q4', name: '灵兽结缘', flag: 'got_pet', map: 'shennong', text: '前往神农谷，收服一只灵宠。', reward: { exp: 120, silver: 50, items: [{ id: 'feed', n: 5 }] } },
+    { id: 'q4', name: '灵兽结缘', flag: 'got_pet', map: 'shennong', text: '前往神农架，收服一只灵宠。', reward: { exp: 120, silver: 50, items: [{ id: 'feed', n: 5 }] } },
     { id: 'q5', name: '进京述职', talk: 'chefu', map: 'taiping', text: '找太平村车夫，进入应天京城，再拜见百工炉师傅。', reward: { exp: 100, silver: 60 } },
     { id: 'q6', name: '百工初试', flag: 'enhanced', map: 'capital', text: '在百工炉将任意装备升星一次。', reward: { exp: 110, silver: 80, items: [{ id: 'stone', n: 3 }] } },
     { id: 'q7', name: '鄱阳水患', flag: 'poyang_clear', map: 'capital', text: '找京城明军水兵，进入鄱阳湖大战，击败张定边。', reward: { exp: 220, silver: 160, items: [{ id: 'hp2', n: 3 }] } },
     { id: 'q8', name: '护送军资', flag: 'escort_done', map: 'capital', text: '从京城护送军资到边城方向。', reward: { exp: 180, silver: 140 } },
     { id: 'q9', name: '英雄试炼', flag: 'tower5', map: 'capital', text: '找大明英雄副本传送人，至少通过第 5 关。', reward: { exp: 260, silver: 200, items: [{ id: 'socket', n: 2 }] } },
-    { id: 'q10', name: '残元余烬', kill: { id: 'world_boss', n: 1 }, map: 'wild', text: '野猪林深处出现残元先锋，将其击溃。', reward: { exp: 400, silver: 300, gold: 2 } }
+    { id: 'q10', name: '湖上陈友谅', kill: { id: 'chenyouliang', n: 1 }, map: 'boyang', text: '鄱阳湖野外有陈友谅盘踞（约 2 时辰刷新）。击溃后回报。', reward: { exp: 400, silver: 300, gold: 2 } }
   ];
 
   D.NPCS = {
@@ -253,9 +266,15 @@
     shanshan: { id: 'shanshan', name: '姗姗', title: '仓库管理员', map: 'taiping', warehouse: true, lines: ['第一个仓库免费。东西多了就寄我这儿，最多开四仓。'] },
     qianzhuang: { id: 'qianzhuang', name: '钱庄老板', title: '钱庄', map: 'taiping', bank: true, lines: ['银子兑成银票更稳妥。五百两一张五锭银票。也可买入或卖出元宝。'] },
     zhangsanfeng: { id: 'zhangsanfeng', name: '张三丰', title: '技能大师', map: 'taiping', skills: true, lines: ['打开技能界面（V），点亮武学、分配技能点。'] },
-    xiaoliu: { id: 'xiaoliu', name: '受伤的小六', title: '村民', map: 'taiping', lines: ['野猪林的獠牙太狠。你若去清剿，也算帮了村里。'] },
-    xunyang: { id: 'xunyang', name: '宠物驯养师', title: '驯养', map: 'taiping', lines: ['幼兽要去神农谷找驯兽师。村里只能问问路。'] },
-    xunshou: { id: 'xunshou', name: '驯兽师', title: '神农谷', map: 'shennong', lines: ['神农谷灵气重，奇兽出没。击败山魈，或能收服灵宠。'] },
+    xiaoliu: { id: 'xiaoliu', name: '受伤的小六', title: '村民', map: 'taiping', lines: ['横涧山的獠牙太狠。你若去清剿，也算帮了村里。'] },
+    xunyang: { id: 'xunyang', name: '宠物驯养师', title: '驯养', map: 'taiping', lines: ['幼兽要去神农架找驯兽师。村里只能问问路。'] },
+    xunshou: { id: 'xunshou', name: '驯兽师', title: '神农架', map: 'shennong', lines: ['神农架灵气重，奇兽出没。击败山魈可收灵宠；林深处藏着猛犸象。'] },
+    liubowen: { id: 'liubowen', name: '刘伯温', title: '隐士', map: 'wild', lines: ['横涧山可通神农架。陈友谅、张士诚皆盘踞要地，按图索骥即可。'] },
+    zhuwenzheng: { id: 'zhuwenzheng', name: '朱文正', title: '鄱阳湖知事', map: 'boyang', lines: ['陈友谅盘踞此地，约两时辰一现。湖上大战另找京城明军水兵报名。'] },
+    pingzhi: { id: 'pingzhi', name: '平江知事', title: '平江', map: 'pingjiang', lines: ['张士诚盘踞要道旁，约两时辰刷新。平江哨塔是国战场地，本学习服未开国战。'] },
+    lanyu: { id: 'lanyu', name: '蓝玉', title: '边防将军', map: 'border', travel: 'kaifeng:12:20', lines: ['边城可通往开封。开封是中立城，不可对战，再往大漠、泉州。'] },
+    zhusu: { id: 'zhusu', name: '朱橚', title: '周王', map: 'kaifeng', travel: 'border:40:18', lines: ['开封中立。可通往大漠、泉州、安南。世界 BOSS 今日出没处见日常面板。'] },
+    wangyangming: { id: 'wangyangming', name: '王阳明', title: '左佥都御史', map: 'xiliang', lines: ['西凉是边关。瓦剌头目在大漠，不在西凉。'] },
     jingche: { id: 'jingche', name: '车夫', title: '京城车夫', map: 'capital', travel: 'taiping:24:4', lines: ['要回太平村，我送你一程。'] },
     xuda: { id: 'xuda', name: '徐达', title: '将军', map: 'capital', merit: true, lines: ['建功立业，每日可来领差事。前十次赏银逐次增加。'] },
     bagong: { id: 'bagong', name: '百工炉师傅', title: '天工炉', map: 'capital', forge: true, lines: ['炉火取《天工开物》之意。升星、开孔、镶石、炼药，都在这一炉。'] },
@@ -327,13 +346,22 @@
   D.WAREHOUSE = { cap: 36, maxTabs: 4, unlock: [0, 200, 500, 1000] };
 
   D.WORLD_NODES = [
-    { id: 'capital', name: '应天京城', left: '50%', top: '46%', tx: 20, ty: 20, desc: '主城' },
-    { id: 'taiping', name: '太平村', left: '56%', top: '58%', tx: 24, ty: 17, desc: '新手村' },
-    { id: 'wild', name: '野猪林', left: '68%', top: '48%', tx: 24, ty: 18, desc: '练级' },
-    { id: 'shennong', name: '神农谷', left: '36%', top: '36%', tx: 24, ty: 18, desc: '灵宠' },
-    { id: 'poyang', name: '鄱阳湖', left: '76%', top: '70%', tx: 8, ty: 18, desc: '副本入口在京城水兵' },
-    { id: 'fish', name: '捕鱼儿海', left: '82%', top: '58%', tx: 8, ty: 18, desc: '京城沐英传送' },
-    { id: 'treasure', name: '大明宝藏', left: '42%', top: '62%', tx: 8, ty: 12, desc: '京城沐英传送' }
+    { id: 'capital', name: '京城', left: '48%', top: '44%', tx: 20, ty: 20, desc: '主城' },
+    { id: 'taiping', name: '太平村', left: '54%', top: '58%', tx: 24, ty: 17, desc: '新手村' },
+    { id: 'wild', name: '横涧山', left: '62%', top: '50%', tx: 24, ty: 18, desc: '可通往神农架' },
+    { id: 'shennong', name: '神农架', left: '38%', top: '38%', tx: 24, ty: 18, desc: '灵宠 / 猛犸象' },
+    { id: 'boyang', name: '鄱阳湖', left: '68%', top: '62%', tx: 8, ty: 18, desc: '陈友谅盘踞' },
+    { id: 'pingjiang', name: '平江', left: '72%', top: '48%', tx: 24, ty: 18, desc: '张士诚盘踞' },
+    { id: 'xinghua', name: '杏花岭', left: '78%', top: '42%', tx: 24, ty: 18, desc: '元兵聚集' },
+    { id: 'xiliang', name: '西凉', left: '18%', top: '36%', tx: 24, ty: 18, desc: '边关' },
+    { id: 'border', name: '边城', left: '40%', top: '50%', tx: 24, ty: 18, desc: '通往开封' },
+    { id: 'kaifeng', name: '开封', left: '36%', top: '42%', tx: 20, ty: 18, desc: '中立城' },
+    { id: 'desert', name: '大漠', left: '24%', top: '28%', tx: 24, ty: 18, desc: '瓦剌头目' },
+    { id: 'tumu', name: '土木堡', left: '32%', top: '22%', tx: 24, ty: 16, desc: '王振盘踞' },
+    { id: 'annan', name: '安南', left: '44%', top: '78%', tx: 24, ty: 18, desc: '南疆' },
+    { id: 'quanzhou', name: '泉州', left: '78%', top: '72%', tx: 24, ty: 18, desc: '海滨' },
+    { id: 'zhedong', name: '浙东', left: '86%', top: '64%', tx: 24, ty: 18, desc: '倭寇 / 世界BOSS' },
+    { id: 'jianzhou', name: '建州', left: '82%', top: '28%', tx: 24, ty: 18, desc: '女真' }
   ];
 
   D.INSTANCES = {
@@ -414,11 +442,23 @@
   ];
 
   D.MAP_META = {
-    taiping: { name: '太平村', safe: true, music: 'village', tint: [0.12, 0.16, 0.08] },
-    wild: { name: '野猪林', safe: false, tint: [0.08, 0.14, 0.06] },
-    shennong: { name: '神农谷', safe: false, tint: [0.06, 0.12, 0.1] },
+    taiping: { name: '太平村', safe: true, theme: 'village', tint: [0.12, 0.16, 0.08] },
+    wild: { name: '横涧山', safe: false, theme: 'grass', tint: [0.08, 0.14, 0.06] },
+    shennong: { name: '神农架', safe: false, theme: 'moss', tint: [0.06, 0.12, 0.1] },
+    boyang: { name: '鄱阳湖', safe: false, theme: 'water', tint: [0.04, 0.08, 0.14] },
+    pingjiang: { name: '平江', safe: false, theme: 'grass', tint: [0.1, 0.12, 0.08] },
+    xinghua: { name: '杏花岭', safe: false, theme: 'grass', tint: [0.1, 0.1, 0.08] },
+    xiliang: { name: '西凉', safe: false, theme: 'sand', tint: [0.16, 0.12, 0.06] },
+    border: { name: '边城', safe: false, theme: 'grass', tint: [0.1, 0.12, 0.08] },
+    kaifeng: { name: '开封', safe: true, theme: 'city', tint: [0.12, 0.1, 0.08] },
+    desert: { name: '大漠', safe: false, theme: 'sand', tint: [0.18, 0.14, 0.06] },
+    tumu: { name: '土木堡', safe: false, theme: 'sand', tint: [0.14, 0.1, 0.08] },
+    annan: { name: '安南', safe: false, theme: 'moss', tint: [0.06, 0.14, 0.08] },
+    quanzhou: { name: '泉州', safe: false, theme: 'water', tint: [0.06, 0.1, 0.14] },
+    zhedong: { name: '浙东', safe: false, theme: 'water', tint: [0.05, 0.1, 0.12] },
+    jianzhou: { name: '建州', safe: false, theme: 'grass', tint: [0.08, 0.12, 0.08] },
     poyang: { name: '鄱阳湖大战', safe: false, instance: true, tint: [0.04, 0.08, 0.14] },
-    capital: { name: '应天京城', safe: true, tint: [0.14, 0.1, 0.06] },
+    capital: { name: '京城', safe: true, theme: 'city', tint: [0.14, 0.1, 0.06] },
     tower: { name: '大明英雄副本', safe: false, instance: true, tint: [0.08, 0.06, 0.12] },
     road: { name: '官道押镖', safe: false, instance: true, tint: [0.12, 0.12, 0.06] },
     fish: { name: '捕鱼儿海', safe: false, instance: true, tint: [0.04, 0.1, 0.16] },
@@ -429,22 +469,70 @@
 
   D.PORTALS = {
     taiping: [
-      { x: 47, y: 18, to: 'wild', tx: 3, ty: 18, label: '野猪林' },
-      { x: 24, y: 2, to: 'capital', tx: 8, ty: 30, label: '应天' }
+      { x: 47, y: 18, to: 'wild', tx: 3, ty: 18, label: '横涧山' },
+      { x: 24, y: 2, to: 'capital', tx: 8, ty: 30, label: '京城' }
     ],
     wild: [
       { x: 1, y: 18, to: 'taiping', tx: 45, ty: 18, label: '太平村' },
-      { x: 24, y: 1, to: 'shennong', tx: 24, ty: 32, label: '神农谷' },
-      { x: 47, y: 30, to: 'poyang', tx: 4, ty: 18, label: '鄱阳湖' }
+      { x: 24, y: 1, to: 'shennong', tx: 24, ty: 32, label: '神农架' },
+      { x: 47, y: 18, to: 'capital', tx: 40, ty: 20, label: '京城' }
     ],
     shennong: [
-      { x: 24, y: 34, to: 'wild', tx: 24, ty: 3, label: '野猪林' }
+      { x: 24, y: 34, to: 'wild', tx: 24, ty: 3, label: '横涧山' }
+    ],
+    capital: [
+      { x: 8, y: 33, to: 'taiping', tx: 24, ty: 4, label: '太平村' },
+      { x: 46, y: 22, to: 'boyang', tx: 4, ty: 18, label: '鄱阳湖' },
+      { x: 46, y: 12, to: 'pingjiang', tx: 4, ty: 18, label: '平江' },
+      { x: 4, y: 12, to: 'xiliang', tx: 44, ty: 18, label: '西凉' },
+      { x: 4, y: 22, to: 'border', tx: 44, ty: 18, label: '边城' }
+    ],
+    boyang: [
+      { x: 2, y: 18, to: 'capital', tx: 44, ty: 22, label: '京城' }
+    ],
+    pingjiang: [
+      { x: 2, y: 18, to: 'capital', tx: 44, ty: 12, label: '京城' },
+      { x: 46, y: 18, to: 'xinghua', tx: 4, ty: 18, label: '杏花岭' }
+    ],
+    xinghua: [
+      { x: 2, y: 18, to: 'pingjiang', tx: 44, ty: 18, label: '平江' }
+    ],
+    xiliang: [
+      { x: 46, y: 18, to: 'capital', tx: 6, ty: 12, label: '京城' }
+    ],
+    border: [
+      { x: 46, y: 18, to: 'capital', tx: 6, ty: 22, label: '京城' },
+      { x: 4, y: 18, to: 'kaifeng', tx: 40, ty: 18, label: '开封' }
+    ],
+    kaifeng: [
+      { x: 46, y: 18, to: 'border', tx: 6, ty: 18, label: '边城' },
+      { x: 8, y: 4, to: 'desert', tx: 24, ty: 30, label: '大漠' },
+      { x: 40, y: 4, to: 'quanzhou', tx: 8, ty: 18, label: '泉州' },
+      { x: 24, y: 32, to: 'annan', tx: 24, ty: 4, label: '安南' }
+    ],
+    desert: [
+      { x: 24, y: 34, to: 'kaifeng', tx: 10, ty: 6, label: '开封' },
+      { x: 24, y: 2, to: 'tumu', tx: 24, ty: 30, label: '土木堡' }
+    ],
+    tumu: [
+      { x: 24, y: 34, to: 'desert', tx: 24, ty: 4, label: '大漠' }
+    ],
+    annan: [
+      { x: 24, y: 2, to: 'kaifeng', tx: 24, ty: 30, label: '开封' }
+    ],
+    quanzhou: [
+      { x: 2, y: 18, to: 'kaifeng', tx: 38, ty: 6, label: '开封' },
+      { x: 46, y: 12, to: 'zhedong', tx: 4, ty: 18, label: '浙东' },
+      { x: 46, y: 24, to: 'jianzhou', tx: 4, ty: 18, label: '建州' }
+    ],
+    zhedong: [
+      { x: 2, y: 18, to: 'quanzhou', tx: 44, ty: 12, label: '泉州' }
+    ],
+    jianzhou: [
+      { x: 2, y: 18, to: 'quanzhou', tx: 44, ty: 24, label: '泉州' }
     ],
     poyang: [
       { x: 2, y: 18, to: 'capital', tx: 36, ty: 22, label: '离开副本' }
-    ],
-    capital: [
-      { x: 8, y: 33, to: 'taiping', tx: 24, ty: 4, label: '太平村' }
     ],
     tower: [
       { x: 12, y: 22, to: 'capital', tx: 40, ty: 14, label: '离开副本' }
@@ -466,6 +554,44 @@
     ]
   };
 
+  /* 对照 17173/4399：野外 BOSS 死后按间隔刷新；无人击杀则一直停在图上。 */
+  D.FIELD_BOSSES = [
+    { id: 'mammoth20', monster: 'mammoth20', map: 'shennong', x: 8, y: 8, respawnH: 29.5 },
+    { id: 'mammoth30', monster: 'mammoth30', map: 'shennong', x: 40, y: 8, respawnH: 29.5 },
+    { id: 'mammoth40', monster: 'mammoth40', map: 'shennong', x: 24, y: 28, respawnH: 29.5 },
+    { id: 'chenyouliang', monster: 'chenyouliang', map: 'boyang', x: 36, y: 20, respawnH: 2 },
+    { id: 'zhangshicheng', monster: 'zhangshicheng', map: 'pingjiang', x: 38, y: 18, respawnH: 2 },
+    { id: 'wala_chief', monster: 'wala_chief', map: 'desert', x: 30, y: 20, respawnH: 2 },
+    { id: 'wangzhen', monster: 'wangzhen', map: 'tumu', x: 28, y: 16, respawnH: 5 }
+  ];
+
+  /* MingGame.swf：今日世界将出现在…；最后一刀所在国家为归属国；伤害达标可抽奖。 */
+  D.WORLD_BOSS = {
+    id: 'yibang',
+    monster: 'yibang',
+    name: '异邦武士',
+    maps: ['zhedong', 'quanzhou'],
+    level: 60,
+    luckNeed: 0.05,
+    rewardRanks: [1, 2, 3, 5, 8, 11, 15, 19]
+  };
+
+  D.MAP_SPAWNS = {
+    wild: [{ kind: 'boar', n: 10, lv: 2 }, { kind: 'wolf', n: 7, lv: 5 }, { kind: 'bandit', n: 5, lv: 8 }],
+    shennong: [{ kind: 'snake', n: 8, lv: 7 }, { kind: 'spirit', n: 5, lv: 11 }],
+    boyang: [{ kind: 'sailor', n: 8, lv: 12 }, { kind: 'xianfeng', n: 4, lv: 14 }],
+    pingjiang: [{ kind: 'bandit', n: 8, lv: 16 }, { kind: 'fujiang', n: 3, lv: 20 }],
+    xinghua: [{ kind: 'yuanbing', n: 10, lv: 14 }, { kind: 'xianfeng', n: 4, lv: 16 }],
+    xiliang: [{ kind: 'bandit', n: 8, lv: 15 }, { kind: 'wala', n: 4, lv: 18 }],
+    border: [{ kind: 'sailor', n: 6, lv: 12 }, { kind: 'bandit', n: 4, lv: 13 }],
+    desert: [{ kind: 'wala', n: 10, lv: 18 }, { kind: 'wolf', n: 4, lv: 16 }],
+    tumu: [{ kind: 'fujiang', n: 6, lv: 22 }, { kind: 'wala', n: 6, lv: 20 }],
+    annan: [{ kind: 'snake', n: 8, lv: 12 }, { kind: 'spirit', n: 4, lv: 14 }],
+    quanzhou: [{ kind: 'wokou', n: 8, lv: 16 }, { kind: 'fishman', n: 4, lv: 14 }],
+    zhedong: [{ kind: 'wokou', n: 10, lv: 16 }, { kind: 'shark', n: 3, lv: 18 }],
+    jianzhou: [{ kind: 'nuzhen', n: 8, lv: 17 }, { kind: 'wolf', n: 4, lv: 15 }]
+  };
+
   D.RARITY_NAME = { white: '凡品', green: '良品', blue: '精品', purple: '珍品', orange: '传说' };
   D.RARITY_COLOR = { white: '#d8d0c4', green: '#6fdf7a', blue: '#6cb6ff', purple: '#c089ff', orange: '#ffb347' };
 
@@ -482,6 +608,8 @@
     'PK 六模式对其他玩家生效。安全区不能打人。红名不能坐车夫；PK≥18 红名，≥30 死亡入狱回村。',
     '点右侧任务追踪绿名可自动寻路。挂机（Z）自动寻敌、放技能、吃药、拾取。',
     '副本：京城明军水兵进鄱阳湖大战；英雄副本传送人按关挑战。沐英传送捕鱼儿海、大明宝藏、竞技场。',
+    '野外 BOSS：神农架猛犸象（29.5 时）、鄱阳湖陈友谅（2 时）、平江张士诚（2 时）、大漠瓦剌头目（2 时）、土木堡王振（5 时）。死后才刷新；无人打则一直在。',
+    '世界 BOSS：每日出现在浙东或泉州。U 日常可看位置、伤害榜。第一刀/最后一刀/排名 1·2·3·5·8·11·15·19 可领奖；最后一刀所在阵营为归属国。',
     'L 信件，Y 传奇目标，O 排行，U 日常，I 明朝贵族。除恶令、天降异宝、活跃度在日常面板。宠物可洗灵/提悟/训练。',
     '元宝分不绑定与绑定。优先消耗绑定元宝。钱庄用银两买入元宝计入贵族经验；任务奖励为绑定元宝。I 查看明朝贵族特权与每日礼包。',
     '太平村与京城篝火旁打坐饮酒加经验。野外死亡可回村或原地健康复活（耗银）。资料对照 MingGame.swf 与 91wan。'

@@ -22,7 +22,7 @@ ROOT = os.path.abspath(os.path.dirname(__file__))
 DATA = os.path.join(ROOT, "data")
 STORE = os.path.join(DATA, "store.json")
 PORT = int(os.environ.get("PORT") or "8088")
-VERSION = "20260816i"
+VERSION = "20260816j"
 HOST = os.environ.get("HOST") or "0.0.0.0"
 WORLD = {}
 CHAT = {}
@@ -107,7 +107,42 @@ def default_store():
         "users": {"demo": {"pass": hash_pass("123456"), "roles": {}, "created": int(time.time() * 1000)}},
         "tokens": {},
         "chat": [{"who": "系统", "text": "欢迎来到大明传说。测试号 demo / 123456", "t": int(time.time() * 1000)}],
+        "bosses": {"field": {}, "world": None},
     }
+
+
+def day_key():
+    t = time.localtime()
+    return "%d-%d-%d" % (t.tm_year, t.tm_mon, t.tm_mday)
+
+
+def world_hp(lv=60):
+    return int((40 + lv * 28 + (lv ** 1.25) * 6) * 8)
+
+
+def ensure_bosses(db):
+    b = db.get("bosses") or {"field": {}, "world": None}
+    b.setdefault("field", {})
+    day = day_key()
+    w = b.get("world")
+    if not w or w.get("day") != day:
+        maps = ["zhedong", "quanzhou"]
+        n = int(time.time() // 86400)
+        hp = world_hp(60)
+        b["world"] = {
+            "day": day,
+            "map": maps[n % 2],
+            "hp": hp,
+            "maxHp": hp,
+            "dmg": {},
+            "first": "",
+            "last": "",
+            "nation": "",
+            "dead": False,
+            "name": "异邦武士",
+        }
+    db["bosses"] = b
+    return b
 
 
 def ensure():
@@ -324,6 +359,41 @@ class Handler(BaseHTTPRequestHandler):
             db["chat"] = db["chat"][-80:]
             save(db)
             return self._json(200, {"ok": True})
+        if p == "/api/bosses" and method == "GET":
+            db = load()
+            bosses = ensure_bosses(db)
+            save(db)
+            return self._json(200, {"bosses": bosses})
+        if p == "/api/bosses" and method == "POST":
+            b = self._body()
+            db = load()
+            bosses = ensure_bosses(db)
+            op = str(b.get("op") or "")
+            if op == "field_kill" and b.get("id"):
+                bosses.setdefault("field", {})[str(b.get("id"))] = {"deadAt": int(time.time() * 1000)}
+                save(db)
+                return self._json(200, {"ok": True, "bosses": bosses})
+            if op == "world_hit":
+                name = self._user(db) or str(b.get("name") or "过客")
+                w = bosses.get("world") or {}
+                if w.get("dead"):
+                    return self._json(200, {"ok": False, "world": w, "killed": False})
+                dmg = max(1, int(b.get("dmg") or 1))
+                w.setdefault("dmg", {})
+                if not w.get("first"):
+                    w["first"] = name
+                w["dmg"][name] = int(w["dmg"].get(name) or 0) + dmg
+                w["hp"] = max(0, int(w.get("hp") or 0) - dmg)
+                killed = False
+                if w["hp"] <= 0 and not w.get("dead"):
+                    w["dead"] = True
+                    w["last"] = name
+                    w["nation"] = str(b.get("nation") or "ming")
+                    killed = True
+                bosses["world"] = w
+                save(db)
+                return self._json(200, {"ok": True, "world": w, "killed": killed})
+            return self._json(400, {"error": "未知操作"})
 
         if p == "/api/world" and method == "POST":
             b = self._body()
