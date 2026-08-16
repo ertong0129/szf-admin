@@ -96,7 +96,10 @@
     chenyouliang: 'boss', zhangshicheng: 'boss', wala_chief: 'boss', wangzhen: 'boss',
     yibang: 'boss', wala: 'redguard', wokou: 'officer', yuanbing: 'guard', nuzhen: 'tiger',
     fishman: 'officer', shark: 'water', fish_boss: 'boss',
-    boxguard: 'guard', box_boss: 'boss', coach: 'dao'
+    boxguard: 'guard', box_boss: 'boss', coach: 'dao',
+    zhouyingqiu: 'officer', yangshuai: 'redguard', sunyunhe: 'healer', tianergeng: 'wanderer', xuxianchun: 'boss',
+    jinyi_baihu: 'guard', jinyi_zhuque: 'redguard', jinyi_qinglong: 'officer', jinyi_xuanwu: 'dao',
+    pagoda_monk: 'dao', pagoda_spirit: 'fox', pagoda_king: 'boss'
   };
 
   var NPC_SRC = {
@@ -107,7 +110,9 @@
     muying: 'guard', limengyang: 'officer', yuelao: 'elder', yushi: 'officer',
     shichang: 'smith', yufu: 'wanderer', baoku: 'guard', jiaochang: 'dao', tongxin: 'elder',
     liubowen: 'elder', zhuwenzheng: 'guard', pingzhi: 'officer', lanyu: 'guard',
-    zhusu: 'officer', wangyangming: 'elder'
+    zhusu: 'officer', wangyangming: 'elder',
+    zhangxiaoxiao: 'fairy', jinyi: 'guard', tieta: 'dao',
+    jx_leave: 'wanderer', sg_leave: 'guard', tt_leave: 'elder'
   };
 
   var NPC_PORTRAIT = {

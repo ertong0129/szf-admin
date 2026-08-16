@@ -193,7 +193,14 @@
     treasure_pt: { id: 'treasure_pt', name: '宝藏积分符', kind: 'mat', desc: '大明宝藏采集所得，离开副本时结算奖励。' },
     skill_book: { id: 'skill_book', name: '职业技能书', kind: 'mat', desc: '使用获得 1 点技能点。' },
     pet_book: { id: 'pet_book', name: '宠物技能书', kind: 'mat', desc: '灵宠学习技能，提升随行伤害。' },
-    medal_pack: { id: 'medal_pack', name: '勋章礼盒', kind: 'pack', desc: '传奇目标奖励。打开可得勋章碎片或银两。' }
+    medal_pack: { id: 'medal_pack', name: '勋章礼盒', kind: 'pack', desc: '传奇目标奖励。打开可得勋章碎片或银两。' },
+    shenfu: { id: 'shenfu', name: '神符', kind: 'mat', desc: '步步惊心缴获。使用获得少量经验。' },
+    shenjie_shard: { id: 'shenjie_shard', name: '碎裂神节', kind: 'mat', desc: '步步惊心掉落。可兑银两。' },
+    weapon_shenjie: { id: 'weapon_shenjie', name: '武器神节', kind: 'mat', desc: '深宫谍影掉落。使用获得技能点。' },
+    lingzhu: { id: 'lingzhu', name: '灵珠', kind: 'mat', desc: '副本掉落。可兑经验。' },
+    lingzhu_blue: { id: 'lingzhu_blue', name: '蓝灵珠', kind: 'mat', desc: '深宫谍影掉落。经验略丰。' },
+    lingzhu_purple: { id: 'lingzhu_purple', name: '紫灵珠', kind: 'mat', desc: '深宫谍影稀有掉落。' },
+    mount_gem: { id: 'mount_gem', name: '坐骑宝石', kind: 'mat', desc: '开封铁塔产出。用于坐骑提星，穿上坐骑装备后绑定。' }
   };
 
   D.RECIPES = [
@@ -242,7 +249,19 @@
     fish_boss: { id: 'fish_boss', name: '陈友谅残部', color: '#102840', level: 20, radius: 20, speed: 72, boss: true, loot: ['pet_stone', 'pet_book', 'socket'] },
     boxguard: { id: 'boxguard', name: '宝库守卫', color: '#6a4a20', level: 15, radius: 12, speed: 84, loot: ['treasure_pt', 'stone'] },
     box_boss: { id: 'box_boss', name: '宝库都监', color: '#5a3010', level: 19, radius: 18, speed: 70, boss: true, loot: ['treasure_pt', 'hero_pack', 'gem'] },
-    coach: { id: 'coach', name: '校场教头', color: '#4a3a2a', level: 12, radius: 14, speed: 90, elite: true, loot: ['stone', 'hp2'] }
+    coach: { id: 'coach', name: '校场教头', color: '#4a3a2a', level: 12, radius: 14, speed: 90, elite: true, loot: ['stone', 'hp2'] },
+    zhouyingqiu: { id: 'zhouyingqiu', name: '周应秋', color: '#4a3040', level: 22, radius: 16, speed: 70, boss: true, trait: 'def', loot: ['shenfu', 'shenjie_shard', 'stone'] },
+    yangshuai: { id: 'yangshuai', name: '杨衰', color: '#8a3020', level: 23, radius: 16, speed: 76, boss: true, trait: 'aoe', loot: ['shenfu', 'hp2', 'socket'] },
+    sunyunhe: { id: 'sunyunhe', name: '孙云鹤', color: '#2a5a40', level: 24, radius: 16, speed: 68, boss: true, trait: 'heal', loot: ['lingzhu', 'shenjie_shard', 'mp2'] },
+    tianergeng: { id: 'tianergeng', name: '田尔耕', color: '#3a2048', level: 25, radius: 16, speed: 80, boss: true, trait: 'clone', loot: ['shenfu', 'socket', 'lingzhu'] },
+    xuxianchun: { id: 'xuxianchun', name: '许显纯', color: '#501828', level: 26, radius: 20, speed: 74, boss: true, loot: ['shenjie_shard', 'lingzhu', 'hero_pack'] },
+    jinyi_baihu: { id: 'jinyi_baihu', name: '锦衣卫白虎', color: '#c8c0a8', level: 18, radius: 16, speed: 72, boss: true, trait: 'def', loot: ['weapon_shenjie', 'lingzhu_blue'] },
+    jinyi_zhuque: { id: 'jinyi_zhuque', name: '锦衣卫朱雀', color: '#a03020', level: 19, radius: 16, speed: 78, boss: true, trait: 'aoe', loot: ['weapon_shenjie', 'hp2'] },
+    jinyi_qinglong: { id: 'jinyi_qinglong', name: '锦衣卫青龙', color: '#206040', level: 20, radius: 16, speed: 70, boss: true, trait: 'heal', loot: ['lingzhu_blue', 'socket'] },
+    jinyi_xuanwu: { id: 'jinyi_xuanwu', name: '锦衣卫玄武', color: '#203048', level: 21, radius: 18, speed: 66, boss: true, trait: 'clone', loot: ['lingzhu_purple', 'weapon_shenjie'] },
+    pagoda_monk: { id: 'pagoda_monk', name: '铁塔护法', color: '#5a4030', level: 14, radius: 13, speed: 80, loot: ['stone', 'mount_gem'] },
+    pagoda_spirit: { id: 'pagoda_spirit', name: '塔中灵魅', color: '#4a3060', level: 16, radius: 14, speed: 84, elite: true, loot: ['mount_gem', 'socket'] },
+    pagoda_king: { id: 'pagoda_king', name: '铁塔都监', color: '#3a2010', level: 18, radius: 20, speed: 70, boss: true, mountLoot: true, loot: ['mount_gem', 'hero_pack', 'stone'] }
   };
 
   D.QUESTS = [
@@ -255,7 +274,8 @@
     { id: 'q7', name: '鄱阳水患', flag: 'poyang_clear', map: 'capital', text: '找京城明军水兵，进入鄱阳湖大战，击败张定边。', reward: { exp: 220, silver: 160, items: [{ id: 'hp2', n: 3 }] } },
     { id: 'q8', name: '护送军资', flag: 'escort_done', map: 'capital', text: '从京城护送军资到边城方向。', reward: { exp: 180, silver: 140 } },
     { id: 'q9', name: '英雄试炼', flag: 'tower5', map: 'capital', text: '找大明英雄副本传送人，至少通过第 5 关。', reward: { exp: 260, silver: 200, items: [{ id: 'socket', n: 2 }] } },
-    { id: 'q10', name: '湖上陈友谅', kill: { id: 'chenyouliang', n: 1 }, map: 'boyang', text: '鄱阳湖野外有陈友谅盘踞（约 2 时辰刷新）。击溃后回报。', reward: { exp: 400, silver: 300, gold: 2 } }
+    { id: 'q10', name: '湖上陈友谅', kill: { id: 'chenyouliang', n: 1 }, map: 'boyang', text: '鄱阳湖野外有陈友谅盘踞（约 2 时辰刷新）。击溃后回报。', reward: { exp: 400, silver: 300, gold: 2 } },
+    { id: 'q11', name: '开封厂卫', flag: 'jingxin_clear', map: 'kaifeng', text: '开封找张笑笑，进入步步惊心，击败许显纯。', reward: { exp: 320, silver: 220, items: [{ id: 'shenfu', n: 1 }] } }
   ];
 
   D.NPCS = {
@@ -273,7 +293,13 @@
     zhuwenzheng: { id: 'zhuwenzheng', name: '朱文正', title: '鄱阳湖知事', map: 'boyang', lines: ['陈友谅盘踞此地，约两时辰一现。湖上大战另找京城明军水兵报名。'] },
     pingzhi: { id: 'pingzhi', name: '平江知事', title: '平江', map: 'pingjiang', lines: ['张士诚盘踞要道旁，约两时辰刷新。平江哨塔是国战场地，本学习服未开国战。'] },
     lanyu: { id: 'lanyu', name: '蓝玉', title: '边防将军', map: 'border', travel: 'kaifeng:12:20', lines: ['边城可通往开封。开封是中立城，不可对战，再往大漠、泉州。'] },
-    zhusu: { id: 'zhusu', name: '朱橚', title: '周王', map: 'kaifeng', travel: 'border:40:18', lines: ['开封中立。可通往大漠、泉州、安南。世界 BOSS 今日出没处见日常面板。'] },
+    zhusu: { id: 'zhusu', name: '朱橚', title: '周王', map: 'kaifeng', travel: 'border:40:18', lines: ['开封中立。可通往大漠、泉州、安南。张笑笑、锦衣卫、铁塔僧人亦在城中。'] },
+    zhangxiaoxiao: { id: 'zhangxiaoxiao', name: '张笑笑', title: '步步惊心', map: 'kaifeng', jingxin: true, lines: ['厂卫轮番拦路。原作每日三次、建议三人队；学习服可单人。过关可抽神符、碎裂神节。'] },
+    jinyi: { id: 'jinyi', name: '锦衣卫指挥使', title: '深宫谍影', map: 'kaifeng', palace: true, lines: ['白虎朱雀青龙玄武镇守深宫。原作六十级三人队；学习服可单人。掉落武器神节与灵珠。'] },
+    tieta: { id: 'tieta', name: '铁塔僧人', title: '开封铁塔', map: 'kaifeng', pagoda: true, lines: ['铁塔一层层往上打。坐骑装备、坐骑宝石多从此塔掉落。穿上坐骑装备后绑定。'] },
+    jx_leave: { id: 'jx_leave', name: '厂卫暗桩', title: '离开副本', map: 'jingxin', lines: ['五名厂卫轮番拦路。要走，从我这儿离开副本。'] },
+    sg_leave: { id: 'sg_leave', name: '宫门侍卫', title: '离开副本', map: 'palace', lines: ['深宫杀声未歇。要走，从我这儿离开副本。'] },
+    tt_leave: { id: 'tt_leave', name: '塔僧', title: '离开副本', map: 'pagoda', lines: ['铁塔未竟。要走，从我这儿离开副本。'] },
     wangyangming: { id: 'wangyangming', name: '王阳明', title: '左佥都御史', map: 'xiliang', lines: ['西凉是边关。瓦剌头目在大漠，不在西凉。'] },
     jingche: { id: 'jingche', name: '车夫', title: '京城车夫', map: 'capital', travel: 'taiping:24:4', lines: ['要回太平村，我送你一程。'] },
     xuda: { id: 'xuda', name: '徐达', title: '将军', map: 'capital', merit: true, lines: ['建功立业，每日可来领差事。前十次赏银逐次增加。'] },
@@ -343,6 +369,28 @@
   D.BANK = { silverPerNote: 500, yuanbaoBuy: 100, yuanbaoSell: 80 };
   D.ENERGY_MAX = 4000;
   D.MOUNT_LEVEL = 18;
+  D.MOUNT_SLOTS = [
+    { id: 'armor', name: '马铠' },
+    { id: 'saddle', name: '马鞍' },
+    { id: 'ornament', name: '马饰' },
+    { id: 'rein', name: '马缰' },
+    { id: 'stirrup', name: '马镫' },
+    { id: 'hoof', name: '马蹄' }
+  ];
+  D.MOUNT_GEAR = {
+    m_armor_1: { id: 'm_armor_1', name: '精铁马铠', type: 'mount', slot: 'armor', rarity: 'green', hp: 48, pdef: 8, mdef: 6 },
+    m_saddle_1: { id: 'm_saddle_1', name: '软皮马鞍', type: 'mount', slot: 'saddle', rarity: 'green', speed: 0.04, hp: 20 },
+    m_ornament_1: { id: 'm_ornament_1', name: '铜铃马饰', type: 'mount', slot: 'ornament', rarity: 'green', crit: 0.01, matk: 6 },
+    m_rein_1: { id: 'm_rein_1', name: '熟丝马缰', type: 'mount', slot: 'rein', rarity: 'green', agi: 2, aspd: 0.03 },
+    m_stirrup_1: { id: 'm_stirrup_1', name: '精铁马镫', type: 'mount', slot: 'stirrup', rarity: 'green', patk: 8, pdef: 4 },
+    m_hoof_1: { id: 'm_hoof_1', name: '包铁马蹄', type: 'mount', slot: 'hoof', rarity: 'green', speed: 0.03, hp: 24 },
+    m_armor_2: { id: 'm_armor_2', name: '玄铁马铠', type: 'mount', slot: 'armor', rarity: 'blue', hp: 90, pdef: 14, mdef: 10 },
+    m_saddle_2: { id: 'm_saddle_2', name: '雕花马鞍', type: 'mount', slot: 'saddle', rarity: 'blue', speed: 0.07, hp: 36 },
+    m_ornament_2: { id: 'm_ornament_2', name: '鎏金马饰', type: 'mount', slot: 'ornament', rarity: 'blue', crit: 0.018, matk: 12 },
+    m_rein_2: { id: 'm_rein_2', name: '云纹马缰', type: 'mount', slot: 'rein', rarity: 'blue', agi: 4, aspd: 0.05 },
+    m_stirrup_2: { id: 'm_stirrup_2', name: '兽面马镫', type: 'mount', slot: 'stirrup', rarity: 'blue', patk: 14, pdef: 8 },
+    m_hoof_2: { id: 'm_hoof_2', name: '龙纹马蹄', type: 'mount', slot: 'hoof', rarity: 'blue', speed: 0.05, hp: 40 }
+  };
   D.WAREHOUSE = { cap: 36, maxTabs: 4, unlock: [0, 200, 500, 1000] };
 
   D.WORLD_NODES = [
@@ -429,6 +477,38 @@
       revive: 'here',
       teleport: false,
       hideQuest: true
+    },
+    jingxin: {
+      name: '步步惊心',
+      daily: 3,
+      minLevel: 20,
+      duration: 1200,
+      revive: 'here',
+      teleport: false,
+      hideQuest: true,
+      seq: ['zhouyingqiu', 'yangshuai', 'sunyunhe', 'tianergeng', 'xuxianchun'],
+      lottery: ['shenfu', 'shenjie_shard', 'lingzhu']
+    },
+    palace: {
+      name: '深宫谍影',
+      daily: 3,
+      minLevel: 16,
+      duration: 900,
+      revive: 'here',
+      teleport: false,
+      hideQuest: true,
+      seq: ['jinyi_baihu', 'jinyi_zhuque', 'jinyi_qinglong', 'jinyi_xuanwu'],
+      lottery: ['weapon_shenjie', 'lingzhu_blue', 'lingzhu_purple']
+    },
+    pagoda: {
+      name: '开封铁塔',
+      daily: 5,
+      minLevel: 14,
+      duration: 900,
+      revive: 'entrance',
+      teleport: false,
+      hideQuest: true,
+      seq: ['pagoda_monk', 'pagoda_spirit', 'pagoda_king']
     }
   };
 
@@ -464,7 +544,10 @@
     fish: { name: '捕鱼儿海', safe: false, instance: true, tint: [0.04, 0.1, 0.16] },
     treasure: { name: '大明宝藏', safe: false, instance: true, tint: [0.12, 0.1, 0.04] },
     arena: { name: '竞技场', safe: false, instance: true, tint: [0.1, 0.08, 0.06] },
-    mentor: { name: '师徒同心', safe: false, instance: true, tint: [0.1, 0.1, 0.06] }
+    mentor: { name: '师徒同心', safe: false, instance: true, tint: [0.1, 0.1, 0.06] },
+    jingxin: { name: '步步惊心', safe: false, instance: true, tint: [0.12, 0.06, 0.1] },
+    palace: { name: '深宫谍影', safe: false, instance: true, tint: [0.1, 0.06, 0.14] },
+    pagoda: { name: '开封铁塔', safe: false, instance: true, tint: [0.14, 0.1, 0.06] }
   };
 
   D.PORTALS = {
@@ -551,6 +634,15 @@
     ],
     mentor: [
       { x: 2, y: 12, to: 'capital', tx: 30, ty: 16, label: '离开同心副本' }
+    ],
+    jingxin: [
+      { x: 2, y: 12, to: 'kaifeng', tx: 18, ty: 20, label: '离开副本' }
+    ],
+    palace: [
+      { x: 2, y: 10, to: 'kaifeng', tx: 18, ty: 20, label: '离开副本' }
+    ],
+    pagoda: [
+      { x: 2, y: 14, to: 'kaifeng', tx: 18, ty: 20, label: '离开副本' }
     ]
   };
 
@@ -600,18 +692,18 @@
     '空格拾取，A 攻击选中，~ 选最近怪物，1–6 技能，7 金创药，8 内力药。方向键点地行走（原作为点地）。',
     '区域地图：深蓝自己、黄 NPC、淡蓝出口。世界地图点地名自动寻路；有传送卷则瞬移。副本内不能跳转。',
     '精力上限 4000，杀 1 怪耗 1。精力为 0 时经验为 1 且不掉落，每日 0 点重置。角色面板可查看。',
-    '18 级系统送坐骑。C 面板「坐骑」可骑乘、用提速牌升色（白→橙）。',
+    '18 级系统送坐骑。C 面板「坐骑」可骑乘、用提速牌升色（白→橙）。坐骑装备六件：马铠、马鞍、马饰、马缰、马镫、马蹄。穿上后绑定。开封铁塔掉落坐骑装备与坐骑宝石。',
     '仓库找姗姗（太平）或依依（京城）。第一仓免费，最多四仓。钱庄兑银票：500 两一张。',
     '京城徐达「建功立业」循环任务，10 级起可接，前 10 次奖励递增。',
     '局域网联机：朋友用浏览器打开同一地址，各自注册后选同一服务器。点其他玩家可组队、交易、加好友、密聊、跟随、PK。',
     'R 社交（好友/队伍/宗族/邀请），K 摆摊，G 跟随选中玩家，H 隐藏玩家。聊天：附近/世界/队伍/宗族，/账号 密聊。',
     'PK 六模式对其他玩家生效。安全区不能打人。红名不能坐车夫；PK≥18 红名，≥30 死亡入狱回村。',
     '点右侧任务追踪绿名可自动寻路。挂机（Z）自动寻敌、放技能、吃药、拾取。',
-    '副本：京城明军水兵进鄱阳湖大战；英雄副本传送人按关挑战。沐英传送捕鱼儿海、大明宝藏、竞技场。',
+    '副本：京城明军水兵进鄱阳湖大战；英雄副本传送人按关挑战。沐英传送捕鱼儿海、大明宝藏、竞技场。开封张笑笑进步步惊心，锦衣卫指挥使进深宫谍影，铁塔僧人进开封铁塔。',
     '野外 BOSS：神农架猛犸象（29.5 时）、鄱阳湖陈友谅（2 时）、平江张士诚（2 时）、大漠瓦剌头目（2 时）、土木堡王振（5 时）。死后才刷新；无人打则一直在。',
     '世界 BOSS：每日出现在浙东或泉州。U 日常可看位置、伤害榜。第一刀/最后一刀/排名 1·2·3·5·8·11·15·19 可领奖；最后一刀所在阵营为归属国。',
     'L 信件，Y 传奇目标，O 排行，U 日常，I 明朝贵族。除恶令、天降异宝、活跃度在日常面板。宠物可洗灵/提悟/训练。',
-    '元宝分不绑定与绑定。优先消耗绑定元宝。钱庄用银两买入元宝计入贵族经验；任务奖励为绑定元宝。I 查看明朝贵族特权与每日礼包。',
+    '元宝、银两、道具均分不绑定与绑定。优先消耗绑定银两与绑定道具。商店购得绑定；任务/日常奖绑定银两与绑定道具；打怪掉落不绑定。绑定物不能交易、摆摊。穿装备与坐骑装备后绑定。钱庄兑元宝用不绑定银两。',
     '太平村与京城篝火旁打坐饮酒加经验。野外死亡可回村或原地健康复活（耗银）。资料对照 MingGame.swf 与 91wan。'
   ];
 
@@ -644,7 +736,7 @@
     { name: '技能书', sub: '职业技能书 / 宠物技能书', ids: ['skill_book', 'pet_book'] },
     { name: '药品', ids: ['hp1', 'hp2', 'mp1', 'mp2'] },
     { name: '灵石', hint: '灵石多从怪物掉落，摊位亦可交易。' },
-    { name: '坐骑宠物', sub: '坐骑 / 宠物', ids: ['mount_token', 'feed', 'wash_dan', 'insight_dan', 'train_pai', 'pet_stone'] },
+    { name: '坐骑宠物', sub: '坐骑 / 宠物', ids: ['mount_token', 'feed', 'wash_dan', 'insight_dan', 'train_pai', 'pet_stone', 'mount_gem'] },
     { name: '杂货', sub: '材料 / 其他', ids: ['scroll', 'bag_token', 'flower', 'wine', 'stone', 'socket'] }
   ];
 

@@ -412,6 +412,11 @@
       var vn = H.vipBonus ? H.vipBonus(p).name : '';
       goldEl.textContent = '元宝 ' + (p.gold || 0) + ' / 绑定 ' + (p.bindGold || 0) + (vn ? '　' + vn : '');
     }
+    var silEl = document.getElementById('silver-line');
+    if (silEl) {
+      F.ensureSilver(p);
+      silEl.textContent = '银两 ' + (p.silver || 0) + ' / 绑定 ' + (p.bindSilver || 0);
+    }
     var mailBtn = document.querySelector('[data-panel="mail"]');
     if (mailBtn && p.mail) {
       var unread = p.mail.filter(function (m) { return m.unread; }).length;

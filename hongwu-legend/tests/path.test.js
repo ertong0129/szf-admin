@@ -54,6 +54,14 @@ assert.ok(ids.indexOf('pingjiang') >= 0 && ids.indexOf('kaifeng') >= 0);
 assert.ok(ids.indexOf('shennong') >= 0 && ids.indexOf('boyang') >= 0);
 
 assert.ok(D.INSTANCES && D.INSTANCES.poyang && D.INSTANCES.tower);
+assert.ok(D.INSTANCES.jingxin && D.INSTANCES.palace && D.INSTANCES.pagoda);
+assert.strictEqual(D.MAP_META.jingxin.instance, true);
+assert.strictEqual(D.MAP_META.palace.instance, true);
+assert.strictEqual(D.MAP_META.pagoda.instance, true);
+assert.ok(D.PORTALS.jingxin && D.PORTALS.jingxin[0].to === 'kaifeng');
+assert.strictEqual(D.MOUNT_SLOTS.length, 6);
+assert.strictEqual(D.MOUNT_SLOTS[0].name, '马铠');
+assert.ok(D.MONSTERS.zhouyingqiu && D.MONSTERS.jinyi_baihu && D.MONSTERS.pagoda_king);
 assert.strictEqual(D.MONSTERS.lake_boss.name, '张定边');
 assert.strictEqual(D.MONSTERS.chenyouliang.name, '陈友谅');
 assert.strictEqual(D.MONSTERS.wangzhen.name, '王振');

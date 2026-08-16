@@ -70,4 +70,30 @@ assert.strictEqual(F.lootByLevelGap(40, 40), 1);
 assert.strictEqual(F.lootByLevelGap(70, 40), 0.55);
 assert.strictEqual(F.lootByLevelGap(100, 40), 0.12);
 
+var p = { silver: 40, bindSilver: 20 };
+assert.strictEqual(F.silverTotal(p), 60);
+assert.strictEqual(F.addSilver(p, 10, true), 10);
+assert.strictEqual(p.bindSilver, 30);
+assert.ok(F.spendSilver(p, 25, 'preferBind'));
+assert.strictEqual(p.bindSilver, 5);
+assert.strictEqual(p.silver, 40);
+assert.ok(!F.spendSilver(p, 100, 'unbind'));
+assert.ok(F.spendSilver(p, 10, 'unbind'));
+assert.strictEqual(p.silver, 30);
+F.addSilver(p, 50, false);
+F.taxSilver(p, 0.9);
+assert.ok(F.silverTotal(p) < 80);
+
+var bag = [
+  { id: 'hp1', n: 2, bind: true, type: 'potion' },
+  { id: 'hp1', n: 3, bind: false, type: 'potion' }
+];
+assert.strictEqual(F.countInBag(bag, 'hp1'), 5);
+assert.strictEqual(F.countInBag(bag, 'hp1', true), 2);
+assert.ok(F.sameStack(bag[0], { id: 'hp1', bind: true, type: 'potion' }));
+assert.ok(!F.sameStack(bag[0], bag[1]));
+assert.ok(F.takeFromBag(bag, 'hp1', 3, true));
+assert.strictEqual(F.countInBag(bag, 'hp1', true), 0);
+assert.strictEqual(F.countInBag(bag, 'hp1', false), 2);
+
 console.log('formulas.test.js ok');

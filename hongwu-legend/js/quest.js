@@ -59,12 +59,12 @@
     p.quests.active = p.quests.active.filter(function (id) { return id !== q.id; });
     p.quests.done.push(q.id);
     H.addExp(p, q.reward.exp || 0);
-    p.silver += q.reward.silver || 0;
+    H.addSilver(p, q.reward.silver || 0, true);
     if (q.reward.gold) {
       if (H.addYuanbao) H.addYuanbao(q.reward.gold, true, false);
-      else p.gold += q.reward.gold;
+      else p.bindGold = (p.bindGold || 0) + q.reward.gold;
     }
-    (q.reward.items || []).forEach(function (it) { H.addItem(p, { id: it.id, n: it.n }); });
+    (q.reward.items || []).forEach(function (it) { H.addItem(p, { id: it.id, n: it.n, bind: true }); });
     H.toast('完成：' + q.name);
     H.log('任务完成：' + q.name);
     if (H.noteAchieve) H.noteAchieve('quest');
@@ -351,7 +351,7 @@
     var exp = F.meritReward(band ? band.exp : 280, p.merit.count);
     var sil = F.meritReward(band ? band.silver : 40, p.merit.count);
     H.addExp(p, exp);
-    p.silver += sil;
+    H.addSilver(p, sil, true);
     p.merit.count += 1;
     p.merit.active = false;
     p.merit.kill = null;

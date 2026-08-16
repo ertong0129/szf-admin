@@ -17,6 +17,14 @@ assert.ok(D.NPCS.muying.portal);
 assert.ok(D.NPCS.limengyang.mentor);
 assert.ok(D.NPCS.shichang.market);
 assert.ok(D.INSTANCES.fish && D.INSTANCES.treasure && D.INSTANCES.mentor);
+assert.ok(D.INSTANCES.jingxin && D.INSTANCES.palace && D.INSTANCES.pagoda);
+assert.ok(D.NPCS.zhangxiaoxiao.jingxin);
+assert.ok(D.NPCS.jinyi.palace);
+assert.ok(D.NPCS.tieta.pagoda);
+assert.strictEqual(D.NPCS.zhangxiaoxiao.map, 'kaifeng');
+assert.ok(D.MOUNT_SLOTS && D.MOUNT_SLOTS.length === 6);
+assert.ok(D.MOUNT_GEAR.m_armor_1 && D.MOUNT_GEAR.m_hoof_2);
+assert.ok(D.CONSUMABLES.mount_gem && D.CONSUMABLES.shenfu);
 assert.ok(D.CHAT_FACES.length >= 12);
 assert.ok(D.MARKET_CATS.length >= 6);
 assert.ok(D.VIP.length === 11);
@@ -33,7 +41,7 @@ assert.strictEqual(D.WAREHOUSE.unlock[0], 0);
 var help = D.HELP.join('\n');
 ['Q 任务', '空格拾取', 'D 打坐', '精力', '坐骑', '建功立业', '91wan', '局域网', '组队',
   '信件', '传奇目标', '除恶令', '捕鱼儿海', '大明宝藏', '洗灵', '篝火', '元宝', '明朝贵族',
-  '野外 BOSS', '世界 BOSS', '平江', '神农架'].forEach(function (k) {
+  '野外 BOSS', '世界 BOSS', '平江', '神农架', '绑定银两', '步步惊心', '深宫谍影', '马铠'].forEach(function (k) {
   assert.ok(help.indexOf(k) >= 0, 'HELP missing ' + k);
 });
 

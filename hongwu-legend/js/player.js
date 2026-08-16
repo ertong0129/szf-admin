@@ -40,6 +40,7 @@
       equip: H.emptyEquip(),
       bag: [],
       silver: 40,
+      bindSilver: 20,
       gold: 0,
       bindGold: 5,
       vipExp: 0,
@@ -58,7 +59,7 @@
       towerUnlock: 1,
       dungeon: { day: '', poyang: 0, tower: 0 },
       warehouse: { tabs: 1, items: [[], [], [], []] },
-      mount: { owned: false, riding: false, rarity: 'white' },
+      mount: { owned: false, riding: false, rarity: 'white', star: 0, equip: {} },
       merit: { day: '', count: 0, active: false, kill: null, need: 0, got: 0 },
       nation: G.selectedNation || 'ming',
       pkValue: 0
@@ -67,9 +68,9 @@
       if (s.unlock <= 1) p.skills[s.id] = 1;
     });
     H.giveStarterGear(p);
-    H.addItem(p, { id: 'hp1', n: 5 });
-    H.addItem(p, { id: 'mp1', n: 3 });
-    H.addItem(p, { id: 'scroll', n: 2 });
+    H.addItem(p, { id: 'hp1', n: 5, bind: true });
+    H.addItem(p, { id: 'mp1', n: 3, bind: true });
+    H.addItem(p, { id: 'scroll', n: 2, bind: true });
     var st = H.stats(p);
     p.hp = st.maxHp;
     p.mp = st.maxMp;
@@ -78,7 +79,9 @@
 
   H.giveStarterGear = function (p) {
     D.SLOTS.forEach(function (s) {
-      p.equip[s.id] = H.rollEquip(s.id, 1, 'white', p.cls);
+      var it = H.rollEquip(s.id, 1, 'white', p.cls);
+      it.bind = true;
+      p.equip[s.id] = it;
     });
   }
 
@@ -125,6 +128,15 @@
       if (b.speed) bspd += b.speed;
     });
     var off = H.officeBonus ? H.officeBonus(p) : { hp: 0, patk: 0, pdef: 0 };
+    var mg = H.mountEquipStats(p);
+    extra.hp += mg.hp;
+    extra.patk += mg.patk;
+    extra.matk += mg.matk;
+    extra.pdef += mg.pdef;
+    extra.mdef += mg.mdef;
+    extra.aspd += mg.aspd;
+    extra.crit += mg.crit;
+    if (p.mount && p.mount.owned && p.mount.riding) extra.speed += mg.speed;
     var maxHp = Math.floor(c.baseHp + d.hp + extra.hp + p.level * 18 + (off.hp || 0));
     var maxMp = Math.floor(c.baseMp + d.mp + extra.mp + p.level * 6);
     return {
@@ -144,12 +156,75 @@
 
   H.mountMul = function (p) {
     if (!p || !p.mount || !p.mount.owned || !p.mount.riding) return 1;
-    return F.mountSpeedMul ? F.mountSpeedMul(p.mount.rarity) : 1.15;
+    var base = F.mountSpeedMul ? F.mountSpeedMul(p.mount.rarity) : 1.15;
+    return base * (1 + (p.mount.star || 0) * 0.015);
+  }
+
+  H.emptyMountEquip = function () {
+    var e = {};
+    (D.MOUNT_SLOTS || []).forEach(function (s) { e[s.id] = null; });
+    return e;
+  }
+
+  H.mountEquipStats = function (p) {
+    var st = { hp: 0, patk: 0, matk: 0, pdef: 0, mdef: 0, speed: 0, crit: 0, aspd: 0 };
+    if (!p || !p.mount || !p.mount.owned) return st;
+    var eq = p.mount.equip || {};
+    (D.MOUNT_SLOTS || []).forEach(function (s) {
+      var it = eq[s.id];
+      if (!it) return;
+      var mul = 1 + (it.stars || 0) * 0.08;
+      st.hp += Math.floor((it.hp || 0) * mul);
+      st.patk += Math.floor((it.patk || 0) * mul);
+      st.matk += Math.floor((it.matk || 0) * mul);
+      st.pdef += Math.floor((it.pdef || 0) * mul);
+      st.mdef += Math.floor((it.mdef || 0) * mul);
+      st.speed += (it.speed || 0) * mul;
+      st.crit += (it.crit || 0) * mul;
+      st.aspd += (it.aspd || 0) * mul;
+    });
+    return st;
+  }
+
+  H.wearMount = function (p, item) {
+    if (!p || !item || item.type !== 'mount' || !item.slot) return false;
+    if (!p.mount || !p.mount.owned) { H.toast('尚未获得坐骑'); return false; }
+    p.mount.equip = p.mount.equip || {};
+    var old = p.mount.equip[item.slot];
+    var worn = Object.assign({}, item, { n: 1, bind: true });
+    p.mount.equip[item.slot] = worn;
+    var idx = p.bag.indexOf(item);
+    if (idx >= 0) {
+      if ((item.n || 1) > 1) item.n -= 1;
+      else p.bag.splice(idx, 1);
+    }
+    if (old) H.addItem(p, old);
+    H.toast(item.name + '已装备（穿上绑定）');
+    return true;
+  }
+
+  H.enhanceMountSlot = function (slot) {
+    var p = G.player;
+    if (!p.mount || !p.mount.equip) return;
+    var it = p.mount.equip[slot];
+    if (!it) { H.toast('该部位没有坐骑装备'); return; }
+    if ((it.stars || 0) >= 10) { H.toast('已至满星'); return; }
+    var cost = F.enhanceCost(it.stars || 0, 12);
+    if (!H.paySilver(cost, 'preferBind', '银两不足 ' + cost)) return;
+    if (!H.takeItem(p, 'stone', 1)) { H.toast('缺少强化石'); return; }
+    if (Math.random() < F.enhanceChance(it.stars || 0)) {
+      it.stars = (it.stars || 0) + 1;
+      it.bind = true;
+      H.toast(H.itemName(it) + ' 升星成功');
+    } else H.toast('炉火不稳，升星失败');
+    H.paintPanel('char');
   }
 
   H.grantMount = function (p, silent) {
     if (!p) return;
-    p.mount = p.mount || { owned: false, riding: false, rarity: 'white' };
+    p.mount = p.mount || { owned: false, riding: false, rarity: 'white', star: 0, equip: {} };
+    p.mount.equip = p.mount.equip || {};
+    p.mount.star = p.mount.star || 0;
     if (p.mount.owned) return;
     if (p.level < (D.MOUNT_LEVEL || 18)) return;
     p.mount.owned = true;
@@ -212,54 +287,65 @@
     if (slot === 'weapon' && cls === 'healer') { st.matk = Math.floor(st.matk * 1.1); st.patk = Math.floor(st.patk * 0.4); }
     return {
       uid: H.uid(), type: 'equip', slot: slot, name: nm, rarity: rarity, level: level,
-      stars: 0, sockets: 0, gems: [], stats: st
+      stars: 0, sockets: 0, gems: [], stats: st, bind: false
     };
   }
 
-  H.itemName = function (it) {
-    if (it.type === 'equip') {
-      return (it.stars ? '+' + it.stars + ' ' : '') + it.name;
-    }
-    var c = D.CONSUMABLES[it.id];
-    if (c) return c.name;
-    if (it.type === 'gem') return it.name + '·' + it.grade + '级';
-    return it.name || it.id;
+  H.itemProto = function (id) {
+    if (!id) return null;
+    return D.CONSUMABLES[id] || (D.MOUNT_GEAR && D.MOUNT_GEAR[id]) || null;
   }
 
-  H.addItem = function (p, item) {
-    if (item.type === 'equip' || item.type === 'gem') {
-      if (p.bag.length >= H.bagCap(p)) { H.toast('背包已满'); return false; }
-      p.bag.push(item);
-      return true;
+  H.addSilver = function (p, n, bind) {
+    return F.addSilver(p || G.player, n, bind);
+  }
+
+  H.paySilver = function (n, mode, msg) {
+    var p = G.player;
+    if (!F.spendSilver(p, n, mode || 'preferBind')) {
+      H.toast(msg || '银两不足');
+      return false;
     }
-    var found = p.bag.find(function (x) { return x.id === item.id && x.type !== 'equip' && x.type !== 'gem'; });
-    if (found) { found.n = (found.n || 1) + (item.n || 1); return true; }
-    if (p.bag.length >= H.bagCap(p)) { H.toast('背包已满'); return false; }
-    var proto = D.CONSUMABLES[item.id];
-    p.bag.push(Object.assign({ n: item.n || 1, type: proto ? proto.kind : 'item' }, proto || item, { id: item.id }));
     return true;
   }
 
-  H.takeItem = function (p, id, n) {
-    n = n || 1;
-    for (var i = 0; i < p.bag.length; i++) {
-      var it = p.bag[i];
-      if (it.id === id && it.type !== 'equip') {
-        if ((it.n || 1) < n) return false;
-        it.n -= n;
-        if (it.n <= 0) p.bag.splice(i, 1);
-        return true;
-      }
+  H.itemName = function (it) {
+    if (!it) return '';
+    var tag = it.bind ? '[绑]' : '';
+    if (it.type === 'equip' || it.type === 'mount') {
+      return tag + (it.stars ? '+' + it.stars + ' ' : '') + (it.name || it.id);
     }
-    return false;
+    var c = H.itemProto(it.id);
+    if (c) return tag + c.name;
+    if (it.type === 'gem') return tag + it.name + '·' + it.grade + '级';
+    return tag + (it.name || it.id);
   }
 
-  H.countItem = function (p, id) {
-    var n = 0;
-    p.bag.forEach(function (it) {
-      if (it.id === id) n += it.n || 1;
-    });
-    return n;
+  H.addItem = function (p, item) {
+    if (!item) return false;
+    var proto = H.itemProto(item.id);
+    var bind = item.bind != null ? !!item.bind : !!(proto && proto.bind);
+    if (item.type === 'equip' || item.type === 'gem' || item.type === 'mount' || (proto && proto.type === 'mount')) {
+      if (p.bag.length >= H.bagCap(p)) { H.toast('背包已满'); return false; }
+      var it = Object.assign({}, proto || {}, item, { bind: bind });
+      if (proto && proto.type === 'mount') it.type = 'mount';
+      it.n = 1;
+      p.bag.push(it);
+      return true;
+    }
+    var found = p.bag.find(function (x) { return F.sameStack(x, { id: item.id, bind: bind, type: item.type || (proto && proto.kind) }); });
+    if (found) { found.n = (found.n || 1) + (item.n || 1); return true; }
+    if (p.bag.length >= H.bagCap(p)) { H.toast('背包已满'); return false; }
+    p.bag.push(Object.assign({ n: item.n || 1, type: proto ? proto.kind : 'item' }, proto || {}, item, { id: item.id, bind: bind }));
+    return true;
+  }
+
+  H.takeItem = function (p, id, n, preferBind) {
+    return F.takeFromBag(p.bag, id, n || 1, preferBind !== false);
+  }
+
+  H.countItem = function (p, id, bindFilter) {
+    return F.countInBag(p.bag, id, bindFilter == null ? null : bindFilter);
   }
 
   H.usePotion = function (kind) {
@@ -318,7 +404,10 @@
     p.warehouse = p.warehouse || { tabs: 1, items: [[], [], [], []] };
     if (!p.warehouse.items) p.warehouse.items = [[], [], [], []];
     while (p.warehouse.items.length < 4) p.warehouse.items.push([]);
-    p.mount = p.mount || { owned: false, riding: false, rarity: 'white' };
+    p.mount = p.mount || { owned: false, riding: false, rarity: 'white', star: 0, equip: {} };
+    p.mount.equip = p.mount.equip || {};
+    p.mount.star = p.mount.star || 0;
+    F.ensureSilver(p);
     p.merit = p.merit || { day: '', count: 0, active: false, kill: null, need: 0, got: 0 };
     if (p.merit.day !== day) {
       p.merit.day = day;
@@ -335,14 +424,13 @@
     var p = G.player;
     var rate = (D.BANK && D.BANK.silverPerNote) || 500;
     if (dir === 'to') {
-      if (p.silver < rate) { H.toast('银两不足 ' + rate); return; }
-      p.silver -= rate;
-      H.addItem(p, { id: 'yinpiao', n: 1 });
+      if (!H.paySilver(rate, 'unbind', '不绑定银两不足 ' + rate + '（银票可交易）')) return;
+      H.addItem(p, { id: 'yinpiao', n: 1, bind: false });
       H.toast('兑得五锭银票');
     } else {
-      if (H.countItem(p, 'yinpiao') < 1) { H.toast('没有银票'); return; }
-      H.takeItem(p, 'yinpiao', 1);
-      p.silver += rate;
+      if (F.countInBag(p.bag, 'yinpiao', false) < 1) { H.toast('没有不绑定银票'); return; }
+      H.takeItem(p, 'yinpiao', 1, false);
+      H.addSilver(p, rate, false);
       H.toast('兑回 ' + rate + ' 两');
     }
   }
@@ -377,8 +465,7 @@
     if (i !== p.warehouse.tabs) { H.toast('请先开通上一仓'); return; }
     if (i >= spec.maxTabs) return;
     var cost = spec.unlock[i] || 0;
-    if (p.silver < cost) { H.toast('银两不足'); return; }
-    p.silver -= cost;
+    if (!H.paySilver(cost, 'preferBind', '银两不足')) return;
     p.warehouse.tabs += 1;
     G.whTab = i;
     H.toast('开通仓库' + (i + 1));
@@ -427,10 +514,13 @@
     }
     if (it.type === 'equip') {
       var old = p.equip[it.slot];
+      it.bind = true;
       p.equip[it.slot] = it;
       p.bag.splice(index, 1);
       if (old) p.bag.push(old);
-      H.toast('装备 ' + H.itemName(it));
+      H.toast('装备 ' + H.itemName(it) + '（穿上绑定）');
+    } else if (it.type === 'mount') {
+      H.wearMount(p, it);
     } else if (it.potion === 'hp') {
       H.takeItem(p, it.id, 1);
       var st = H.stats(p);
@@ -448,19 +538,19 @@
     } else if (it.id === 'zodiac') {
       H.takeItem(p, 'zodiac', 1);
       H.addExp(p, 150);
-      p.silver += 80;
-      H.toast('兑出生肖残页：经验 +150，银两 +80');
+      H.addSilver(p, 80, true);
+      H.toast('兑出生肖残页：经验 +150，绑定银两 +80');
     } else if (it.id === 'hero_pack' || it.kind === 'pack') {
       H.takeItem(p, it.id, 1);
       if (Math.random() < 0.45) {
         var gdef = D.GEMS[H.irand(0, D.GEMS.length - 1)];
-        H.addItem(p, { uid: H.uid(), type: 'gem', id: gdef.id, name: gdef.name, kind: gdef.kind, grade: 1 });
+        H.addItem(p, { uid: H.uid(), type: 'gem', id: gdef.id, name: gdef.name, kind: gdef.kind, grade: 1, bind: true });
         H.toast('打开礼包：' + gdef.name);
       } else if (Math.random() < 0.5) {
-        H.addItem(p, { id: 'stone', n: 2 });
+        H.addItem(p, { id: 'stone', n: 2, bind: true });
         H.toast('打开礼包：强化石×2');
       } else {
-        H.addItem(p, { id: 'hp2', n: 2 });
+        H.addItem(p, { id: 'hp2', n: 2, bind: true });
         H.toast('打开礼包：大型金创药×2');
       }
     } else if (it.id === 'skill_book') {
@@ -480,7 +570,7 @@
     } else if (it.id === 'yibao') {
       H.takeItem(p, 'yibao', 1);
       H.addExp(p, 50);
-      p.silver += 15;
+      H.addSilver(p, 15, true);
       H.toast('献上异宝');
     } else if (it.id === 'pet_stone') {
       H.takeItem(p, 'pet_stone', 1);
@@ -495,6 +585,24 @@
       H.takeItem(p, 'feed', 1);
       p.pet.hp = Math.min(p.pet.maxHp, p.pet.hp + 60);
       H.toast('灵宠进食');
+    } else if (it.id === 'mount_gem') {
+      if (!p.mount || !p.mount.owned) { H.toast('尚未获得坐骑'); return; }
+      H.takeItem(p, 'mount_gem', 1);
+      p.mount.star = (p.mount.star || 0) + 1;
+      H.toast('坐骑提星 +1（现 ' + p.mount.star + ' 星）');
+    } else if (it.id === 'shenfu' || it.id === 'lingzhu' || it.id === 'lingzhu_blue' || it.id === 'lingzhu_purple') {
+      H.takeItem(p, it.id, 1);
+      var xp = it.id === 'lingzhu_purple' ? 220 : (it.id === 'lingzhu_blue' ? 140 : 80);
+      H.addExp(p, xp);
+      H.toast('使用' + H.itemName(it) + '，经验 +' + xp);
+    } else if (it.id === 'shenjie_shard') {
+      H.takeItem(p, 'shenjie_shard', 1);
+      H.addSilver(p, 60, true);
+      H.toast('兑出碎裂神节：绑定银两 +60');
+    } else if (it.id === 'weapon_shenjie') {
+      H.takeItem(p, 'weapon_shenjie', 1);
+      p.unspentSkill += 1;
+      H.toast('武器神节：技能点 +1');
     } else {
       H.toast(H.itemName(it));
     }
@@ -507,11 +615,11 @@
     if (!it) return;
     if (it.stars >= 10) { H.toast('已至满星'); return; }
     var cost = F.enhanceCost(it.stars, it.level);
-    if (p.silver < cost) { H.toast('银两不足 ' + cost); return; }
+    if (!H.paySilver(cost, 'preferBind', '银两不足 ' + cost)) return;
     if (!H.takeItem(p, 'stone', 1)) { H.toast('缺少强化石'); return; }
-    p.silver -= cost;
     if (Math.random() < F.enhanceChance(it.stars)) {
       it.stars += 1;
+      it.bind = true;
       Object.keys(it.stats).forEach(function (k) {
         if (k === 'crit' || k === 'speed') it.stats[k] = +(it.stats[k] * 1.08).toFixed(3);
         else it.stats[k] = Math.floor(it.stats[k] * 1.08);
@@ -532,9 +640,8 @@
     if (!it) return;
     if (it.sockets >= 3) { H.toast('孔位已满'); return; }
     var cost = F.socketCost(it.sockets);
-    if (p.silver < cost) { H.toast('银两不足'); return; }
+    if (!H.paySilver(cost, 'preferBind', '银两不足')) return;
     if (!H.takeItem(p, 'socket', 1)) { H.toast('缺少开孔符'); return; }
-    p.silver -= cost;
     it.sockets += 1;
     H.toast('开孔成功');
     if (H.noteAchieve) H.noteAchieve('socket');
@@ -586,7 +693,7 @@
       if (H.countItem(p, keys[k]) < r.ins[keys[k]]) { H.toast('材料不足'); return; }
     }
     keys.forEach(function (id) { H.takeItem(p, id, r.ins[id]); });
-    H.addItem(p, { id: r.out.id, n: r.out.n });
+    H.addItem(p, { id: r.out.id, n: r.out.n, bind: true });
     H.toast('炼成 ' + D.CONSUMABLES[r.out.id].name);
     H.paintPanel('forge');
   }

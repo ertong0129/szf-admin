@@ -211,6 +211,117 @@
     return (n || 1) * 80;
   };
 
+  F.ensureSilver = function (p) {
+    if (!p) return p;
+    p.silver = p.silver || 0;
+    p.bindSilver = p.bindSilver || 0;
+    return p;
+  };
+
+  F.silverTotal = function (p) {
+    if (!p) return 0;
+    return (p.silver || 0) + (p.bindSilver || 0);
+  };
+
+  F.addSilver = function (p, n, bind) {
+    n = Math.floor(n || 0);
+    if (!p || n <= 0) return 0;
+    F.ensureSilver(p);
+    if (bind) p.bindSilver += n;
+    else p.silver += n;
+    return n;
+  };
+
+  /* mode: preferBind（默认）/ preferUnbind / unbind / bind */
+  F.spendSilver = function (p, n, mode) {
+    n = Math.floor(n || 0);
+    if (!p || n <= 0) return true;
+    F.ensureSilver(p);
+    var s = p.silver, b = p.bindSilver;
+    if (mode === 'unbind') {
+      if (s < n) return false;
+      p.silver = s - n;
+      return true;
+    }
+    if (mode === 'bind') {
+      if (b < n) return false;
+      p.bindSilver = b - n;
+      return true;
+    }
+    if (s + b < n) return false;
+    if (mode === 'preferUnbind') {
+      var takeS = Math.min(s, n);
+      p.silver = s - takeS;
+      p.bindSilver = b - (n - takeS);
+      return true;
+    }
+    var takeB = Math.min(b, n);
+    p.bindSilver = b - takeB;
+    p.silver = s - (n - takeB);
+    return true;
+  };
+
+  F.taxSilver = function (p, keepRatio) {
+    F.ensureSilver(p);
+    var total = p.silver + p.bindSilver;
+    var keep = Math.max(0, Math.min(1, keepRatio == null ? 0.9 : keepRatio));
+    var take = Math.floor(total * (1 - keep));
+    if (take <= 0) return 0;
+    F.spendSilver(p, take, 'preferUnbind');
+    return take;
+  };
+
+  F.bindOf = function (it) {
+    return !!(it && it.bind);
+  };
+
+  F.stackable = function (it) {
+    return !!(it && it.type !== 'equip' && it.type !== 'gem' && it.type !== 'mount');
+  };
+
+  F.sameStack = function (a, b) {
+    return !!(a && b && a.id === b.id && F.bindOf(a) === F.bindOf(b) && F.stackable(a) && F.stackable(b));
+  };
+
+  F.countInBag = function (bag, id, bindFilter) {
+    var n = 0;
+    (bag || []).forEach(function (it) {
+      if (!it || it.id !== id) return;
+      if (bindFilter === true && !it.bind) return;
+      if (bindFilter === false && it.bind) return;
+      n += it.n || 1;
+    });
+    return n;
+  };
+
+  F.takeFromBag = function (bag, id, n, preferBind) {
+    n = n || 1;
+    preferBind = preferBind !== false;
+    var idxs = [];
+    for (var i = 0; i < bag.length; i++) {
+      if (bag[i] && bag[i].id === id && F.stackable(bag[i])) idxs.push(i);
+    }
+    idxs.sort(function (ia, ib) {
+      var ba = F.bindOf(bag[ia]) ? 1 : 0;
+      var bb = F.bindOf(bag[ib]) ? 1 : 0;
+      return preferBind ? (bb - ba) : (ba - bb);
+    });
+    var total = 0;
+    idxs.forEach(function (ix) { total += bag[ix].n || 1; });
+    if (total < n) return false;
+    for (var k = 0; k < idxs.length && n > 0; k++) {
+      var it = bag[idxs[k]];
+      var have = it.n || 1;
+      var take = Math.min(have, n);
+      it.n = have - take;
+      n -= take;
+    }
+    for (var j = bag.length - 1; j >= 0; j--) {
+      if (bag[j] && bag[j].id === id && F.stackable(bag[j]) && (bag[j].n || 0) <= 0) bag.splice(j, 1);
+    }
+    return true;
+  };
+
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = F;
   }

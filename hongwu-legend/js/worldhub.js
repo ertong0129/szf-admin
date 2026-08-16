@@ -411,7 +411,7 @@
     function stallOpen(server, user, title, goods) {
       var me = slotOf(server, user);
       if (!me) return { error: '尚未进入世界' };
-      if (me.mapId !== 'capital' && me.mapId !== 'taiping') return { error: '请在城镇摆摊' };
+      if (me.mapId !== 'capital' && me.mapId !== 'taiping' && me.mapId !== 'kaifeng') return { error: '请在城镇摆摊' };
       me.stall = {
         title: String(title || (me.name + '的摊')).slice(0, 12),
         goods: Array.isArray(goods) ? goods.slice(0, 8) : []

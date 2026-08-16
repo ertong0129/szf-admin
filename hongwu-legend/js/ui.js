@@ -187,7 +187,7 @@
         '<div class="stat-line"><span>等级</span><span>' + p.level + '</span></div>' +
         '<div class="stat-line"><span>阵营 / PK</span><span>' + (p.nation === 'yuan' ? '北元' : '大明') +
         '　' + (p.pkValue || 0) + ((p.pkValue || 0) >= 18 ? ' 红名' : '') + '</span></div>' +
-        '<div class="stat-line"><span>银两</span><span>' + p.silver + '</span></div>' +
+        '<div class="stat-line"><span>银两 / 绑定</span><span>' + (p.silver || 0) + ' / ' + (p.bindSilver || 0) + '</span></div>' +
         '<div class="stat-line"><span>元宝 / 绑定</span><span>' + (p.gold || 0) + ' / ' + (p.bindGold || 0) + '</span></div>' +
         '<div class="stat-line"><span>明朝贵族</span><span>' + ((H.vipBonus && H.vipBonus(p).name) || '白身') + '</span></div>' +
         '<div class="stat-line"><span>官职</span><span>' + ((H.officeOf && H.officeOf(p).name) || '白身') + '</span></div>' +
@@ -209,7 +209,8 @@
         '<div id="char-office" hidden>' + H.officeHtml(p) + '</div>';
     } else if (id === 'bag') {
       document.getElementById('panel-bag').innerHTML = H.header('背包', 'bag') +
-        '<p style="color:#b8a57a;margin-bottom:8px">左键使用/装备，右键丢弃。银两 ' + p.silver +
+        '<p style="color:#b8a57a;margin-bottom:8px">左键使用/装备，右键丢弃。[绑] 为绑定，不能交易。银两 ' +
+        (p.silver || 0) + ' / 绑定 ' + (p.bindSilver || 0) +
         '　容量 ' + p.bag.length + '/' + H.bagCap(p) +
         '　<button class="btn ghost" data-bag-expand="1">扩展背包</button></p>' +
         '<div class="bag-grid">' + p.bag.map(function (it, i) {
@@ -245,7 +246,8 @@
     } else if (id === 'forge') {
       document.getElementById('panel-forge').innerHTML = H.header('百工炉', 'forge') +
         '<p style="color:#b8a57a;margin-bottom:8px">强化石 ' + H.countItem(p, 'stone') +
-        '　开孔符 ' + H.countItem(p, 'socket') + '　银两 ' + p.silver + '</p>' +
+        '　开孔符 ' + H.countItem(p, 'socket') + '　银两 ' + (p.silver || 0) +
+        ' / 绑定 ' + (p.bindSilver || 0) + '</p>' +
         '<div class="equip-list">' + D.SLOTS.map(function (s) {
           var it = p.equip[s.id];
           if (!it) return '';
@@ -325,10 +327,23 @@
     var col = D.RARITY_COLOR[p.mount.rarity] || '#d8d0c4';
     var mul = F.mountSpeedMul(p.mount.rarity);
     var next = F.mountUpgradeChance(p.mount.rarity);
+    var mg = H.mountEquipStats(p);
+    var slots = (D.MOUNT_SLOTS || []).map(function (s) {
+      var it = (p.mount.equip || {})[s.id];
+      return '<div class="slot-row"><span>' + s.name + '</span><span style="color:' +
+        (it ? (D.RARITY_COLOR[it.rarity] || '#f3e6c4') : '#888') + '">' +
+        (it ? H.itemName(it) : '空') + '</span>' +
+        (it ? ' <button class="btn ghost" data-mount-en="' + s.id + '">升星</button>' : '') +
+        '</div>';
+    }).join('');
     return '<p>坐骑品质 <span style="color:' + col + '">' + (D.RARITY_NAME[p.mount.rarity] || p.mount.rarity) +
-      '</span>　移速 ×' + mul.toFixed(2) + '</p>' +
+      '</span>　移速 ×' + mul.toFixed(2) + '　提星 ' + (p.mount.star || 0) + '</p>' +
       '<p style="color:#b8a57a;margin:8px 0">提速牌 ' + H.countItem(p, 'mount_token') +
+      '　坐骑宝石 ' + H.countItem(p, 'mount_gem') +
       '　成功率 ' + (next ? Math.floor(next * 100) + '%' : '已满') + '</p>' +
+      '<p style="color:#b8a57a">马装：生命 +' + mg.hp + '　外攻 +' + mg.patk + '　外防 +' + mg.pdef +
+      '。穿上绑定。开封铁塔掉落。</p>' +
+      '<div class="equip-list">' + slots + '</div>' +
       '<button class="btn" data-mount-ride="1">' + (p.mount.riding ? '下马' : '骑乘') + '</button> ' +
       (next ? '<button class="btn ghost" data-mount-up="1">提升速度</button>' : '') +
       '<button class="btn ghost" data-buy="mount_token" data-price="40">购提速牌 40 两</button>';
@@ -408,10 +423,12 @@
       }).join('');
       el.innerHTML = H.header('元宝商城', 'shop') + tabs +
         '<p style="color:#b8a57a;margin-bottom:8px">你当前拥有元宝 ' + (p.gold || 0) +
-        '　绑定 ' + (p.bindGold || 0) + '。优先使用绑定元宝。</p>' + body;
+        '　绑定 ' + (p.bindGold || 0) + '。优先使用绑定元宝。购得道具绑定。</p>' + body;
       return;
     }
-    el.innerHTML = H.header(kind === 'mall' ? '商城' : '货殖', 'shop') + tabs + list.map(function (s) {
+    el.innerHTML = H.header(kind === 'mall' ? '商城' : '货殖', 'shop') + tabs +
+      '<p style="color:#b8a57a;margin-bottom:8px">银两 ' + (p.silver || 0) + ' / 绑定 ' + (p.bindSilver || 0) +
+      '。优先扣绑定银两。购得道具绑定。</p>' + list.map(function (s) {
       return '<div class="stat-line"><span>' + D.CONSUMABLES[s.id].name + '　' + s.price + ' 两</span>' +
         '<button class="btn" data-buy="' + s.id + '" data-price="' + s.price + '">购</button></div>';
     }).join('');
@@ -460,6 +477,15 @@
       opts += '<button class="btn" data-mentor="pupil">拜师</button>';
       opts += '<button class="btn ghost" data-mentor="master">收徒</button>';
       opts += '<button class="btn" data-enter-mentor="1">师徒同心副本</button>';
+    }
+    if (def.jingxin) {
+      opts += '<button class="btn" data-enter-jingxin="1">进入步步惊心</button>';
+    }
+    if (def.palace) {
+      opts += '<button class="btn" data-enter-palace="1">进入深宫谍影</button>';
+    }
+    if (def.pagoda) {
+      opts += '<button class="btn" data-enter-pagoda="1">进入开封铁塔</button>';
     }
     if (def.market) opts += '<button class="btn" data-open-market="1">浏览市场</button>';
     if (def.office) opts += '<button class="btn" data-open-office="1">查看官职</button>';

@@ -79,7 +79,7 @@
           if (pt.to === 'poyang' && G.mapId !== 'poyang') {
             H.travel('capital', 36, 22);
             H.toast('找明军水兵，选择难度进入鄱阳湖大战');
-          } else if (H.inInstance() && pt.to === 'capital') {
+          } else if (H.inInstance() && (pt.to === 'capital' || pt.to === 'kaifeng')) {
             H.leaveInstance();
           } else {
             H.travel(pt.to, pt.tx, pt.ty);
@@ -153,6 +153,28 @@
           H.hurtPlayer(dmg);
           e.atkCd = e.boss ? 1.15 : 1.35;
           H.beep(140, 0.04);
+          if (e.trait === 'aoe') {
+            H.hurtPlayer(Math.max(1, Math.floor(dmg * 0.45)));
+            H.floatText(p.x, p.y - 28, '烈火', '#ff8a4a');
+          }
+        }
+        if (e.trait === 'heal' && e.aggro > 0 && (e._healCd || 0) <= 0) {
+          e.hp = Math.min(e.maxHp, e.hp + Math.floor(e.maxHp * 0.08));
+          e._healCd = 3;
+          H.floatText(e.x, e.y - 22, '回春', '#7dff9a');
+        }
+        if (e._healCd > 0) e._healCd -= dt;
+        if (e.trait === 'clone' && !e.cloned && e.hp < e.maxHp * 0.5) {
+          e.cloned = true;
+          var clone = H.spawnOne(e.kind, e.x + 28, e.y, Math.max(1, e.level - 2));
+          if (clone) {
+            clone.hp = Math.floor(e.maxHp * 0.4);
+            clone.maxHp = clone.hp;
+            clone.trait = '';
+            clone.name = e.name + '·影';
+            clone.cloned = true;
+          }
+          H.toast(e.name + '分身');
         }
       }
     });
@@ -256,7 +278,7 @@
     }
     if (cart.x > 52 * TILE) {
       G.player.flags.escort_done = true;
-      G.player.silver += 80;
+      H.addSilver(G.player, 80, true);
       H.addExp(G.player, 140);
       H.toast('军资送达');
       G.escort = null;

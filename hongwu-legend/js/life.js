@@ -122,22 +122,22 @@
       if (w.first !== me) { H.toast('第一刀不是你'); return; }
       if (c.first) { H.toast('已领取'); return; }
       c.first = true;
-      H.addItem(p, { id: 'zodiac', n: 1 });
+      H.addItem(p, { id: 'zodiac', n: 1, bind: true });
       H.addExp(p, 200);
       H.toast('领取第一刀奖励：生肖残页');
     } else if (kind === 'last') {
       if (w.last !== me) { H.toast('最后一刀不是你'); return; }
       if (c.last) { H.toast('已领取'); return; }
       c.last = true;
-      H.addItem(p, { id: 'zodiac', n: 1 });
-      p.silver += 200;
+      H.addItem(p, { id: 'zodiac', n: 1, bind: true });
+      H.addSilver(p, 200, true);
       H.toast('领取最后一刀奖励。归属国：' + (w.nation === 'yuan' ? '北元' : '大明'));
     } else if (kind === 'rank') {
       var rank = B.rankOf(w, me);
       if (!B.rankReward(rank, D)) { H.toast('你的名次不在领奖名单（1/2/3/5/8/11/15/19）'); return; }
       if (c.rank) { H.toast('已领取'); return; }
       c.rank = true;
-      H.addItem(p, { id: 'socket', n: 1 });
+      H.addItem(p, { id: 'socket', n: 1, bind: true });
       p.bindGold = (p.bindGold || 0) + Math.max(1, 6 - Math.min(5, rank));
       H.toast('领取第 ' + rank + ' 名奖励');
     } else if (kind === 'top3') {
@@ -145,16 +145,16 @@
       if (r2 < 1 || r2 > 3) { H.toast('伤害前三才能领神器礼包'); return; }
       if (c.top3) { H.toast('已领取'); return; }
       c.top3 = true;
-      H.addItem(p, { id: 'boss_pack', n: 1 });
+      H.addItem(p, { id: 'boss_pack', n: 1, bind: true });
       H.toast('领取神器礼包');
     } else if (kind === 'luck') {
       if (!B.luckOk(w, me, D)) { H.toast('造成伤害不足，无法抽奖'); return; }
       if (c.luck) { H.toast('已抽过'); return; }
       c.luck = true;
       var silver = H.irand(80, 240);
-      p.silver += silver;
+      H.addSilver(p, silver, true);
       H.addExp(p, 120);
-      H.toast('幸运抽奖：银两 +' + silver);
+      H.toast('幸运抽奖：绑定银两 +' + silver);
     }
     H.saveSilent();
     if (H.paintDaily) H.paintDaily();
@@ -247,7 +247,7 @@
     if (!row) return;
     var cost = H.goldPrice(row.gold);
     if (!H.spendYuanbao(cost)) return;
-    H.addItem(p, { id: id, n: 1 });
+    H.addItem(p, { id: id, n: 1, bind: true });
     H.toast('购得 ' + D.CONSUMABLES[id].name + '（' + cost + ' 元宝）');
     H.paintVip();
     if (document.getElementById('panel-shop') && document.getElementById('panel-shop').classList.contains('open')) {
@@ -261,14 +261,13 @@
     n = Math.max(1, n || 1);
     if (dir === 'buy') {
       var cost = F.yuanbaoBuyCost(n);
-      if (p.silver < cost) { H.toast('银两不足 ' + cost); return; }
-      p.silver -= cost;
+      if (!H.paySilver(cost, 'unbind', '不绑定银两不足 ' + cost)) return;
       H.addYuanbao(n, false, true);
       H.toast('成功购买元宝 ×' + n);
     } else {
       if (p.gold < n) { H.toast('不绑定元宝不足'); return; }
       p.gold -= n;
-      p.silver += F.yuanbaoSellGain(n);
+      H.addSilver(p, F.yuanbaoSellGain(n), false);
       H.toast('成功出售元宝 ×' + n + '，得银 ' + F.yuanbaoSellGain(n));
     }
     H.closeDialog();
@@ -279,8 +278,7 @@
     var pack = null;
     (D.RECHARGE_PACKS || []).forEach(function (x) { if (x.id === id) pack = x; });
     if (!pack) return;
-    if (p.silver < pack.silver) { H.toast('银两不足 ' + pack.silver); return; }
-    p.silver -= pack.silver;
+    if (!H.paySilver(pack.silver, 'unbind', '不绑定银两不足 ' + pack.silver)) return;
     H.addYuanbao(pack.gold, false, true);
     if (!p.rechargeFirst[id] && pack.firstBonus) {
       p.rechargeFirst[id] = true;
@@ -300,7 +298,7 @@
     p.daily.vipGift = true;
     H.addYuanbao(v.gift, true, false);
     H.addExp(p, 40 + v.lv * 12);
-    p.silver += 20 * v.lv;
+    H.addSilver(p, 20 * v.lv, true);
     H.pushMail(p, '明朝贵族', '每日礼包', v.name + ' 礼包：绑定元宝 ' + v.gift + '。', true);
     H.toast('领取贵族每日礼包');
     H.paintVip();
@@ -404,7 +402,7 @@
         if (!ok) return;
         p.achieve[a.id] = true;
         H.addExp(p, a.exp || 0);
-        p.silver += a.silver || 0;
+        H.addSilver(p, a.silver || 0, true);
         H.pushMail(p, '传奇目标', a.name, a.desc + '。奖励经验 ' + a.exp + '、银两 ' + a.silver + '。', true);
         H.toast('成就：' + a.name);
         H.log('传奇目标完成：' + a.name);
@@ -434,7 +432,7 @@
       p.daily.chue.active = false;
       p.daily.chue.done = true;
       H.addExp(p, p.daily.chue.exp);
-      p.silver += p.daily.chue.silver;
+      H.addSilver(p, p.daily.chue.silver, true);
       H.pushMail(p, '除恶令', '今日除恶完成', '经验 +' + p.daily.chue.exp + '，银两 +' + p.daily.chue.silver, true);
       H.toast('除恶令完成');
       H.addActivity(25);
@@ -445,10 +443,10 @@
     var p = G.player;
     H.ensureLife(p);
     if (p.daily.yibao >= 5) { H.toast('今日异宝已采尽'); return false; }
-    if (!H.addItem(p, { id: 'yibao', n: 1 })) return false;
+    if (!H.addItem(p, { id: 'yibao', n: 1, bind: true })) return false;
     p.daily.yibao += 1;
     H.addExp(p, 40);
-    p.silver += 12;
+    H.addSilver(p, 12, true);
     H.toast('采集天降异宝（' + p.daily.yibao + '/5）');
     H.addActivity(8);
     return true;
@@ -462,8 +460,7 @@
     var useToken = H.countItem(p, 'bag_token') > 0;
     if (useToken) H.takeItem(p, 'bag_token', 1);
     else {
-      if (p.silver < cost) { H.toast('银两不足 ' + cost + '，或使用背包扩展符'); return; }
-      p.silver -= cost;
+      if (!H.paySilver(cost, 'preferBind', '银两不足 ' + cost + '，或使用背包扩展符')) return;
     }
     p.bagExpand += 1;
     H.toast('扩展背包 +12，容量 ' + H.bagCap(p));
@@ -648,7 +645,7 @@
     if (p.daily.act >= 100 && !p.daily.actClaimed) {
       p.daily.actClaimed = true;
       H.addExp(p, 200);
-      p.silver += 80;
+      H.addSilver(p, 80, true);
       H.pushMail(p, '日常', '活跃度奖励', '今日活跃度已满。奖励经验 200、银两 80，已通过邮件告知。', true);
       H.toast('今日活跃度已满，奖励发到信件');
     }
@@ -714,7 +711,10 @@
       '　英雄副本 ' + ((p.dungeon && p.dungeon.tower) || 0) + '/' + (D.INSTANCES.tower.daily || 10) +
       '　捕鱼儿海 ' + ((p.dungeon && p.dungeon.fish) || 0) + '/' + (D.INSTANCES.fish.daily || 5) +
       '　大明宝藏 ' + ((p.dungeon && p.dungeon.treasure) || 0) + '/' + (D.INSTANCES.treasure.daily || 3) +
-      '　师徒同心 ' + ((p.dungeon && p.dungeon.mentor) || 0) + '/' + ((D.INSTANCES.mentor && D.INSTANCES.mentor.daily) || 3) + '</p>' +
+      '　师徒同心 ' + ((p.dungeon && p.dungeon.mentor) || 0) + '/' + ((D.INSTANCES.mentor && D.INSTANCES.mentor.daily) || 3) +
+      '　步步惊心 ' + ((p.dungeon && p.dungeon.jingxin) || 0) + '/' + ((D.INSTANCES.jingxin && D.INSTANCES.jingxin.daily) || 3) +
+      '　深宫谍影 ' + ((p.dungeon && p.dungeon.palace) || 0) + '/' + ((D.INSTANCES.palace && D.INSTANCES.palace.daily) || 3) +
+      '　开封铁塔 ' + ((p.dungeon && p.dungeon.pagoda) || 0) + '/' + ((D.INSTANCES.pagoda && D.INSTANCES.pagoda.daily) || 5) + '</p>' +
       H.worldBossDailyHtml();
   };
 
@@ -835,7 +835,7 @@
       H.takeItem(p, 'treasure_pt', n);
       var xp = n * 35, sl = n * 18;
       H.addExp(p, xp);
-      p.silver += sl;
+      H.addSilver(p, sl, true);
       H.pushMail(p, '大明宝藏', '宝藏结算', '积分 ' + n + '，经验 +' + xp + '，银两 +' + sl, true);
       H.toast('宝藏积分结算 ' + n);
     }

@@ -153,22 +153,21 @@
     } else if (ev.kind === 'trade_done') {
       (ev.give && ev.give.items || []).forEach(function () { /* already removed locally */ });
       (ev.take && ev.take.items || []).forEach(function (it) { H.addItem(p, it); });
-      if (ev.take && ev.take.silver) p.silver += ev.take.silver | 0;
+      if (ev.take && ev.take.silver) H.addSilver(p, ev.take.silver | 0, false);
       G.tradeOffer = { items: [], silver: 0 };
       H.toast('交易完成');
       H.closePanels();
     } else if (ev.kind === 'trade_cancel') {
       (ev.offer && ev.offer.items || []).forEach(function (it) { H.addItem(p, it); });
-      if (ev.offer && ev.offer.silver) p.silver += ev.offer.silver | 0;
+      if (ev.offer && ev.offer.silver) H.addSilver(p, ev.offer.silver | 0, false);
       G.tradeOffer = { items: [], silver: 0 };
       H.toast('交易取消，物品已退回');
     } else if (ev.kind === 'stall_got') {
-      if (p.silver < (ev.price || 0)) { H.toast('银两不足（摊主已下架请刷新）'); return; }
-      p.silver -= ev.price || 0;
-      if (ev.item) H.addItem(p, ev.item);
+      if (!H.paySilver(ev.price || 0, 'unbind', '不绑定银两不足（摊主已下架请刷新）')) return;
+      if (ev.item) H.addItem(p, Object.assign({}, ev.item, { bind: false }));
       H.toast('购得摊货');
     } else if (ev.kind === 'stall_sold') {
-      p.silver += ev.price || 0;
+      H.addSilver(p, ev.price || 0, false);
       H.toast('摊位售出 ' + (ev.price || 0) + ' 两');
     }
   }
@@ -249,10 +248,10 @@
   H.openStall = function () {
     var p = G.player;
     if (G.mapId !== 'capital' && G.mapId !== 'taiping' && G.mapId !== 'kaifeng') { H.toast('请在城镇摆摊'); return; }
-    var goods = p.bag.filter(function (it) { return it; }).slice(0, 6).map(function (it) {
+    var goods = p.bag.filter(function (it) { return it && !it.bind; }).slice(0, 6).map(function (it) {
       return { item: it, price: 20 };
     });
-    if (!goods.length) { H.toast('背包空，摆不出摊'); return; }
+    if (!goods.length) { H.toast('没有不绑定物品可摆摊'); return; }
     goods.forEach(function (g) {
       var idx = p.bag.indexOf(g.item);
       if (idx >= 0) p.bag.splice(idx, 1);

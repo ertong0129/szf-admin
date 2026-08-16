@@ -57,7 +57,7 @@
     H.addExp(p, xp);
     var sil = tired ? 0 : H.irand(2, 6 + e.level);
     if (e.boss && !tired) sil *= 8;
-    p.silver += sil;
+    H.addSilver(p, sil, false);
     H.log('击败 ' + e.name + '，经验 +' + xp + (tired ? '（精力耗尽）' : ' 银两 +' + sil));
     if (!tired) H.dropLoot(e);
     else H.toast('精力耗尽：经验为 1，无掉落');
@@ -78,6 +78,7 @@
     G.entities = G.entities.filter(function (x) { return x !== e; });
     if (p.target === e) p.target = null;
     if (G.mapId === 'tower') H.onTowerKill();
+    if (G.mapId === 'jingxin' || G.mapId === 'palace' || G.mapId === 'pagoda') H.onSeqDungeonKill();
     if (G.mapId === 'arena' && e.kind === 'coach') {
       p.arenaScore = (p.arenaScore || 0) + 8;
       H.toast('竞技积分 +8');
@@ -111,9 +112,17 @@
           });
         }
       } else if (Math.random() < (e.boss || e.elite ? 0.8 : 0.22)) {
-        G.drops.push({ x: e.x + H.rand(-10, 10), y: e.y + H.rand(-10, 10), item: { id: id, n: 1 } });
+        G.drops.push({ x: e.x + H.rand(-10, 10), y: e.y + H.rand(-10, 10), item: { id: id, n: 1, bind: false } });
       }
     });
+    if ((e.mountLoot || (def && def.mountLoot)) && D.MOUNT_GEAR && Math.random() < 0.7) {
+      var keys = Object.keys(D.MOUNT_GEAR);
+      var mk = D.MOUNT_GEAR[keys[H.irand(0, keys.length - 1)]];
+      G.drops.push({
+        x: e.x + H.rand(-10, 10), y: e.y + H.rand(-10, 10),
+        item: Object.assign({}, mk, { bind: false, n: 1, stars: 0 })
+      });
+    }
   }
 
   H.pickupNear = function () {
@@ -157,6 +166,7 @@
     var def = magic ? 0 : p.target.level * 1.2;
     var crit = F.critRoll(st.crit);
     var dmg = F.calcDamage(atk, def, 1, crit, H.rand(-0.08, 0.08));
+    if (p.target.trait === 'def') dmg = Math.max(1, Math.floor(dmg * 0.65));
     if (p.target.isPeer) {
       H.hitPeer(p.target, dmg, crit);
     } else {
@@ -240,6 +250,7 @@
     var atk = magic ? st.matk : st.patk;
     var crit = F.critRoll(st.crit + (sk && sk.crit ? sk.crit : 0));
     var dmg = F.calcDamage(atk, e.level != null ? e.level : 1, mul, crit, H.rand(-0.05, 0.05));
+    if (e.trait === 'def') dmg = Math.max(1, Math.floor(dmg * 0.65));
     if (e.isPeer) {
       H.hitPeer(e, dmg, crit);
       return;
@@ -291,7 +302,7 @@
       if (btn) btn.textContent = '返回入口';
     } else {
       G.deathKind = 'village';
-      p.silver = Math.max(0, Math.floor(p.silver * ((p.pkValue || 0) >= 18 ? 0.75 : 0.9)));
+      F.taxSilver(p, (p.pkValue || 0) >= 18 ? 0.75 : 0.9);
       if ((p.pkValue || 0) >= 30) {
         if (title) title.textContent = '入狱示众';
         if (text) text.textContent = 'PK 值过高，复活后押回太平村。';
@@ -335,8 +346,7 @@
     var p = G.player;
     var cost = F.reviveHereCost(p.level);
     if (H.vipBonus) cost = Math.floor(cost * (H.vipBonus(p).revive || 1));
-    if (p.silver < cost) { H.toast('银两不足，无法原地复活'); return; }
-    p.silver -= cost;
+    if (!H.paySilver(cost, 'preferBind', '银两不足，无法原地复活')) return;
     G.deathKind = 'here';
     H.revive();
     H.toast('原地健康复活');

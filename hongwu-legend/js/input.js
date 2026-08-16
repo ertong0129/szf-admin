@@ -213,6 +213,7 @@
         if (G.netTrade) {
           var it = G.player.bag[bi];
           if (it) {
+            if (it.bind) { H.toast('绑定物品不能交易'); return; }
             G.player.bag.splice(bi, 1);
             G.tradeOffer.items.push(it);
             GameAPI.social('trade_put', {
@@ -230,10 +231,9 @@
       if (ev.target.dataset.craft != null) H.craftRecipe(+ev.target.dataset.craft);
       if (ev.target.dataset.buy) {
         var price = +ev.target.dataset.price;
-        if (G.player.silver < price) { H.toast('银两不足'); return; }
-        G.player.silver -= price;
-        H.addItem(G.player, { id: ev.target.dataset.buy, n: 1 });
-        H.toast('购得物品');
+        if (!H.paySilver(price, 'preferBind', '银两不足')) return;
+        H.addItem(G.player, { id: ev.target.dataset.buy, n: 1, bind: true });
+        H.toast('购得绑定物品');
         if (document.getElementById('panel-char') && document.getElementById('panel-char').classList.contains('open')) {
           H.paintPanel('char');
         } else {
@@ -271,6 +271,7 @@
         }
       }
       if (ev.target.dataset.mountUp) H.upgradeMount();
+      if (ev.target.dataset.mountEn) H.enhanceMountSlot(ev.target.dataset.mountEn);
       if (ev.target.dataset.bagExpand) H.expandBag();
       if (ev.target.dataset.petWash) H.washPet();
       if (ev.target.dataset.petInsight) H.insightPet();
@@ -403,8 +404,7 @@
       if (ev.target.dataset.poyangDiff) H.enterPoyang(ev.target.dataset.poyangDiff);
       if (ev.target.dataset.leaveInstance) { H.closeDialog(); H.leaveInstance(); }
       if (ev.target.dataset.buypet) {
-        if (G.player.silver < 80) { H.toast('银两不足'); return; }
-        G.player.silver -= 80;
+        if (!H.paySilver(80, 'preferBind', '银两不足')) return;
         H.grantPet();
         H.closeDialog();
       }
@@ -412,6 +412,9 @@
       if (ev.target.dataset.enterTreasure) H.enterTreasure();
       if (ev.target.dataset.enterArena) H.enterArena();
       if (ev.target.dataset.enterMentor) H.enterMentor();
+      if (ev.target.dataset.enterJingxin) H.enterJingxin();
+      if (ev.target.dataset.enterPalace) H.enterPalace();
+      if (ev.target.dataset.enterPagoda) H.enterPagoda();
       if (ev.target.dataset.mentor) H.claimMentor(ev.target.dataset.mentor);
       if (ev.target.dataset.openMarket) { H.closeDialog(); H.paintMarket(); }
       if (ev.target.dataset.openOffice) { H.closeDialog(); H.openPanel('char'); }

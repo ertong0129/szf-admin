@@ -20,11 +20,12 @@
   H.ensureDungeon = function (p) {
     p.dungeon = p.dungeon || { day: '', poyang: 0, tower: 0 };
     var day = H.dungeonDay();
-    if (p.dungeon.day !== day) p.dungeon = { day: day, poyang: 0, tower: 0, fish: 0, treasure: 0, arena: 0, mentor: 0 };
-    p.dungeon.fish = p.dungeon.fish || 0;
-    p.dungeon.treasure = p.dungeon.treasure || 0;
-    p.dungeon.arena = p.dungeon.arena || 0;
-    p.dungeon.mentor = p.dungeon.mentor || 0;
+    if (p.dungeon.day !== day) {
+      p.dungeon = { day: day, poyang: 0, tower: 0, fish: 0, treasure: 0, arena: 0, mentor: 0, jingxin: 0, palace: 0, pagoda: 0 };
+    }
+    ['fish', 'treasure', 'arena', 'mentor', 'jingxin', 'palace', 'pagoda'].forEach(function (k) {
+      p.dungeon[k] = p.dungeon[k] || 0;
+    });
     if (!p.towerUnlock) p.towerUnlock = 1;
   }
 
@@ -62,15 +63,20 @@
     H.hideFloorClear();
     G.escort = null;
     G.towerAuto = false;
+    var from = G.mapId;
     G.instance = null;
     var tx = 20, ty = 20;
-    if (G.mapId === 'poyang') { tx = 36; ty = 22; }
-    else if (G.mapId === 'tower') { tx = 40; ty = 14; }
-    else if (G.mapId === 'road') { tx = 32; ty = 20; }
-    else if (G.mapId === 'fish' || G.mapId === 'treasure' || G.mapId === 'arena') { tx = 18; ty = 14; }
-    else if (G.mapId === 'mentor') { tx = 30; ty = 16; }
-    if (G.mapId === 'treasure') H.settleTreasure();
-    H.travel('capital', tx, ty);
+    if (from === 'poyang') { tx = 36; ty = 22; }
+    else if (from === 'tower') { tx = 40; ty = 14; }
+    else if (from === 'road') { tx = 32; ty = 20; }
+    else if (from === 'fish' || from === 'treasure' || from === 'arena') { tx = 18; ty = 14; }
+    else if (from === 'mentor') { tx = 30; ty = 16; }
+    if (from === 'treasure') H.settleTreasure();
+    if (from === 'jingxin' || from === 'palace' || from === 'pagoda') {
+      H.travel('kaifeng', 18, 20);
+    } else {
+      H.travel('capital', tx, ty);
+    }
     H.toast('离开副本');
   }
 
@@ -137,8 +143,7 @@
   H.startEscort = function () {
     var p = G.player;
     if (p.level < 8) { H.toast('等级不足 8 级'); return; }
-    if (p.silver < 20) { H.toast('押金 20 两不足'); return; }
-    p.silver -= 20;
+    if (!H.paySilver(20, 'unbind', '押金需 20 两不绑定银两')) return;
     G.escort = { hp: 220, maxHp: 220, x: 4 * TILE, y: 11 * TILE, t: 0, spawn: 0 };
     G.instance = { id: 'road' };
     H.travel('road', 3, 11);
@@ -170,7 +175,7 @@
     if (G.towerFloor >= 5) G.player.flags.tower5 = true;
     H.questCheck();
     G.player.towerUnlock = Math.max(G.player.towerUnlock || 1, G.towerFloor + 1);
-    if (G.towerFloor % 5 === 0) H.addItem(G.player, { id: 'hero_pack', n: 1 });
+    if (G.towerFloor % 5 === 0) H.addItem(G.player, { id: 'hero_pack', n: 1, bind: true });
     if (G.towerFloor >= 10) {
       H.toast('您已通关所有关卡');
       H.showFloorClear(true);
@@ -178,12 +183,10 @@
     }
     if (G.towerAuto) {
       var cost = D.INSTANCES.tower.autoCost || 5;
-      if (G.player.silver < cost) {
-        H.toast('银两不足，自动闯关停止');
+      if (!H.paySilver(cost, 'preferBind', '银两不足，自动闯关停止')) {
         H.showFloorClear(false);
         return;
       }
-      G.player.silver -= cost;
       H.startTowerFloor(G.towerFloor + 1);
       return;
     }
@@ -264,9 +267,76 @@
       var lm = Math.max(0, Math.floor(G.instance.left || 0));
       info.textContent = '同心　剩余 ' + Math.floor(lm / 60) + ':' + ((lm % 60) < 10 ? '0' : '') + (lm % 60) +
         '　敌人 ' + G.entities.length;
+    } else if (G.mapId === 'jingxin' || G.mapId === 'palace' || G.mapId === 'pagoda') {
+      var spec2 = D.INSTANCES[G.mapId] || {};
+      var wave = (G.instance && G.instance.wave) || 1;
+      var total = (spec2.seq || []).length;
+      var lf2 = G.instance && G.instance.left != null ? Math.max(0, Math.floor(G.instance.left)) : 0;
+      info.textContent = '第 ' + wave + '/' + total + ' 关　敌军 ' + G.entities.length +
+        (G.instance && G.instance.left != null
+          ? ('　剩余 ' + Math.floor(lf2 / 60) + ':' + ((lf2 % 60) < 10 ? '0' : '') + (lf2 % 60))
+          : '');
     } else {
       info.textContent = '副本中';
     }
+  }
+
+  H.enterSeqDungeon = function (id, tx, ty) {
+    var spec = D.INSTANCES[id];
+    if (!spec) return;
+    if (!H.canEnterDungeon(id)) return;
+    H.useDungeon(id);
+    G.instance = { id: id, left: spec.duration, wave: 1 };
+    H.closeDialog();
+    H.closePanels();
+    H.travel(id, tx, ty);
+    H.log('进入' + spec.name + '。原作建议三人组队，学习服可单人。');
+    H.toast(spec.name + '　第 1 关');
+    if (H.addActivity) H.addActivity(12);
+  }
+
+  H.enterJingxin = function () { H.enterSeqDungeon('jingxin', 6, 12); };
+  H.enterPalace = function () { H.enterSeqDungeon('palace', 6, 10); };
+  H.enterPagoda = function () { H.enterSeqDungeon('pagoda', 6, 14); };
+
+  H.spawnSeqWave = function (id) {
+    var spec = D.INSTANCES[id];
+    if (!spec || !spec.seq || !G.instance) return;
+    var wave = G.instance.wave || 1;
+    var kind = spec.seq[wave - 1];
+    if (!kind) return;
+    var def = D.MONSTERS[kind];
+    var lv = Math.max(def && def.level || 10, (G.player && G.player.level) || 10);
+    var e = H.spawnAt(kind, 16, 12, lv);
+    if (e && wave === spec.seq.length) e.boss = true;
+    if (wave > 1) {
+      H.spawnPack(kind === 'pagoda_king' ? 'pagoda_monk' : (id === 'palace' ? 'bandit' : 'sailor'), 2, Math.max(8, lv - 4));
+    }
+  }
+
+  H.onSeqDungeonKill = function () {
+    var id = G.mapId;
+    var spec = D.INSTANCES[id];
+    if (!spec || !spec.seq || !G.instance) return;
+    var left = G.entities.filter(function (e) { return e.hp > 0; });
+    if (left.length) return;
+    var wave = G.instance.wave || 1;
+    if (wave >= spec.seq.length) {
+      if (id === 'jingxin') G.player.flags.jingxin_clear = true;
+      if (id === 'palace') G.player.flags.palace_clear = true;
+      if (id === 'pagoda') G.player.flags.pagoda_clear = true;
+      if (H.questCheck) H.questCheck();
+      if (spec.lottery && spec.lottery.length) {
+        var lid = spec.lottery[H.irand(0, spec.lottery.length - 1)];
+        H.addItem(G.player, { id: lid, n: 1, bind: true });
+        H.toast('过关抽奖：' + H.itemName({ id: lid, bind: true }));
+      } else H.toast('通关 ' + spec.name);
+      H.log('通关 ' + spec.name);
+      return;
+    }
+    G.instance.wave = wave + 1;
+    H.spawnSeqWave(id);
+    H.toast(spec.name + '　第 ' + G.instance.wave + ' 关');
   }
 
 })(window.Hongwu);

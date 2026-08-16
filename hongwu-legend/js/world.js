@@ -124,6 +124,24 @@
       }
       w = 24; h = 24;
       g = g.slice(0, 24).map(function (row) { return row.slice(0, 24); });
+    } else if (id === 'jingxin' || id === 'palace') {
+      H.fill(g, 'stone');
+      for (x = 0; x < 32; x++) for (y = 0; y < 22; y++) {
+        if (x === 0 || y === 0 || x === 31 || y === 21) H.setTile(g, x, y, 'wall');
+        else H.setTile(g, x, y, 'arena');
+      }
+      H.rect(g, 10, 6, 12, 4, 'house');
+      w = 32; h = 22;
+      g = g.slice(0, 22).map(function (row) { return row.slice(0, 32); });
+    } else if (id === 'pagoda') {
+      H.fill(g, 'stone');
+      for (x = 0; x < 24; x++) for (y = 0; y < 28; y++) {
+        if (x === 0 || y === 0 || x === 23 || y === 27) H.setTile(g, x, y, 'wall');
+        else H.setTile(g, x, y, 'arena');
+      }
+      H.rect(g, 8, 4, 8, 6, 'house');
+      w = 24; h = 28;
+      g = g.slice(0, 28).map(function (row) { return row.slice(0, 24); });
     } else {
       H.paintOverworld(g, id);
     }
@@ -260,6 +278,8 @@
     } else if (id === 'mentor') {
       H.spawnPack('bandit', 6, 10);
       H.spawnAt('fujiang', 12, 12, 14);
+    } else if (id === 'jingxin' || id === 'palace' || id === 'pagoda') {
+      H.spawnSeqWave(id);
     } else {
       var packs = (D.MAP_SPAWNS && D.MAP_SPAWNS[id]) || [];
       packs.forEach(function (s) { H.spawnPack(s.kind, s.n, s.lv); });
@@ -315,6 +335,12 @@
       pingzhi: [12 * TILE, 16 * TILE],
       lanyu: [12 * TILE, 18 * TILE],
       zhusu: [24 * TILE, 16 * TILE],
+      zhangxiaoxiao: [14 * TILE, 22 * TILE],
+      jinyi: [32 * TILE, 14 * TILE],
+      tieta: [18 * TILE, 10 * TILE],
+      jx_leave: [6 * TILE, 12 * TILE],
+      sg_leave: [6 * TILE, 10 * TILE],
+      tt_leave: [6 * TILE, 14 * TILE],
       wangyangming: [22 * TILE, 16 * TILE]
     };
     var p = table[id] || [10 * TILE, 10 * TILE];
@@ -346,7 +372,8 @@
       atk: F.monsterAtk(level, def.boss),
       stun: 0, atkCd: 0, aggro: 0,
       ranged: !!def.ranged, range: def.range || 0, elite: !!def.elite,
-      fieldBoss: !!def.fieldBoss, worldBoss: !!def.worldBoss, fieldId: def.fieldId || ''
+      fieldBoss: !!def.fieldBoss, worldBoss: !!def.worldBoss, fieldId: def.fieldId || '',
+      trait: def.trait || '', cloned: false, mountLoot: !!def.mountLoot
     };
     G.entities.push(e);
     return e;
