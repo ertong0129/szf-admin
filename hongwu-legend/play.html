@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>明朝传奇 · 游戏</title>
+  <link rel="stylesheet" href="css/game.css" />
+</head>
+<body>
+  <div id="app" class="game-app">
+    <section id="create-screen" class="screen">
+      <div class="create-wrap">
+        <h2>创建角色</h2>
+        <div class="class-grid" id="class-grid"></div>
+        <div class="name-row">
+          <label>名号</label>
+          <input id="name-input" maxlength="8" placeholder="少侠之名" />
+        </div>
+        <p id="class-tip" class="disclaimer"></p>
+        <div class="btn-row">
+          <a class="btn ghost" href="index.html">返 回 选 服</a>
+          <button class="btn" id="btn-enter">进入游戏</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="play-screen" class="screen">
+      <div class="stage-frame">
+        <div class="stage">
+          <canvas id="world"></canvas>
+          <div class="hud-top">
+            <div class="portrait" id="portrait">武</div>
+            <div class="bars">
+              <div class="who" id="who-line">—</div>
+              <div class="bar hp"><i id="hp-fill"></i><span id="hp-text"></span></div>
+              <div class="bar mp"><i id="mp-fill"></i><span id="mp-text"></span></div>
+              <div class="bar xp"><i id="xp-fill"></i><span id="xp-text"></span></div>
+            </div>
+          </div>
+          <div class="side-right">
+            <canvas id="minimap" width="196" height="132"></canvas>
+            <div class="quest-box">
+              <h4>任务追踪</h4>
+              <div id="quest-track"></div>
+            </div>
+          </div>
+          <div class="toast" id="toast"></div>
+          <div class="dialog" id="dialog"></div>
+        </div>
+        <div class="dock">
+          <div class="chat-box">
+            <div class="chat-tabs"><span class="on">附近</span><span>系统</span></div>
+            <div class="chat-log" id="chat-log"></div>
+            <form id="chat-form">
+              <input id="chat-input" maxlength="80" placeholder="回车发言" autocomplete="off" />
+              <button type="submit">发送</button>
+            </form>
+          </div>
+          <div class="skill-bar" id="skill-bar"></div>
+          <div class="sys-btns">
+            <button data-panel="char">角色</button>
+            <button data-panel="bag">背包</button>
+            <button data-panel="skills">技能</button>
+            <button data-panel="pet">宠物</button>
+            <button data-panel="forge">天工炉</button>
+            <button data-panel="quest">任务</button>
+            <button id="btn-auto">挂机</button>
+            <button data-panel="help">系统</button>
+            <button id="btn-save">存档</button>
+            <a href="index.html">选服</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-char"></div>
+      <div class="panel" id="panel-bag"></div>
+      <div class="panel" id="panel-skills"></div>
+      <div class="panel" id="panel-pet"></div>
+      <div class="panel" id="panel-forge"></div>
+      <div class="panel" id="panel-quest"></div>
+      <div class="panel" id="panel-help"></div>
+      <div class="panel" id="panel-shop"></div>
+      <div id="log-list" hidden></div>
+
+      <div class="death-mask" id="death">
+        <div>
+          <h2>身死道消</h2>
+          <p>银两略有折损，将在太平村回魂。</p>
+          <div class="btn-row" style="margin-top:16px">
+            <button class="btn" id="btn-revive">回 村 再 战</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script src="js/formulas.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/art.js"></script>
+  <script src="js/path.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>

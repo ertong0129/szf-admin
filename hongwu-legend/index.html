@@ -3,115 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>洪武风云录 · 单机志</title>
+  <title>明朝传奇 · 学习服大厅</title>
   <link rel="stylesheet" href="css/game.css" />
 </head>
-<body>
-  <div id="app">
-    <section id="title-screen" class="screen active">
-      <div class="title-wrap">
-        <div class="seal">洪</div>
-        <h1 class="game-title">洪武风云录</h1>
-        <p class="game-sub">页游即时战斗 · 单机志</p>
-        <p class="disclaimer">
-          非官方同人作品。玩法结构致敬 2011 年页游《明朝传奇》的即时战斗、四职业、挂机、百工炉与副本循环，
-          但不使用原作美术、音频、注册商标与原文案。可离线游玩，进度保存在本机。
-        </p>
-        <div class="btn-row">
-          <button class="btn" id="btn-new">开 启 传 奇</button>
-          <button class="btn ghost" id="btn-continue">继 续 征 途</button>
-          <button class="btn ghost" id="btn-analysis">玩 法 分 析</button>
-        </div>
-        <div id="analysis-box" class="analysis" hidden>
-          <h4>原作是什么</h4>
-          91wan《明朝传奇》是广州明朝互动开发的 Flash ARPG 页游：洪武元年穿越背景，战士 / 射手 / 侠客 / 医仙四职业，
-          点击移动即时战斗，自动挂机与自动寻路，天工炉强化镶嵌，宠物、押镖、宗族、国战与鄱阳湖等副本。
-          原作依赖 Flash，现代浏览器已无法直接游玩。
-          <h4>单机志做了什么</h4>
-          用 HTML5 Canvas 重写可单人闭环的核心：创角、地图探索、实时战斗、技能、掉落、任务、灵宠、百工炉、
-          鄱阳水寨、官道押镖、英雄试炼与本地存档。多人国战 / 宗族 / 交易行不在范围内。
-          <h4>操作</h4>
-          WASD 移动 · 点击寻路/锁定 · 1-6 技能 · Z 挂机 · F 拾取 · C/B/V/P/E/J 面板
-        </div>
-      </div>
-    </section>
-
-    <section id="create-screen" class="screen">
-      <div class="create-wrap">
-        <h2>择业开宗</h2>
-        <div class="class-grid" id="class-grid"></div>
-        <div class="name-row">
-          <label>名号</label>
-          <input id="name-input" maxlength="8" placeholder="少侠之名" />
-        </div>
-        <p id="class-tip" class="disclaimer"></p>
-        <div class="btn-row">
-          <button class="btn ghost" id="btn-back-title">返 回</button>
-          <button class="btn" id="btn-enter">踏 入 洪 武</button>
-        </div>
-      </div>
-    </section>
-
-    <section id="play-screen" class="screen">
-      <canvas id="world"></canvas>
-      <div class="hud-top">
-        <div class="portrait" id="portrait">武</div>
-        <div class="bars">
-          <div class="who" id="who-line">—</div>
-          <div class="bar hp"><i id="hp-fill"></i><span id="hp-text"></span></div>
-          <div class="bar mp"><i id="mp-fill"></i><span id="mp-text"></span></div>
-          <div class="bar xp"><i id="xp-fill"></i><span id="xp-text"></span></div>
-        </div>
-      </div>
-      <div class="menu-left">
-        <button data-panel="char">C 角色</button>
-        <button data-panel="bag">B 背包</button>
-        <button data-panel="skills">V 技能</button>
-        <button data-panel="pet">P 灵宠</button>
-        <button data-panel="forge">E 百工</button>
-        <button data-panel="quest">J 任务</button>
-        <button data-panel="help">? 帮助</button>
-        <button id="btn-save">存档</button>
-      </div>
-      <div class="side-right">
-        <canvas id="minimap" width="196" height="132"></canvas>
-        <div class="quest-box">
-          <h4>任务追踪</h4>
-          <div id="quest-track"></div>
-        </div>
-        <div class="log-box">
-          <h4>见闻</h4>
-          <div id="log-list"></div>
-        </div>
-      </div>
-      <div class="skill-bar" id="skill-bar"></div>
-      <div class="hint">点击地面行走 · 点敌人攻击 · Z 挂机 · Esc 关窗</div>
-
-      <div class="panel" id="panel-char"></div>
-      <div class="panel" id="panel-bag"></div>
-      <div class="panel" id="panel-skills"></div>
-      <div class="panel" id="panel-pet"></div>
-      <div class="panel" id="panel-forge"></div>
-      <div class="panel" id="panel-quest"></div>
-      <div class="panel" id="panel-help"></div>
-      <div class="panel" id="panel-shop"></div>
-
-      <div class="dialog" id="dialog"></div>
-      <div class="toast" id="toast"></div>
-      <div class="death-mask" id="death">
-        <div>
-          <h2>身死道消</h2>
-          <p>银两略有折损，将在太平村回魂。</p>
-          <div class="btn-row" style="margin-top:16px">
-            <button class="btn" id="btn-revive">回 村 再 战</button>
-          </div>
-        </div>
-      </div>
-    </section>
+<body class="portal-body">
+  <div class="portal-shell">
+    <header class="portal-top">
+      <div class="portal-logo">明朝传奇</div>
+      <nav>
+        <a href="index.html">官网首页</a>
+        <a href="play.html?server=s1">直接进1服</a>
+        <span>客服：学习用途本地服</span>
+      </nav>
+    </header>
+    <div class="portal-hero">
+      <img class="ref-shot" src="assets/portal/banner.jpg" alt="原作画面参考" />
+    </div>
+    <main id="portal-app"></main>
+    <footer class="portal-foot">
+      本目录为个人学习用本地服。请用「启动游戏.bat」或 <code>node server.js</code> 启动后再登录。
+    </footer>
   </div>
-  <script src="js/formulas.js"></script>
-  <script src="js/data.js"></script>
-  <script src="js/art.js"></script>
-  <script src="js/game.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/portal.js"></script>
 </body>
 </html>

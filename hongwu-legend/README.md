@@ -1,21 +1,23 @@
 # 洪武风云录 · 单机志
 
-非官方 HTML5 单机作品。玩法结构致敬 2011 年页游《明朝传奇》的即时战斗循环，**不打包原作美术、音频、注册商标与原文案**，也不连接 91wan 或任何游戏服务器。
+个人学习用本地服：大厅选服 + 游戏端 + 可选 Node 服务端。
 
-## Windows 直接下载
+## 怎么开
 
-仓库根目录的 `洪武风云录-Windows.zip` 解压后双击 `启动游戏.bat` 即可（或直接打开 `index.html`）。无需安装、无需联网。建议 Chrome / Edge。
+仓库根目录下载 `洪武风云录-Windows.zip`，解压后双击 `启动游戏.bat`。
 
-也可只下载本目录：把 `hongwu-legend` 整夹拷到 Windows 后同样双击 `启动游戏.bat`。
-
-Mac / Linux 可用本地静态服务器：
+有 Node.js 时会启动 `http://127.0.0.1:8088/`（测试号 `demo` / `123456`）。没有 Node 也可打开 `index.html`，存档只在浏览器。
 
 ```bash
 cd hongwu-legend
-python3 -m http.server 8765
+node server.js
 ```
 
-浏览器访问 `http://localhost:8765`。进度写入 `localStorage`。
+**走路：** 左键点地面（黄圈落点并自动寻路）。旧档若卡在房子里，进游戏会自动拉到空地。
+
+## Windows 直接下载
+
+https://github.com/ertong0129/szf-admin/raw/cursor/hongwu-offline-legend-f2d5/洪武风云录-Windows.zip
 
 ## 画面说明
 

@@ -5,6 +5,7 @@
   var TILE = 40;
   var SAVE_KEY = 'hongwu-legend-save-v1';
   var BAG_CAP = 36;
+  var SPAWN = { x: 24.5 * 40, y: 17.5 * 40 };
 
   var canvas = document.getElementById('world');
   var ctx = canvas.getContext('2d');
@@ -49,6 +50,7 @@
 
   function toast(msg) {
     var el = document.getElementById('toast');
+    if (!el) return;
     el.textContent = msg;
     el.style.display = 'block';
     G.toastT = 2.2;
@@ -56,14 +58,19 @@
 
   function log(msg) {
     G.log.unshift(msg);
-    if (G.log.length > 8) G.log.pop();
+    if (G.log.length > 30) G.log.pop();
     renderLog();
   }
 
   function renderLog() {
-    document.getElementById('log-list').innerHTML = G.log.map(function (l) {
-      return '<p>' + l + '</p>';
-    }).join('');
+    var chat = document.getElementById('chat-log');
+    if (chat) {
+      chat.innerHTML = G.log.slice(0, 16).map(function (l) {
+        return '<p><i>系统</i> ' + l + '</p>';
+      }).join('');
+    }
+    var legacy = document.getElementById('log-list');
+    if (legacy) legacy.innerHTML = G.log.slice(0, 8).map(function (l) { return '<p>' + l + '</p>'; }).join('');
   }
 
   function showScreen(id) {
@@ -91,8 +98,8 @@
       cls: cls,
       level: 1,
       exp: 0,
-      x: 22 * TILE,
-      y: 20 * TILE,
+      x: SPAWN.x,
+      y: SPAWN.y,
       facing: 0,
       hp: 1,
       mp: 1,
@@ -331,10 +338,11 @@
       rect(g, 26, 14, 4, 3, 'house'); rect(g, 26, 13, 4, 1, 'roof');
       rect(g, 22, 20, 5, 3, 'house'); rect(g, 22, 19, 5, 1, 'roof');
       rect(g, 0, 30, 50, 6, 'water');
-      scatter(g, 'tree', 70, function (t) { return t === 'grass'; });
+      scatter(g, 'tree', 36, function (t) { return t === 'grass'; });
     } else if (id === 'wild') {
       fill(g, 'grass');
-      scatter(g, 'tree', 140, function (t) { return t === 'grass'; });
+      rect(g, 1, 16, 48, 4, 'dirt');
+      scatter(g, 'tree', 70, function (t) { return t === 'grass'; });
       scatter(g, 'dirt', 40, function (t) { return t === 'grass'; });
       rect(g, 36, 22, 10, 8, 'dirt');
     } else if (id === 'shennong') {
@@ -392,10 +400,44 @@
 
   function canWalk(x, y) {
     return !blockedTile(tileAtWorld(x, y), G.mapId) &&
-      !blockedTile(tileAtWorld(x - 10, y), G.mapId) &&
-      !blockedTile(tileAtWorld(x + 10, y), G.mapId) &&
-      !blockedTile(tileAtWorld(x, y - 10), G.mapId) &&
-      !blockedTile(tileAtWorld(x, y + 10), G.mapId);
+      !blockedTile(tileAtWorld(x - 6, y), G.mapId) &&
+      !blockedTile(tileAtWorld(x + 6, y), G.mapId) &&
+      !blockedTile(tileAtWorld(x, y - 6), G.mapId) &&
+      !blockedTile(tileAtWorld(x, y + 6), G.mapId);
+  }
+
+  function tileWalkable(tx, ty) {
+    return inGrid(G.grid, tx, ty) && !blockedTile(G.grid[ty][tx], G.mapId);
+  }
+
+  function snapWalkable(x, y) {
+    if (canWalk(x, y)) return { x: x, y: y };
+    var tx = Math.floor(x / TILE), ty = Math.floor(y / TILE);
+    for (var r = 1; r <= 14; r++) {
+      for (var dy = -r; dy <= r; dy++) {
+        for (var dx = -r; dx <= r; dx++) {
+          if (tileWalkable(tx + dx, ty + dy)) {
+            return { x: (tx + dx + 0.5) * TILE, y: (ty + dy + 0.5) * TILE };
+          }
+        }
+      }
+    }
+    return { x: x, y: y };
+  }
+
+  function setDest(x, y) {
+    var goal = snapWalkable(x, y);
+    G.clickFx = { x: goal.x, y: goal.y, t: 0.7 };
+    G.dest = goal;
+    G.path = [];
+    if (window.PathFind && G.grid) {
+      var p = G.player;
+      G.path = PathFind.astar(
+        tileWalkable, G.grid[0].length, G.grid.length,
+        Math.floor(p.x / TILE), Math.floor(p.y / TILE),
+        Math.floor(goal.x / TILE), Math.floor(goal.y / TILE)
+      );
+    }
   }
 
   function spawnMapContent(id) {
@@ -435,9 +477,9 @@
 
   function npcPos(id, map) {
     var table = {
-      cunzheng: [20 * TILE, 16 * TILE],
-      tiesmith: [28 * TILE, 16 * TILE],
-      yaopu: [24 * TILE, 22 * TILE],
+      cunzheng: [19.5 * TILE, 17.6 * TILE],
+      tiesmith: [28 * TILE, 17.6 * TILE],
+      yaopu: [20.5 * TILE, 23.2 * TILE],
       xunshou: [24 * TILE, 16 * TILE],
       chefu: [10 * TILE, 20 * TILE],
       bagong: [24 * TILE, 12 * TILE],
@@ -492,10 +534,12 @@
   function travel(to, tx, ty) {
     var p = G.player;
     buildMap(to);
-    p.x = (tx + 0.5) * TILE;
-    p.y = (ty + 0.5) * TILE;
+    var landed = snapWalkable((tx + 0.5) * TILE, (ty + 0.5) * TILE);
+    p.x = landed.x;
+    p.y = landed.y;
     p.target = null;
     G.dest = null;
+    G.path = [];
     log('抵达 ' + D.MAP_META[to].name);
     if (to === 'capital') maybeCompleteTalk('chefu');
     refreshQuestUI();
@@ -854,9 +898,14 @@
 
   /* ========== 更新 ========== */
   function tryMove(ent, dx, dy) {
+    var stuck = !canWalk(ent.x, ent.y);
     var nx = ent.x + dx, ny = ent.y + dy;
-    if (canWalk(nx, ent.y)) ent.x = nx;
-    if (canWalk(ent.x, ny)) ent.y = ny;
+    if (stuck || canWalk(nx, ent.y)) ent.x = nx;
+    if (stuck || canWalk(ent.x, ny)) ent.y = ny;
+    if (stuck && !canWalk(ent.x, ent.y)) {
+      var s = snapWalkable(ent.x, ent.y);
+      ent.x = s.x; ent.y = s.y;
+    }
     var ws = worldSize();
     ent.x = clamp(ent.x, 16, ws.w - 16);
     ent.y = clamp(ent.y, 16, ws.h - 16);
@@ -873,18 +922,31 @@
     p._moving = false;
     if (mx || my) {
       G.dest = null;
+      G.path = [];
       var len = Math.hypot(mx, my) || 1;
       tryMove(p, (mx / len) * st.speed * dt, (my / len) * st.speed * dt);
       p.facing = Math.atan2(my, mx);
       p._moving = true;
+    } else if (G.path && G.path.length) {
+      var wp = G.path[0];
+      var wx = (wp.x + 0.5) * TILE, wy = (wp.y + 0.5) * TILE;
+      if (Math.hypot(p.x - wx, p.y - wy) < 10) G.path.shift();
+      else {
+        var pa = Math.atan2(wy - p.y, wx - p.x);
+        tryMove(p, Math.cos(pa) * st.speed * dt, Math.sin(pa) * st.speed * dt);
+        p.facing = pa;
+        p._moving = true;
+      }
     } else if (G.dest) {
       var dd = dist(p, G.dest);
-      if (dd < 6) G.dest = null;
+      if (dd < 8) G.dest = null;
       else {
         var a = ang(p, G.dest);
+        var ox = p.x, oy = p.y;
         tryMove(p, Math.cos(a) * st.speed * dt, Math.sin(a) * st.speed * dt);
         p.facing = a;
         p._moving = true;
+        if (Math.hypot(p.x - ox, p.y - oy) < 0.2) G.dest = null;
       }
     }
     p.atkCd = Math.max(0, p.atkCd - dt);
@@ -895,7 +957,7 @@
     if (p.target && p.target.hp <= 0) p.target = null;
     if (p.target && dist(p, p.target) <= st.range) playerAttack();
     else if (p.target) {
-      G.dest = { x: p.target.x, y: p.target.y };
+      setDest(p.target.x, p.target.y);
     }
     pickupNear();
     G.portals.forEach(function (pt) {
@@ -1053,6 +1115,7 @@
     G.particles = G.particles.filter(function (p) {
       p.t -= dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 80 * dt; return p.t > 0;
     });
+    if (G.clickFx) G.clickFx.t -= dt;
     if (G.toastT > 0) {
       G.toastT -= dt;
       if (G.toastT <= 0) document.getElementById('toast').style.display = 'none';
@@ -1069,7 +1132,7 @@
   function revive() {
     document.getElementById('death').classList.remove('open');
     var p = G.player;
-    travel('taiping', 22, 20);
+    travel('taiping', 24, 17);
     var st = stats(p);
     p.hp = st.maxHp;
     p.mp = st.maxMp;
@@ -1163,6 +1226,15 @@
       drawBar(cs.x - 16, cs.y - 18, 32, G.escort.hp / G.escort.maxHp, '#c8312a');
       ctx.fillStyle = '#fff'; ctx.font = '11px serif'; ctx.textAlign = 'center';
       ctx.fillText('军资车', cs.x, cs.y + 22);
+    }
+    if (G.clickFx && G.clickFx.t > 0) {
+      var mk = worldToScreen(G.clickFx.x, G.clickFx.y);
+      ctx.strokeStyle = 'rgba(255,220,80,' + clamp(G.clickFx.t * 1.4, 0, 1) + ')';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(mk.x, mk.y, 10 + (0.7 - G.clickFx.t) * 8, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.lineWidth = 1;
     }
     if (p.pet && p.pet.hp > 0) {
       var ps = worldToScreen(p.pet.x, p.pet.y);
@@ -1494,14 +1566,24 @@
   }
 
   /* ========== 存档 ========== */
+  function currentServer() {
+    var q = new URLSearchParams(location.search);
+    return q.get('server') || localStorage.getItem('hongwu-server') || 's1';
+  }
+
   function serialize() {
-    return JSON.stringify({
+    return {
       v: 1, player: G.player, mapId: G.mapId, towerFloor: G.towerFloor, log: G.log.slice(0, 5)
-    });
+    };
   }
 
   function saveSilent() {
-    try { localStorage.setItem(SAVE_KEY, serialize()); } catch (e) { /* ignore */ }
+    var data = serialize();
+    try { localStorage.setItem(SAVE_KEY + ':' + currentServer(), JSON.stringify(data)); } catch (e) { /* ignore */ }
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch (e) { /* ignore */ }
+    if (window.GameAPI && GameAPI.online && GameAPI.token) {
+      GameAPI.saveRole(currentServer(), data).catch(function () {});
+    }
   }
 
   function saveNow() {
@@ -1509,27 +1591,33 @@
     toast('进度已记入本机');
   }
 
+  function applySave(data) {
+    if (!data || !data.player) return false;
+    G.player = data.player;
+    G.player.buffs = G.player.buffs || [];
+    G.player.skillCd = {};
+    G.player.target = null;
+    G.player.auto = false;
+    G.log = data.log || [];
+    G.towerFloor = data.towerFloor || 0;
+    buildMap(data.mapId || 'taiping');
+    var pos = snapWalkable(G.player.x, G.player.y);
+    G.player.x = pos.x;
+    G.player.y = pos.y;
+    renderLog();
+    refreshQuestUI();
+    return true;
+  }
+
   function hasSave() {
-    try { return !!localStorage.getItem(SAVE_KEY); } catch (e) { return false; }
+    try { return !!(localStorage.getItem(SAVE_KEY + ':' + currentServer()) || localStorage.getItem(SAVE_KEY)); } catch (e) { return false; }
   }
 
   function loadSave() {
     try {
-      var raw = localStorage.getItem(SAVE_KEY);
+      var raw = localStorage.getItem(SAVE_KEY + ':' + currentServer()) || localStorage.getItem(SAVE_KEY);
       if (!raw) return false;
-      var data = JSON.parse(raw);
-      if (!data || !data.player) return false;
-      G.player = data.player;
-      G.player.buffs = G.player.buffs || [];
-      G.player.skillCd = {};
-      G.player.target = null;
-      G.player.auto = false;
-      G.log = data.log || [];
-      G.towerFloor = data.towerFloor || 0;
-      buildMap(data.mapId || 'taiping');
-      renderLog();
-      refreshQuestUI();
-      return true;
+      return applySave(JSON.parse(raw));
     } catch (e) {
       return false;
     }
@@ -1560,7 +1648,7 @@
       closeDialog();
       return;
     }
-    G.dest = { x: wpos.x, y: wpos.y };
+    setDest(wpos.x, wpos.y);
     p.target = null;
     closeDialog();
   }
@@ -1675,6 +1763,7 @@
       G.mouse.wy = wpos.y;
     });
     window.addEventListener('keydown', function (ev) {
+      if (ev.target && (ev.target.tagName === 'INPUT' || ev.target.tagName === 'TEXTAREA')) return;
       G.keys[ev.code] = true;
       if (G.mode !== 'play') return;
       if (ev.code === 'Escape') { closePanels(); closeDialog(); return; }
@@ -1696,14 +1785,35 @@
       var map = { Digit1: 0, Digit2: 1, Digit3: 2, Digit4: 3, Digit5: 4, Digit6: 5 };
       if (map[ev.code] != null) castSkill(D.SKILLS[G.player.cls][map[ev.code]]);
     });
-    window.addEventListener('keyup', function (ev) { G.keys[ev.code] = false; });
-
-    document.querySelector('.menu-left').addEventListener('click', function (ev) {
-      var btn = ev.target.closest('button');
-      if (!btn) return;
-      if (btn.id === 'btn-save') saveNow();
-      else if (btn.dataset.panel) openPanel(btn.dataset.panel);
+    window.addEventListener('keyup', function (ev) {
+      if (ev.target && (ev.target.tagName === 'INPUT' || ev.target.tagName === 'TEXTAREA')) return;
+      G.keys[ev.code] = false;
     });
+
+    var sys = document.querySelector('.sys-btns') || document.querySelector('.menu-left');
+    if (sys) {
+      sys.addEventListener('click', function (ev) {
+        var btn = ev.target.closest('button');
+        if (!btn) return;
+        if (btn.id === 'btn-save') saveNow();
+        else if (btn.id === 'btn-auto') {
+          G.player.auto = !G.player.auto;
+          toast(G.player.auto ? '挂机开启' : '挂机关闭');
+        } else if (btn.dataset.panel) openPanel(btn.dataset.panel);
+      });
+    }
+    var chatForm = document.getElementById('chat-form');
+    if (chatForm) {
+      chatForm.addEventListener('submit', function (ev) {
+        ev.preventDefault();
+        var input = document.getElementById('chat-input');
+        var text = (input.value || '').trim();
+        if (!text) return;
+        input.value = '';
+        log((window.GameAPI && GameAPI.user ? GameAPI.user : '我') + '：' + text);
+        if (window.GameAPI && GameAPI.online) GameAPI.chatSend(text).catch(function () {});
+      });
+    }
     document.getElementById('skill-bar').addEventListener('click', function (ev) {
       var slot = ev.target.closest('.skill-slot');
       if (slot) {
@@ -1804,21 +1914,26 @@
     G.mode = 'play';
     showScreen('play-screen');
     resize();
+    requestAnimationFrame(function () { resize(); });
     if (!fromSave) {
       buildMap('taiping');
-      G.player.x = 22 * TILE;
-      G.player.y = 20 * TILE;
-      log('洪武元年。太平村外，江湖未远。');
-      toast('与村正交谈，开启功业');
+      G.player.x = SPAWN.x;
+      G.player.y = SPAWN.y;
+      log('洪武元年。左键点地行走，点人对话，点怪攻击。');
+      toast('左键点地面即可走路');
+    } else {
+      var fix = snapWalkable(G.player.x, G.player.y);
+      G.player.x = fix.x;
+      G.player.y = fix.y;
     }
     refreshQuestUI();
     renderLog();
     saveSilent();
   }
 
-  /* ========== 标题 / 创角 ========== */
   function paintClasses() {
     var box = document.getElementById('class-grid');
+    if (!box) return;
     box.innerHTML = Object.keys(D.CLASSES).map(function (id) {
       var c = D.CLASSES[id];
       var src = window.Art && Art.src[Art.classKey(id)] ? Art.src[Art.classKey(id)] : '';
@@ -1828,40 +1943,55 @@
         '<div class="weapon">兵器 · ' + c.weapon + '</div>' +
         '<p>' + c.desc + '</p></div>';
     }).join('');
-    document.getElementById('class-tip').textContent = D.CLASSES[G.selectedClass].tip;
+    var tip = document.getElementById('class-tip');
+    if (tip) tip.textContent = D.CLASSES[G.selectedClass].tip;
+  }
+
+  function startCreate() {
+    showScreen('create-screen');
+    paintClasses();
   }
 
   function boot() {
-    document.getElementById('btn-continue').disabled = !hasSave();
-    document.getElementById('btn-new').addEventListener('click', function () {
-      showScreen('create-screen');
-      paintClasses();
-    });
-    document.getElementById('btn-continue').addEventListener('click', function () {
-      if (loadSave()) enterPlay(true);
-      else toast('没有可用存档');
-    });
-    document.getElementById('btn-analysis').addEventListener('click', function () {
-      var box = document.getElementById('analysis-box');
-      box.hidden = !box.hidden;
-    });
-    document.getElementById('btn-back-title').addEventListener('click', function () {
-      showScreen('title-screen');
-    });
-    document.getElementById('class-grid').addEventListener('click', function (ev) {
-      var card = ev.target.closest('[data-cls]');
-      if (!card) return;
-      G.selectedClass = card.dataset.cls;
-      paintClasses();
-    });
-    document.getElementById('btn-enter').addEventListener('click', function () {
-      var name = (document.getElementById('name-input').value || '').trim() || randomName();
-      G.player = makePlayer(name, G.selectedClass);
-      enterPlay(false);
-    });
+    if (!document.getElementById('play-screen')) return;
+    localStorage.setItem('hongwu-server', currentServer());
+    var grid = document.getElementById('class-grid');
+    if (grid) {
+      grid.addEventListener('click', function (ev) {
+        var card = ev.target.closest('[data-cls]');
+        if (!card) return;
+        G.selectedClass = card.dataset.cls;
+        paintClasses();
+      });
+    }
+    var enter = document.getElementById('btn-enter');
+    if (enter) {
+      enter.addEventListener('click', function () {
+        var name = (document.getElementById('name-input').value || '').trim() || randomName();
+        G.player = makePlayer(name, G.selectedClass);
+        enterPlay(false);
+      });
+    }
     bindPlayEvents();
     if (window.Art) Art.load(function () { paintClasses(); });
     requestAnimationFrame(loop);
+
+    function goSavedOrCreate() {
+      if (loadSave()) enterPlay(true);
+      else startCreate();
+    }
+
+    if (window.GameAPI) {
+      GameAPI.probe().then(function (ok) {
+        if (!ok || !GameAPI.token) { goSavedOrCreate(); return; }
+        return GameAPI.loadRole(currentServer()).then(function (j) {
+          if (j.role && applySave(j.role)) enterPlay(true);
+          else goSavedOrCreate();
+        });
+      }).catch(goSavedOrCreate);
+    } else {
+      goSavedOrCreate();
+    }
   }
 
   function randomName() {
