@@ -22,6 +22,41 @@ function get(p, headers, cb) {
   req.on('error', cb);
 }
 
+function post(p, body, headers, cb) {
+  var data = JSON.stringify(body || {});
+  var req = http.request({
+    hostname: '127.0.0.1',
+    port: PORT,
+    path: p,
+    method: 'POST',
+    headers: Object.assign({
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(data)
+    }, headers || {})
+  }, function (res) {
+    var buf = '';
+    res.on('data', function (c) { buf += c; });
+    res.on('end', function () { cb(null, res.statusCode, buf); });
+  });
+  req.on('error', cb);
+  req.write(data);
+  req.end();
+}
+
+function abortGet(p, cb) {
+  var done = false;
+  function once() {
+    if (done) return;
+    done = true;
+    setTimeout(cb, 40);
+  }
+  var req = http.get({ hostname: '127.0.0.1', port: PORT, path: p }, function (res) {
+    res.once('data', function () { req.destroy(); });
+  });
+  req.on('error', once);
+  req.on('close', once);
+}
+
 function waitUp(n, cb) {
   if (n <= 0) return cb(new Error('server did not start: ' + out));
   get('/api/ping', {}, function (err, code, body) {
@@ -35,20 +70,40 @@ waitUp(40, function (err) {
     child.kill();
     throw err;
   }
-  get('/api/chat', {}, function (err, code, body) {
+  get('/api/ping', {}, function (err, code, body) {
     assert.ifError(err);
-    assert.strictEqual(code, 200, 'chat should be 200 not 404 after headers');
-    var j = JSON.parse(body);
-    assert.ok(Array.isArray(j.lines));
-    get('/api/role?server=s1', {}, function (err2, code2) {
-      assert.ifError(err2);
-      assert.ok(code2 === 401 || code2 === 200);
-      get('/api/ping', {}, function (err3, code3) {
-        assert.ifError(err3);
-        assert.strictEqual(code3, 200);
-        child.kill();
-        console.log('server-http.test.js ok');
-        process.exit(0);
+    assert.strictEqual(code, 200);
+    var ping = JSON.parse(body);
+    assert.strictEqual(ping.ok, true);
+    assert.ok(ping.v, 'ping should include version');
+    get('/api/chat', {}, function (errC, codeC, bodyC) {
+      assert.ifError(errC);
+      assert.strictEqual(codeC, 200, 'chat should be 200 not 404 after headers');
+      var j = JSON.parse(bodyC);
+      assert.ok(Array.isArray(j.lines));
+      post('/api/login', { user: 'demo', pass: '123456' }, {}, function (errL, codeL, bodyL) {
+        assert.ifError(errL);
+        assert.strictEqual(codeL, 200, 'login should succeed');
+        var login = JSON.parse(bodyL);
+        assert.ok(login.token);
+        get('/play.html', {}, function (errP, codeP) {
+          assert.ifError(errP);
+          assert.strictEqual(codeP, 200);
+          abortGet('/js/vendor/three.min.js', function () {
+            get('/api/role?server=s1', { 'X-Token': login.token }, function (err2, code2) {
+              assert.ifError(err2);
+              assert.ok(code2 === 401 || code2 === 200);
+              get('/api/ping', {}, function (err3, code3) {
+                assert.ifError(err3);
+                assert.strictEqual(code3, 200, 'server should still be alive after abort');
+                assert.strictEqual(child.exitCode, null, 'server process must not exit');
+                child.kill();
+                console.log('server-http.test.js ok');
+                process.exit(0);
+              });
+            });
+          });
+        });
       });
     });
   });

@@ -14,6 +14,7 @@ var ROOT = path.resolve(__dirname);
 var DATA = path.join(ROOT, 'data');
 var PORT = parseInt(process.env.PORT || '8088', 10);
 var STORE = path.join(DATA, 'store.json');
+var VERSION = '20260816c';
 
 function hash(s) {
   return crypto.createHash('sha256').update(String(s)).digest('hex');
@@ -54,7 +55,23 @@ function load() {
 }
 
 function save(db) {
-  fs.writeFileSync(STORE, JSON.stringify(db, null, 2));
+  try {
+    fs.writeFileSync(STORE, JSON.stringify(db, null, 2));
+  } catch (e) {
+    console.error('存档失败：', e && e.message ? e.message : e);
+  }
+}
+
+function isPipeErr(err) {
+  var code = err && err.code;
+  return code === 'EPIPE' || code === 'ECONNRESET' || code === 'ECONNABORTED' ||
+    code === 'ERR_STREAM_DESTROYED' || code === 'ERR_HTTP_HEADERS_SENT' ||
+    code === 'ERR_STREAM_WRITE_AFTER_END';
+}
+
+function quiet(err) {
+  if (!err || isPipeErr(err)) return;
+  console.error('连接错误：', err.code || err.message || err);
 }
 
 function canWrite(res) {
@@ -146,14 +163,16 @@ function serveStatic(req, res, pathname) {
       'Cache-Control': 'no-cache'
     });
     var stream = fs.createReadStream(file);
-    stream.on('error', function () {
+    stream.on('error', function (e) {
       try {
         stream.destroy();
         if (canWrite(res)) sendText(res, 500, 'read error');
         else if (!res.writableEnded) res.end();
-      } catch (e) { /* ignore */ }
+      } catch (err) { /* ignore */ }
+      quiet(e);
     });
     req.on('close', function () { stream.destroy(); });
+    res.on('error', quiet);
     stream.pipe(res);
   });
 }
@@ -182,34 +201,44 @@ function handleRequest(req, res) {
   }
   var p = u.pathname || '/';
 
-  if (p === '/api/ping') return json(res, 200, { ok: true });
+  if (p === '/api/ping') return json(res, 200, { ok: true, v: VERSION });
 
   if (p === '/api/register' && req.method === 'POST') {
     return readBody(req, function (b) {
-      var user = String(b.user || '').trim();
-      var pass = String(b.pass || '');
-      if (!/^[A-Za-z0-9_\u4e00-\u9fa5]{2,16}$/.test(user)) return json(res, 400, { error: '账号需 2-16 位' });
-      if (pass.length < 4) return json(res, 400, { error: '密码至少 4 位' });
-      var db = load();
-      if (db.users[user]) return json(res, 400, { error: '账号已存在' });
-      db.users[user] = { pass: hash(pass), roles: {}, created: Date.now() };
-      var token = crypto.randomBytes(16).toString('hex');
-      db.tokens[token] = user;
-      save(db);
-      json(res, 200, { token: token, user: user });
+      try {
+        var user = String(b.user || '').trim();
+        var pass = String(b.pass || '');
+        if (!/^[A-Za-z0-9_\u4e00-\u9fa5]{2,16}$/.test(user)) return json(res, 400, { error: '账号需 2-16 位' });
+        if (pass.length < 4) return json(res, 400, { error: '密码至少 4 位' });
+        var db = load();
+        if (db.users[user]) return json(res, 400, { error: '账号已存在' });
+        db.users[user] = { pass: hash(pass), roles: {}, created: Date.now() };
+        var token = crypto.randomBytes(16).toString('hex');
+        db.tokens[token] = user;
+        save(db);
+        json(res, 200, { token: token, user: user });
+      } catch (e) {
+        console.error('注册失败：', e && e.stack ? e.stack : e);
+        json(res, 500, { error: '服务器内部错误' });
+      }
     });
   }
 
   if (p === '/api/login' && req.method === 'POST') {
     return readBody(req, function (b) {
-      var db = load();
-      var user = String(b.user || '').trim();
-      var rec = db.users[user];
-      if (!rec || rec.pass !== hash(String(b.pass || ''))) return json(res, 400, { error: '账号或密码错误' });
-      var token = crypto.randomBytes(16).toString('hex');
-      db.tokens[token] = user;
-      save(db);
-      json(res, 200, { token: token, user: user });
+      try {
+        var db = load();
+        var user = String(b.user || '').trim();
+        var rec = db.users[user];
+        if (!rec || rec.pass !== hash(String(b.pass || ''))) return json(res, 400, { error: '账号或密码错误' });
+        var token = crypto.randomBytes(16).toString('hex');
+        db.tokens[token] = user;
+        save(db);
+        json(res, 200, { token: token, user: user });
+      } catch (e) {
+        console.error('登录失败：', e && e.stack ? e.stack : e);
+        json(res, 500, { error: '服务器内部错误' });
+      }
     });
   }
 
@@ -225,13 +254,19 @@ function handleRequest(req, res) {
 
   if (p === '/api/role' && req.method === 'POST') {
     return readBody(req, function (b) {
-      var db = load();
-      var name = userOf(req, db);
-      if (!name) return json(res, 401, { error: '请先登录' });
-      var sid = String(b.server || 's1');
-      db.users[name].roles[sid] = b.payload || null;
-      save(db);
-      json(res, 200, { ok: true });
+      try {
+        var db = load();
+        var name = userOf(req, db);
+        if (!name) return json(res, 401, { error: '请先登录' });
+        var sid = String(b.server || 's1');
+        if (!db.users[name].roles) db.users[name].roles = {};
+        db.users[name].roles[sid] = b.payload || null;
+        save(db);
+        json(res, 200, { ok: true });
+      } catch (e) {
+        console.error('存档失败：', e && e.stack ? e.stack : e);
+        json(res, 500, { error: '服务器内部错误' });
+      }
     });
   }
 
@@ -260,12 +295,17 @@ function handleRequest(req, res) {
 }
 
 var server = http.createServer(function (req, res) {
+  req.on('error', quiet);
+  res.on('error', quiet);
   try {
     handleRequest(req, res);
   } catch (e) {
     console.error('请求处理失败：', e && e.stack ? e.stack : e);
     try { json(res, 500, { error: '服务器内部错误' }); } catch (e2) { /* ignore */ }
   }
+});
+server.on('connection', function (socket) {
+  socket.on('error', quiet);
 });
 server.on('clientError', function (err, socket) {
   try { socket.end('HTTP/1.1 400 Bad Request\r\n\r\n'); } catch (e) { /* ignore */ }
@@ -296,6 +336,7 @@ function tryListen(port, last) {
     server.removeListener('error', onError);
     var href = 'http://127.0.0.1:' + port + '/';
     console.log('洪武风云录服务端 ' + href);
+    console.log('版本 ' + VERSION);
     console.log('测试账号 demo / 123456');
     console.log('关闭本窗口即停止服务。');
     setTimeout(function () { openBrowser(href); }, 200);
@@ -306,14 +347,17 @@ function tryListen(port, last) {
 }
 
 if (typeof module !== 'undefined') {
-  module.exports = { safeFile: safeFile, ROOT: ROOT };
+  module.exports = { safeFile: safeFile, ROOT: ROOT, VERSION: VERSION };
 }
 
 if (require.main === module) {
+  try { process.stdout.on('error', quiet); process.stderr.on('error', quiet); } catch (e) { /* ignore */ }
   process.on('uncaughtException', function (err) {
+    if (isPipeErr(err)) return;
     console.error('未捕获错误（服务继续运行）：', err && err.stack ? err.stack : err);
   });
   process.on('unhandledRejection', function (err) {
+    if (isPipeErr(err)) return;
     console.error('未处理 Promise（服务继续运行）：', err && err.stack ? err.stack : err);
   });
   ensure();

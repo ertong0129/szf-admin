@@ -23,8 +23,9 @@
   }
 
   API.probe = function () {
-    return fetch('/api/ping').then(function (r) { return r.json(); }).then(function () {
+    return fetch('/api/ping').then(function (r) { return r.json(); }).then(function (j) {
       API.online = true;
+      API.ver = (j && j.v) || '';
       return true;
     }).catch(function () {
       API.online = false;

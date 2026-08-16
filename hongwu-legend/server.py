@@ -22,6 +22,7 @@ ROOT = os.path.abspath(os.path.dirname(__file__))
 DATA = os.path.join(ROOT, "data")
 STORE = os.path.join(DATA, "store.json")
 PORT = int(os.environ.get("PORT") or "8088")
+VERSION = "20260816c"
 
 
 def hash_pass(s):
@@ -67,8 +68,11 @@ def load():
 
 
 def save(db):
-    with open(STORE, "w", encoding="utf-8") as f:
-        json.dump(db, f, ensure_ascii=False, indent=2)
+    try:
+        with open(STORE, "w", encoding="utf-8") as f:
+            json.dump(db, f, ensure_ascii=False, indent=2)
+    except OSError as e:
+        print("存档失败：" + str(e))
 
 
 MIME = {
@@ -121,14 +125,17 @@ class Handler(BaseHTTPRequestHandler):
         sys.stderr.write("%s - %s\n" % (self.address_string(), fmt % args))
 
     def _json(self, code, obj):
-        raw = json.dumps(obj, ensure_ascii=False).encode("utf-8")
-        self.send_response(code)
-        self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type, X-Token")
-        self.send_header("Content-Length", str(len(raw)))
-        self.end_headers()
-        self.wfile.write(raw)
+        try:
+            raw = json.dumps(obj, ensure_ascii=False).encode("utf-8")
+            self.send_response(code)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header("Access-Control-Allow-Headers", "Content-Type, X-Token")
+            self.send_header("Content-Length", str(len(raw)))
+            self.end_headers()
+            self.wfile.write(raw)
+        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError, IOError, OSError):
+            return
 
     def _body(self):
         n = int(self.headers.get("Content-Length") or 0)
@@ -161,6 +168,19 @@ class Handler(BaseHTTPRequestHandler):
         self._handle("POST")
 
     def _handle(self, method):
+        try:
+            self._dispatch(method)
+        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+            return
+        except Exception:
+            import traceback
+            traceback.print_exc()
+            try:
+                self._json(500, {"error": "服务器内部错误"})
+            except Exception:
+                pass
+
+    def _dispatch(self, method):
         if sys.version_info[0] >= 3:
             from urllib.parse import urlparse, parse_qs
         else:
@@ -170,7 +190,7 @@ class Handler(BaseHTTPRequestHandler):
         q = parse_qs(u.query)
 
         if p == "/api/ping":
-            return self._json(200, {"ok": True})
+            return self._json(200, {"ok": True, "v": VERSION})
         if p == "/api/servers":
             return self._json(200, {"servers": SERVERS})
         if p == "/api/register" and method == "POST":
@@ -256,7 +276,10 @@ class Handler(BaseHTTPRequestHandler):
                 chunk = f.read(64 * 1024)
                 if not chunk:
                     break
-                self.wfile.write(chunk)
+                try:
+                    self.wfile.write(chunk)
+                except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError, IOError, OSError):
+                    return
 
 
 def serve(port):
@@ -273,10 +296,16 @@ def serve(port):
 
 
 def main():
+    try:
+        import signal
+        signal.signal(signal.SIGPIPE, signal.SIG_IGN)
+    except Exception:
+        pass
     ensure()
     httpd, port = serve(PORT)
     href = "http://127.0.0.1:%s/" % port
     print("洪武风云录服务端 " + href)
+    print("版本 " + VERSION)
     print("测试账号 demo / 123456")
     print("关闭本窗口即停止服务。")
     if os.environ.get("OPEN_BROWSER") != "0":
