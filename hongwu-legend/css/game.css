@@ -41,8 +41,9 @@ html, body {
 /* —— 标题 —— */
 #title-screen, #create-screen {
   background:
-    radial-gradient(ellipse at 50% 20%, rgba(154, 31, 26, 0.35), transparent 55%),
-    linear-gradient(180deg, #1a1008 0%, #0c0805 100%);
+    linear-gradient(180deg, rgba(12, 8, 5, 0.35), rgba(12, 8, 5, 0.72)),
+    url('../assets/title-bg.jpg') center/cover no-repeat,
+    #0c0805;
 }
 .title-wrap {
   height: 100%;
@@ -122,11 +123,20 @@ html, body {
 .class-card {
   border: 1px solid var(--line);
   background: var(--panel);
-  padding: 16px 14px 18px;
+  padding: 0 0 14px;
   cursor: pointer;
   text-align: left;
-  min-height: 210px;
+  min-height: 280px;
+  overflow: hidden;
 }
+.class-art {
+  height: 150px;
+  background-size: cover;
+  background-position: top center;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.class-card h3, .class-card .weapon, .class-card p { padding: 0 12px; }
 .class-card.selected {
   border-color: var(--gold);
   box-shadow: 0 0 0 1px var(--gold), 0 8px 24px rgba(0, 0, 0, 0.35);
@@ -168,11 +178,12 @@ html, body {
   width: 74px;
   height: 74px;
   border: 2px solid var(--gold);
-  background: #2a1810;
+  background: #2a1810 center/cover no-repeat;
   display: grid;
   place-items: center;
   font-size: 28px;
   pointer-events: auto;
+  box-shadow: 0 0 0 1px #3a2508, 0 0 12px rgba(212, 175, 55, 0.25);
 }
 .bars { width: 240px; }
 .who { font-size: 14px; letter-spacing: 2px; margin-bottom: 4px; }

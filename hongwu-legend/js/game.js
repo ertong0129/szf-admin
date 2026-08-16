@@ -870,11 +870,13 @@
     if (G.keys.KeyS || G.keys.ArrowDown) my += 1;
     if (G.keys.KeyA || G.keys.ArrowLeft) mx -= 1;
     if (G.keys.KeyD || G.keys.ArrowRight) mx += 1;
+    p._moving = false;
     if (mx || my) {
       G.dest = null;
       var len = Math.hypot(mx, my) || 1;
       tryMove(p, (mx / len) * st.speed * dt, (my / len) * st.speed * dt);
       p.facing = Math.atan2(my, mx);
+      p._moving = true;
     } else if (G.dest) {
       var dd = dist(p, G.dest);
       if (dd < 6) G.dest = null;
@@ -882,6 +884,7 @@
         var a = ang(p, G.dest);
         tryMove(p, Math.cos(a) * st.speed * dt, Math.sin(a) * st.speed * dt);
         p.facing = a;
+        p._moving = true;
       }
     }
     p.atkCd = Math.max(0, p.atkCd - dt);
@@ -1098,23 +1101,24 @@
         if (!inGrid(G.grid, tx, ty)) continue;
         var t = G.grid[ty][tx];
         var sx = tx * TILE - G.cam.x, sy = ty * TILE - G.cam.y;
-        var col = TILE_COLOR[t] || '#333';
-        if (t === 'water') {
-          var wave = Math.sin(G.time * 2 + tx * 0.4 + ty * 0.3) * 8;
-          ctx.fillStyle = shade(col, wave);
+        if (window.Art && Art.ready) {
+          Art.drawTile(ctx, t, sx, sy, TILE, G.time, tx, ty);
         } else {
-          ctx.fillStyle = shade(col, ((tx * 13 + ty * 7) % 9) - 4);
+          var col = TILE_COLOR[t] || '#333';
+          ctx.fillStyle = t === 'water' ? shade(col, Math.sin(G.time * 2 + tx) * 8) : shade(col, ((tx * 13 + ty * 7) % 9) - 4);
+          ctx.fillRect(sx, sy, TILE + 1, TILE + 1);
         }
-        ctx.fillRect(sx, sy, TILE + 1, TILE + 1);
-        if (t === 'tree') {
-          ctx.fillStyle = '#2a1a10';
-          ctx.fillRect(sx + 17, sy + 22, 6, 14);
-          ctx.fillStyle = '#1f4a24';
-          ctx.beginPath(); ctx.arc(sx + 20, sy + 16, 13, 0, Math.PI * 2); ctx.fill();
-        }
-        if (t === 'roof') {
-          ctx.fillStyle = '#c9a227';
-          ctx.fillRect(sx + 4, sy + 16, TILE - 8, 3);
+      }
+    }
+
+    if (window.Art && Art.ready) {
+      for (ty = y0; ty < y1; ty++) {
+        for (tx = x0; tx < x1; tx++) {
+          if (!inGrid(G.grid, tx, ty)) continue;
+          var pt = G.grid[ty][tx];
+          if (pt === 'tree' || pt === 'house' || pt === 'roof') {
+            Art.drawProp(ctx, pt, tx * TILE - G.cam.x, ty * TILE - G.cam.y, TILE);
+          }
         }
       }
     }
@@ -1141,23 +1145,30 @@
       ctx.fillText(pt.label, s.x, s.y - 18);
     });
     G.npcs.forEach(function (n) {
-      drawActor(n.x, n.y, '#d4af37', 11, '！');
       var s = worldToScreen(n.x, n.y);
-      ctx.fillStyle = '#f3e6c4';
-      ctx.font = '12px serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(n.name, s.x, s.y - 22);
+      if (window.Art && Art.ready) Art.drawNpc(ctx, n, s, G.time);
+      else {
+        drawActor(n.x, n.y, '#d4af37', 11, '！');
+        ctx.fillStyle = '#f3e6c4';
+        ctx.font = '12px serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(n.name, s.x, s.y - 22);
+      }
     });
     G.entities.forEach(function (e) { drawMonster(e); });
     if (G.escort && G.mapId === 'road') {
       var cs = worldToScreen(G.escort.x, G.escort.y);
-      ctx.fillStyle = '#c4a060';
-      ctx.fillRect(cs.x - 16, cs.y - 10, 32, 20);
+      if (window.Art && Art.ready) Art.drawCart(ctx, cs);
+      else { ctx.fillStyle = '#c4a060'; ctx.fillRect(cs.x - 16, cs.y - 10, 32, 20); }
       drawBar(cs.x - 16, cs.y - 18, 32, G.escort.hp / G.escort.maxHp, '#c8312a');
       ctx.fillStyle = '#fff'; ctx.font = '11px serif'; ctx.textAlign = 'center';
       ctx.fillText('军资车', cs.x, cs.y + 22);
     }
-    if (p.pet && p.pet.hp > 0) drawActor(p.pet.x, p.pet.y, p.pet.color, 8, '');
+    if (p.pet && p.pet.hp > 0) {
+      var ps = worldToScreen(p.pet.x, p.pet.y);
+      if (window.Art && Art.ready) Art.drawPet(ctx, p.pet, ps, G.time);
+      else drawActor(p.pet.x, p.pet.y, p.pet.color, 8, '');
+    }
     drawHero(p);
     G.projectiles.forEach(function (pr) {
       var s = worldToScreen(pr.x, pr.y);
@@ -1215,31 +1226,38 @@
   function drawHero(p) {
     var s = worldToScreen(p.x, p.y);
     var c = D.CLASSES[p.cls];
-    ctx.save();
-    ctx.translate(s.x, s.y);
-    ctx.rotate(p.facing);
-    ctx.fillStyle = 'rgba(0,0,0,0.35)';
-    ctx.beginPath(); ctx.ellipse(0, 10, 12, 5, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = c.color;
-    ctx.beginPath(); ctx.arc(0, 0, 12, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = c.accent;
-    ctx.fillRect(10, -2, 14, 4);
-    ctx.restore();
+    if (!(window.Art && Art.ready && Art.drawHero(ctx, p, s, G.time))) {
+      ctx.save();
+      ctx.translate(s.x, s.y);
+      ctx.rotate(p.facing);
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      ctx.beginPath(); ctx.ellipse(0, 10, 12, 5, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = c.color;
+      ctx.beginPath(); ctx.arc(0, 0, 12, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = c.accent;
+      ctx.fillRect(10, -2, 14, 4);
+      ctx.restore();
+    }
+    if (window.Art && Art.ready) {
+      Art.drawNameplate(ctx, s.x, s.y + 22, D.CLASSES[p.cls].name, p.name, '#d8f5a0');
+    }
     if (p.target) {
       var ts = worldToScreen(p.target.x, p.target.y);
       ctx.strokeStyle = '#ffd36a';
-      ctx.beginPath(); ctx.arc(ts.x, ts.y, p.target.r + 8, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(ts.x, ts.y, (p.target.r || 14) + 16, 0, Math.PI * 2); ctx.stroke();
     }
   }
 
   function drawMonster(e) {
-    drawActor(e.x, e.y, e.color, e.r, e.boss ? '★' : '');
     var s = worldToScreen(e.x, e.y);
-    drawBar(s.x - 16, s.y - e.r - 10, 32, e.hp / e.maxHp, '#c8312a');
-    ctx.fillStyle = '#f3e6c4';
-    ctx.font = '10px sans-serif';
+    if (!(window.Art && Art.ready && Art.drawMob(ctx, e, s, G.time))) {
+      drawActor(e.x, e.y, e.color, e.r, e.boss ? '★' : '');
+    }
+    drawBar(s.x - 18, s.y - (e.boss ? 78 : 62), 36, e.hp / e.maxHp, '#c8312a');
+    ctx.fillStyle = e.boss ? '#ffd36a' : '#f3e6c4';
+    ctx.font = '10px "Microsoft YaHei",sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(e.level + ' ' + e.name, s.x, s.y + e.r + 12);
+    ctx.fillText((e.boss ? '★ ' : '') + e.level + ' ' + e.name, s.x, s.y + 20);
   }
 
   function drawBar(x, y, w, ratio, color) {
@@ -1273,8 +1291,17 @@
   function drawHud() {
     var p = G.player, st = stats(p);
     document.getElementById('who-line').textContent = p.name + ' · ' + D.CLASSES[p.cls].name + '  ' + p.level + '级';
-    document.getElementById('portrait').textContent = D.CLASSES[p.cls].name[0];
-    document.getElementById('portrait').style.color = D.CLASSES[p.cls].accent;
+    var port = document.getElementById('portrait');
+    var pk = window.Art ? Art.classKey(p.cls) : p.cls;
+    if (window.Art && Art.imgs[pk]) {
+      port.textContent = '';
+      port.style.backgroundImage = 'url(' + Art.src[pk] + ')';
+      port.style.backgroundSize = 'cover';
+      port.style.backgroundPosition = 'top center';
+    } else {
+      port.textContent = D.CLASSES[p.cls].name[0];
+      port.style.color = D.CLASSES[p.cls].accent;
+    }
     setBar('hp', p.hp, st.maxHp);
     setBar('mp', p.mp, st.maxMp);
     setBar('xp', p.exp, F.xpToNext(p.level));
@@ -1286,23 +1313,43 @@
     document.getElementById(id + '-text').textContent = Math.floor(cur) + '/' + Math.floor(max);
   }
 
-  function renderSkills() {
+  function ensureSkillBar() {
     var p = G.player;
     var box = document.getElementById('skill-bar');
+    if (box.dataset.cls === p.cls && box.childElementCount) return;
+    box.dataset.cls = p.cls;
     var html = D.SKILLS[p.cls].map(function (sk) {
-      var lv = p.skills[sk.id] || 0;
-      var cd = p.skillCd[sk.id] || 0;
-      var locked = lv <= 0;
-      return '<div class="skill-slot' + (locked ? ' locked' : '') + '" data-skill="' + sk.id + '">' +
+      return '<div class="skill-slot" data-skill="' + sk.id + '">' +
         '<div class="key">' + sk.key + '</div>' +
         '<div class="name">' + sk.name + '</div>' +
-        (cd > 0 ? '<div class="cd">' + cd.toFixed(1) + '</div>' : '') +
-        '</div>';
+        '<div class="cd" hidden></div></div>';
     }).join('');
     html += '<div class="util-slot" id="slot-hp"><div class="key">Q</div><div class="name">金创</div></div>';
     html += '<div class="util-slot" id="slot-mp"><div class="key">R</div><div class="name">内力</div></div>';
-    html += '<div class="util-slot' + (p.auto ? ' auto-on' : '') + '" id="slot-auto"><div class="key">Z</div><div class="name">挂机</div></div>';
+    html += '<div class="util-slot" id="slot-auto"><div class="key">Z</div><div class="name">挂机</div></div>';
     box.innerHTML = html;
+  }
+
+  function renderSkills() {
+    var p = G.player;
+    ensureSkillBar();
+    var box = document.getElementById('skill-bar');
+    D.SKILLS[p.cls].forEach(function (sk, i) {
+      var slot = box.children[i];
+      if (!slot) return;
+      var lv = p.skills[sk.id] || 0;
+      slot.classList.toggle('locked', lv <= 0);
+      var cdEl = slot.querySelector('.cd');
+      var cd = p.skillCd[sk.id] || 0;
+      if (cd > 0) {
+        cdEl.hidden = false;
+        cdEl.textContent = cd.toFixed(1);
+      } else {
+        cdEl.hidden = true;
+      }
+    });
+    var auto = document.getElementById('slot-auto');
+    if (auto) auto.classList.toggle('auto-on', !!p.auto);
   }
 
   /* ========== 面板 ========== */
@@ -1774,7 +1821,9 @@
     var box = document.getElementById('class-grid');
     box.innerHTML = Object.keys(D.CLASSES).map(function (id) {
       var c = D.CLASSES[id];
+      var src = window.Art && Art.src[Art.classKey(id)] ? Art.src[Art.classKey(id)] : '';
       return '<div class="class-card' + (G.selectedClass === id ? ' selected' : '') + '" data-cls="' + id + '">' +
+        (src ? '<div class="class-art" style="background-image:url(' + src + ')"></div>' : '') +
         '<h3 style="color:' + c.accent + '">' + c.name + '</h3>' +
         '<div class="weapon">兵器 · ' + c.weapon + '</div>' +
         '<p>' + c.desc + '</p></div>';
@@ -1811,6 +1860,7 @@
       enterPlay(false);
     });
     bindPlayEvents();
+    if (window.Art) Art.load(function () { paintClasses(); });
     requestAnimationFrame(loop);
   }
 
