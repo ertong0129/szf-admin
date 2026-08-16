@@ -508,13 +508,14 @@
       var nkey = art && art.npcKey ? art.npcKey(n.id) : 'officer';
       var nimg = art && art.imgs ? (art.imgs[nkey] || art.imgs.officer) : null;
       var ns = spriteSize(nkey, false);
-      var quest = state.questNpcId && state.questNpcId === n.id;
+      var quest = n.questMark;
+      var mark = quest === '?' ? '？' : (quest ? '！' : '');
       var a = ensureActor(id, nimg, {
         sx: ns[0],
         sy: ns[1],
-        label: (quest ? '！' : '') + n.name,
+        label: mark + n.name,
         title: n.title || '',
-        labelColor: quest ? '#ffd36a' : '#7dff7a'
+        labelColor: quest === '?' ? '#6fdf7a' : (quest ? '#ffd36a' : '#7dff7a')
       });
       placeActor(a, px(n.x), px(n.y), 1.05, Math.sin((state.time || 0) * 2) * 0.02);
       alive[id] = 1;

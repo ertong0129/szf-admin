@@ -246,6 +246,20 @@
     ]
   };
 
+  D.WORLD_NODES = [
+    { id: 'capital', name: '应天京城', left: '50%', top: '46%', tx: 20, ty: 20, desc: '主城' },
+    { id: 'taiping', name: '太平村', left: '56%', top: '58%', tx: 24, ty: 17, desc: '新手村' },
+    { id: 'wild', name: '野猪林', left: '68%', top: '48%', tx: 24, ty: 18, desc: '练级' },
+    { id: 'shennong', name: '神农谷', left: '36%', top: '36%', tx: 24, ty: 18, desc: '灵宠' },
+    { id: 'poyang', name: '鄱阳水寨', left: '76%', top: '70%', tx: 8, ty: 18, desc: '水寨' }
+  ];
+
+  D.PK_MODES = [
+    { id: 'peace', name: '和平' },
+    { id: 'all', name: '全体' },
+    { id: 'karma', name: '善恶' }
+  ];
+
   D.MAP_META = {
     taiping: { name: '太平村', safe: true, music: 'village', tint: [0.12, 0.16, 0.08] },
     wild: { name: '野猪林', safe: false, tint: [0.08, 0.14, 0.06] },
@@ -288,8 +302,9 @@
   D.RARITY_COLOR = { white: '#d8d0c4', green: '#6fdf7a', blue: '#6cb6ff', purple: '#c089ff', orange: '#ffb347' };
 
   D.HELP = [
-    '点右侧任务追踪可自动寻路（跨图会先走到传送点）。',
-    '数字键 1-6 技能，空格普攻，F 拾取，Z 或底栏「挂机」。',
+    '点右侧任务追踪绿名/下划线可自动寻路（跨图会先走到传送点）。',
+    'M 打开区域地图：点 NPC 或输入坐标寻路。小地图旁「地图」打开世界地图，点地名立即传送。',
+    '数字键 1-6 技能，空格普攻，F 拾取，Z 或底栏「挂机」。头像下可切换 PK 模式。',
     '底栏：角色 / 背包 / 技能 / 宠物 / 天工炉 / 任务 / 系统。Esc 关窗。',
     '挂机会自动寻敌、放技能、吃药和拾取。生命过低会停手喝药。',
     '路边草药可采集；五株同类草药可在百工炉炼成金创药或内力药。',

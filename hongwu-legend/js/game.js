@@ -128,6 +128,7 @@
       flags: {},
       buffs: [],
       auto: false,
+      pkMode: 'peace',
       target: null,
       atkCd: 0,
       gatherCd: 0
@@ -555,6 +556,7 @@
     log('抵达 ' + D.MAP_META[to].name);
     if (to === 'capital') maybeCompleteTalk('chefu');
     refreshQuestUI();
+    if (mapOverlayOpen()) refreshMapOverlay();
     saveSilent();
     if (G.guide) {
       setTimeout(function () { guideStep(); }, 30);
@@ -840,27 +842,61 @@
     beep(660, 0.1);
   }
 
-  function refreshQuestUI() {
-    var q = currentQuest();
-    var el = document.getElementById('quest-track');
-    if (!el) return;
-    if (!q) {
-      el.innerHTML = '<div class="q-item muted">暂无追踪任务。可挂机或挑战试炼。</div>';
-      return;
+  function nextAcceptQuest() {
+    var p = G.player;
+    if (!p) return null;
+    for (var i = 0; i < D.QUESTS.length; i++) {
+      var q = D.QUESTS[i];
+      if (p.quests.done.indexOf(q.id) >= 0) continue;
+      if (p.quests.active.indexOf(q.id) >= 0) continue;
+      return q;
     }
-    var extra = '';
-    if (q.kill) extra = '（' + (G.player.quests.progress[q.id] || 0) + '/' + q.kill.n + '）';
-    if (q.gather) extra = '（' + countItem(G.player, q.gather.id) + '/' + q.gather.n + '）';
+    return null;
+  }
+
+  function questProgressText(q) {
+    if (q.kill) return '（' + (G.player.quests.progress[q.id] || 0) + '/' + q.kill.n + '）';
+    if (q.gather) return '（' + countItem(G.player, q.gather.id) + '/' + q.gather.n + '）';
+    return '';
+  }
+
+  function questLineHtml(q) {
+    var extra = questProgressText(q);
     var icon = '';
     if (q.talk && window.Art && Art.npcIcon) icon = Art.npcIcon(q.talk);
-    var where = D.MAP_META[q.map] ? D.MAP_META[q.map].name : '';
-    el.innerHTML =
-      '<button type="button" class="q-item q-go" data-quest-go="' + q.id + '">' +
-        (icon ? '<img src="' + icon + '" alt="" />' : '') +
-        '<div><b>' + q.name + extra + '</b>' +
-        '<small>' + q.text + '</small>' +
-        '<small class="q-where">地点：' + where + '　点击自动寻路</small></div>' +
-      '</button>';
+    var bits = [];
+    if (q.talk && D.NPCS[q.talk]) {
+      bits.push('与 <span class="q-link" data-quest-go="' + q.id + '">' + D.NPCS[q.talk].name + '</span> 交谈');
+    }
+    if (q.kill && D.MONSTERS[q.kill.id]) {
+      bits.push('击杀 <span class="q-link mob" data-quest-go="' + q.id + '">' + D.MONSTERS[q.kill.id].name + '</span>' + extra);
+    }
+    if (q.gather && D.CONSUMABLES[q.gather.id]) {
+      bits.push('采集 <span class="q-link" data-quest-go="' + q.id + '">' + D.CONSUMABLES[q.gather.id].name + '</span>' + extra);
+    }
+    var mapName = D.MAP_META[q.map] ? D.MAP_META[q.map].name : '';
+    if (mapName) {
+      bits.push('地点：<span class="q-link" data-quest-go="' + q.id + '">' + mapName + '</span>');
+    }
+    if (!bits.length) {
+      bits.push('<span class="q-link" data-quest-go="' + q.id + '">' + q.text + '</span>');
+    }
+    return '<div class="q-item">' +
+      (icon ? '<img src="' + icon + '" alt="" />' : '') +
+      '<div><b>' + q.name + extra + '</b>' + bits.join('<br/>') + '</div></div>';
+  }
+
+  function refreshQuestUI() {
+    var el = document.getElementById('quest-track');
+    if (!el) return;
+    var q = currentQuest();
+    var nxt = nextAcceptQuest();
+    var html = '';
+    html += '<div class="q-sec">当前任务</div>';
+    html += q ? questLineHtml(q) : '<div class="q-item muted">暂无进行中的任务。</div>';
+    html += '<div class="q-sec">可接任务</div>';
+    html += nxt ? questLineHtml(nxt) : '<div class="q-item muted">暂无可接。可挂机或挑战试炼。</div>';
+    el.innerHTML = html;
   }
 
   function questTarget(q) {
@@ -887,6 +923,31 @@
     return t && t.npcId ? t.npcId : null;
   }
 
+  function npcQuestMark(n) {
+    if (currentQuestNpcId() === n.id) return '?';
+    var nxt = nextAcceptQuest();
+    if (nxt) {
+      var t = questTarget(nxt);
+      if (t && t.npcId === n.id && t.map === G.mapId) return '!';
+    }
+    return '';
+  }
+
+  function stampNpcMarks() {
+    G.npcs.forEach(function (n) { n.questMark = npcQuestMark(n); });
+  }
+
+  function guidedQuest() {
+    if (!G.guide) return null;
+    if (G.guide.qid) {
+      for (var i = 0; i < D.QUESTS.length; i++) {
+        if (D.QUESTS[i].id === G.guide.qid) return D.QUESTS[i];
+      }
+      return null;
+    }
+    return currentQuest();
+  }
+
   function followQuest(q) {
     if (!q) q = currentQuest();
     if (!q) { toast('当前没有任务'); return; }
@@ -896,12 +957,22 @@
     guideStep();
   }
 
+  function followNpcOnMap(npcId) {
+    G.guide = { tgt: { kind: 'npc', map: G.mapId, npcId: npcId } };
+    toast('自动寻路：' + (D.NPCS[npcId] ? D.NPCS[npcId].name : '人物'));
+    guideStep();
+  }
+
   function guideStep() {
     if (!G.guide || !G.player) return;
-    var q = currentQuest();
-    if (!q || q.id !== G.guide.qid) { G.guide = null; return; }
-    var tgt = questTarget(q);
-    var destMap = tgt.map || q.map;
+    var tgt = G.guide.tgt;
+    if (!tgt) {
+      var q = guidedQuest();
+      if (!q) { G.guide = null; return; }
+      tgt = questTarget(q);
+    }
+    var destMap = tgt.map;
+    if (!destMap) { G.guide = null; return; }
     if (G.mapId !== destMap) {
       var route = window.PathFind && PathFind.mapRoute ? PathFind.mapRoute(D.PORTALS, G.mapId, destMap) : null;
       if (!route || !route.length) {
@@ -968,8 +1039,7 @@
 
   function tickGuideArrive() {
     if (!G.guide || G.player._moving) return;
-    var q = currentQuest();
-    if (!q || q.id !== G.guide.qid) { G.guide = null; return; }
+    if (G.guide.qid && !guidedQuest()) { G.guide = null; return; }
     if (G.guide.wantTalk) {
       var npc = findNpc(G.guide.wantTalk);
       if (npc && dist(G.player, npc) < 56) {
@@ -1301,6 +1371,7 @@
   };
 
   function draw() {
+    stampNpcMarks();
     if (window.World3D && World3D.enabled && G.player && G.grid) {
       World3D.sync({
         player: G.player,
@@ -1399,10 +1470,10 @@
     }
     G.npcs.forEach(function (n) {
       var s = worldToScreen(n.x, n.y);
-      n.questMark = currentQuestNpcId() === n.id;
       if (window.Art && Art.ready) Art.drawNpc(ctx, n, s, G.time);
       else {
-        drawActor(n.x, n.y, '#d4af37', 11, n.questMark ? '！' : '');
+        var mk = n.questMark === '?' ? '？' : (n.questMark ? '！' : '');
+        drawActor(n.x, n.y, '#d4af37', 11, mk);
         ctx.fillStyle = '#c9a227';
         ctx.font = '11px serif';
         ctx.textAlign = 'center';
@@ -1532,14 +1603,13 @@
     ctx.fillRect(x, y, w * clamp(ratio, 0, 1), 4);
   }
 
-  function drawMinimap() {
-    var w = mini.width, h = mini.height;
-    mctx.fillStyle = '#071214';
-    mctx.fillRect(0, 0, w, h);
+  function paintRadar(ctx, w, h, labeled) {
+    ctx.fillStyle = '#071214';
+    ctx.fillRect(0, 0, w, h);
     if (window.Art && Art.imgs && Art.imgs.radar) {
-      mctx.globalAlpha = 0.4;
-      mctx.drawImage(Art.imgs.radar, 0, 0, w, h);
-      mctx.globalAlpha = 1;
+      ctx.globalAlpha = labeled ? 0.28 : 0.4;
+      ctx.drawImage(Art.imgs.radar, 0, 0, w, h);
+      ctx.globalAlpha = 1;
     }
     if (!G.grid) return;
     var gw = G.grid[0].length, gh = G.grid.length;
@@ -1547,33 +1617,217 @@
     for (var y = 0; y < gh; y++) {
       for (var x = 0; x < gw; x++) {
         var t = G.grid[y][x];
-        if (t === 'water') mctx.fillStyle = 'rgba(42,110,150,0.55)';
-        else if (t === 'wall' || t === 'rock' || t === 'house' || t === 'roof') mctx.fillStyle = 'rgba(20,16,12,0.55)';
-        else if (t === 'tree') mctx.fillStyle = 'rgba(30,70,40,0.35)';
-        else mctx.fillStyle = 'rgba(46,90,70,0.22)';
-        mctx.fillRect(x * sx, y * sy, sx + 0.4, sy + 0.4);
+        if (t === 'water') ctx.fillStyle = 'rgba(42,110,150,0.55)';
+        else if (t === 'wall' || t === 'rock' || t === 'house' || t === 'roof') ctx.fillStyle = 'rgba(20,16,12,0.55)';
+        else if (t === 'tree') ctx.fillStyle = 'rgba(30,70,40,0.35)';
+        else ctx.fillStyle = 'rgba(46,90,70,0.22)';
+        ctx.fillRect(x * sx, y * sy, sx + 0.4, sy + 0.4);
       }
     }
     if (G.path && G.path.length) {
-      mctx.fillStyle = '#ffd36a';
+      ctx.fillStyle = '#ffd36a';
       G.path.forEach(function (wp) {
-        mctx.fillRect(wp.x * sx, wp.y * sy, Math.max(2, sx), Math.max(2, sy));
+        ctx.fillRect(wp.x * sx, wp.y * sy, Math.max(2, sx), Math.max(2, sy));
       });
     }
+    G.portals.forEach(function (pt) {
+      ctx.fillStyle = '#6cb6ff';
+      ctx.fillRect((pt.x + 0.5) * sx - 2, (pt.y + 0.5) * sy - 2, 4, 4);
+      if (labeled) {
+        ctx.fillStyle = '#8ad4d6';
+        ctx.font = '11px "Microsoft YaHei",sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(pt.label || '传送', (pt.x + 0.5) * sx + 4, (pt.y + 0.5) * sy);
+      }
+    });
     G.npcs.forEach(function (n) {
-      mctx.fillStyle = currentQuestNpcId() === n.id ? '#ffd36a' : '#ffe7a0';
-      mctx.fillRect(n.x / TILE * sx - 1.5, n.y / TILE * sy - 1.5, 3, 3);
+      ctx.fillStyle = n.questMark ? '#ffd36a' : '#ffe7a0';
+      ctx.fillRect(n.x / TILE * sx - 2, n.y / TILE * sy - 2, 4, 4);
+      if (labeled) {
+        ctx.fillStyle = '#6fdf7a';
+        ctx.font = '11px "Microsoft YaHei",sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(n.name, n.x / TILE * sx + 5, n.y / TILE * sy);
+      }
     });
     G.entities.forEach(function (e) {
-      mctx.fillStyle = e.boss ? '#ffd36a' : '#c8312a';
-      mctx.fillRect(e.x / TILE * sx - 1, e.y / TILE * sy - 1, 3, 3);
+      ctx.fillStyle = e.boss ? '#ffd36a' : '#c8312a';
+      ctx.fillRect(e.x / TILE * sx - 1, e.y / TILE * sy - 1, 3, 3);
     });
     if (G.player) {
-      mctx.fillStyle = '#6fdf7a';
-      mctx.fillRect(G.player.x / TILE * sx - 2, G.player.y / TILE * sy - 2, 4, 4);
+      ctx.fillStyle = '#6fdf7a';
+      ctx.fillRect(G.player.x / TILE * sx - 3, G.player.y / TILE * sy - 3, 6, 6);
+      if (labeled) {
+        ctx.fillStyle = '#ffe7a0';
+        ctx.font = '11px "Microsoft YaHei",sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('我', G.player.x / TILE * sx + 6, G.player.y / TILE * sy - 4);
+      }
     }
+  }
+
+  function drawMinimap() {
+    if (!mini || !mctx) return;
+    paintRadar(mctx, mini.width, mini.height, false);
     var nameEl = document.getElementById('map-name');
     if (nameEl && D.MAP_META[G.mapId]) nameEl.textContent = D.MAP_META[G.mapId].name;
+    var coord = document.getElementById('map-coord');
+    if (coord && G.player) {
+      coord.textContent = Math.floor(G.player.x / TILE) + ',' + Math.floor(G.player.y / TILE);
+    }
+    var qb = document.querySelector('.quest-box');
+    if (qb) qb.hidden = (G.mapId === 'tower' || G.mapId === 'road');
+    if (mapOverlayOpen() && regionTabOn()) paintRegionMap();
+  }
+
+  function mapOverlayOpen() {
+    var el = document.getElementById('map-overlay');
+    return !!(el && !el.hidden);
+  }
+
+  function regionTabOn() {
+    var pane = document.getElementById('map-region');
+    return !!(pane && !pane.hidden);
+  }
+
+  function closeMapOverlay() {
+    var el = document.getElementById('map-overlay');
+    if (el) el.hidden = true;
+  }
+
+  function showMapTab(tab) {
+    var region = document.getElementById('map-region');
+    var world = document.getElementById('map-world');
+    if (region) region.hidden = tab !== 'region';
+    if (world) world.hidden = tab !== 'world';
+    document.querySelectorAll('[data-map-tab]').forEach(function (b) {
+      b.classList.toggle('on', b.dataset.mapTab === tab);
+    });
+    var title = document.getElementById('map-overlay-title');
+    if (title) {
+      title.textContent = tab === 'world'
+        ? '世界地图'
+        : (D.MAP_META[G.mapId] ? D.MAP_META[G.mapId].name : '区域地图');
+    }
+    if (tab === 'region') {
+      paintRegionMap();
+      fillMapNpcList();
+    } else {
+      fillWorldPins();
+    }
+  }
+
+  function openMapOverlay(tab) {
+    if (G.mode !== 'play') return;
+    closePanels();
+    closeDialog();
+    var el = document.getElementById('map-overlay');
+    if (!el) return;
+    el.hidden = false;
+    showMapTab(tab || 'region');
+  }
+
+  function refreshMapOverlay() {
+    if (!mapOverlayOpen()) return;
+    showMapTab(regionTabOn() ? 'region' : 'world');
+  }
+
+  function paintRegionMap() {
+    var c = document.getElementById('region-canvas');
+    if (!c) return;
+    var ctx2 = c.getContext('2d');
+    paintRadar(ctx2, c.width, c.height, true);
+    var cx = document.getElementById('map-cx');
+    var cy = document.getElementById('map-cy');
+    if (cx && cy && G.player && document.activeElement !== cx && document.activeElement !== cy) {
+      cx.placeholder = String(Math.floor(G.player.x / TILE));
+      cy.placeholder = String(Math.floor(G.player.y / TILE));
+    }
+  }
+
+  function fillMapNpcList() {
+    var box = document.getElementById('map-npc-list');
+    if (!box) return;
+    var html = '';
+    G.npcs.forEach(function (n) {
+      var mark = n.questMark === '?' ? '？' : (n.questMark === '!' ? '！' : '');
+      html += '<button type="button" class="map-npc" data-map-npc="' + n.id + '">' +
+        mark + n.name + (n.title ? '　' + n.title : '') + '</button>';
+    });
+    G.portals.forEach(function (pt, i) {
+      html += '<button type="button" class="map-pt" data-map-portal="' + i + '">传送 · ' +
+        (pt.label || pt.to) + '</button>';
+    });
+    if (!html) html = '<p class="map-tip">此地暂无人物。</p>';
+    box.innerHTML = html;
+  }
+
+  function fillWorldPins() {
+    var box = document.getElementById('world-pins');
+    if (!box) return;
+    box.innerHTML = (D.WORLD_NODES || []).map(function (n) {
+      return '<button type="button" class="world-pin' + (G.mapId === n.id ? ' here' : '') +
+        '" data-world-go="' + n.id + '" style="left:' + n.left + ';top:' + n.top + '" title="' +
+        (n.desc || n.name) + '">' + n.name + '</button>';
+    }).join('');
+  }
+
+  function clickRegionCanvas(ev) {
+    var c = document.getElementById('region-canvas');
+    if (!c || !G.grid || !G.player) return;
+    var r = c.getBoundingClientRect();
+    var gx = ((ev.clientX - r.left) / r.width) * G.grid[0].length;
+    var gy = ((ev.clientY - r.top) / r.height) * G.grid.length;
+    G.guide = null;
+    G.player.target = null;
+    setDest((gx + 0.5) * TILE, (gy + 0.5) * TILE);
+    toast('寻路至 ' + Math.floor(gx) + ',' + Math.floor(gy));
+  }
+
+  function pathToCoord(tx, ty) {
+    if (!G.grid || !G.player) return;
+    var gw = G.grid[0].length, gh = G.grid.length;
+    tx = clamp(tx | 0, 0, gw - 1);
+    ty = clamp(ty | 0, 0, gh - 1);
+    G.guide = null;
+    G.player.target = null;
+    setDest((tx + 0.5) * TILE, (ty + 0.5) * TILE);
+    toast('寻路至 ' + tx + ',' + ty);
+  }
+
+  function worldJump(id) {
+    var node = null;
+    (D.WORLD_NODES || []).forEach(function (n) { if (n.id === id) node = n; });
+    if (!node) return;
+    if (G.mapId === id) {
+      toast('已在' + node.name);
+      return;
+    }
+    closeMapOverlay();
+    G.guide = null;
+    travel(id, node.tx, node.ty);
+  }
+
+  function cyclePkMode() {
+    if (!G.player) return;
+    var list = D.PK_MODES || [];
+    if (!list.length) return;
+    var i = 0;
+    for (; i < list.length; i++) if (list[i].id === G.player.pkMode) break;
+    if (i >= list.length) i = 0;
+    var next = list[(i + 1) % list.length];
+    G.player.pkMode = next.id;
+    toast('PK 模式：' + next.name);
+    refreshPkMode();
+  }
+
+  function refreshPkMode() {
+    var btn = document.getElementById('pk-mode');
+    if (!btn || !G.player) return;
+    var mode = (D.PK_MODES || []).filter(function (m) { return m.id === G.player.pkMode; })[0] || D.PK_MODES[0];
+    btn.textContent = mode.name;
+    btn.classList.toggle('all', mode.id === 'all');
+    btn.classList.toggle('karma', mode.id === 'karma');
   }
 
   function drawHud() {
@@ -1594,6 +1848,7 @@
     setBar('hp', p.hp, st.maxHp);
     setBar('mp', p.mp, st.maxMp);
     setBar('xp', p.exp, F.xpToNext(p.level));
+    refreshPkMode();
     var tf = document.getElementById('target-frame');
     if (tf) {
       var t = p.target;
@@ -1659,6 +1914,7 @@
   /* ========== 面板 ========== */
   function closePanels() {
     document.querySelectorAll('.panel').forEach(function (p) { p.classList.remove('open'); });
+    closeMapOverlay();
   }
 
   function openPanel(id) {
@@ -1850,6 +2106,7 @@
     G.player.skillCd = {};
     G.player.target = null;
     G.player.auto = false;
+    G.player.pkMode = G.player.pkMode || 'peace';
     G.log = data.log || [];
     G.towerFloor = data.towerFloor || 0;
     buildMap(data.mapId || 'taiping');
@@ -2027,10 +2284,21 @@
     bindCanvas(canvas);
     bindCanvas(canvas3d);
     window.addEventListener('keydown', function (ev) {
-      if (ev.target && (ev.target.tagName === 'INPUT' || ev.target.tagName === 'TEXTAREA')) return;
+      if (ev.target && (ev.target.tagName === 'INPUT' || ev.target.tagName === 'TEXTAREA')) {
+        if (ev.code === 'Escape') { ev.target.blur(); closeMapOverlay(); }
+        return;
+      }
+      if (mapOverlayOpen()) {
+        if (ev.code === 'Escape' || ev.code === 'KeyM') {
+          ev.preventDefault();
+          closeMapOverlay();
+        }
+        return;
+      }
       G.keys[ev.code] = true;
       if (G.mode !== 'play') return;
       if (ev.code === 'Escape') { closePanels(); closeDialog(); return; }
+      if (ev.code === 'KeyM') { ev.preventDefault(); openMapOverlay('region'); return; }
       if (ev.code === 'KeyC') openPanel('char');
       if (ev.code === 'KeyB') openPanel('bag');
       if (ev.code === 'KeyV') openPanel('skills');
@@ -2169,6 +2437,49 @@
         G.guide = null;
         G.player.target = null;
         setDest((gx + 0.5) * TILE, (gy + 0.5) * TILE);
+      });
+    }
+    var btnRegion = document.getElementById('btn-region-map');
+    if (btnRegion) btnRegion.addEventListener('click', function () { openMapOverlay('region'); });
+    var btnWorld = document.getElementById('btn-world-map');
+    if (btnWorld) btnWorld.addEventListener('click', function () { openMapOverlay('world'); });
+    var pkBtn = document.getElementById('pk-mode');
+    if (pkBtn) pkBtn.addEventListener('click', cyclePkMode);
+    var overlay = document.getElementById('map-overlay');
+    if (overlay) {
+      overlay.addEventListener('click', function (ev) {
+        if (ev.target === overlay || (ev.target.closest && ev.target.closest('[data-close-map]'))) {
+          closeMapOverlay();
+          return;
+        }
+        var tab = ev.target.closest && ev.target.closest('[data-map-tab]');
+        if (tab) showMapTab(tab.dataset.mapTab);
+        var npcBtn = ev.target.closest && ev.target.closest('[data-map-npc]');
+        if (npcBtn) followNpcOnMap(npcBtn.dataset.mapNpc);
+        var ptBtn = ev.target.closest && ev.target.closest('[data-map-portal]');
+        if (ptBtn && G.portals[+ptBtn.dataset.mapPortal]) {
+          var pt = G.portals[+ptBtn.dataset.mapPortal];
+          G.guide = null;
+          setDest((pt.x + 0.5) * TILE, (pt.y + 0.5) * TILE);
+          toast('寻路至传送点：' + (pt.label || pt.to));
+        }
+        var pin = ev.target.closest && ev.target.closest('[data-world-go]');
+        if (pin) worldJump(pin.dataset.worldGo);
+      });
+    }
+    var regionCanvas = document.getElementById('region-canvas');
+    if (regionCanvas) regionCanvas.addEventListener('mousedown', clickRegionCanvas);
+    var coordForm = document.getElementById('map-coord-form');
+    if (coordForm) {
+      coordForm.addEventListener('submit', function (ev) {
+        ev.preventDefault();
+        var x = parseInt(document.getElementById('map-cx').value, 10);
+        var y = parseInt(document.getElementById('map-cy').value, 10);
+        if (isNaN(x) || isNaN(y)) {
+          toast('请输入坐标 X、Y');
+          return;
+        }
+        pathToCoord(x, y);
       });
     }
     document.getElementById('btn-revive').addEventListener('click', revive);

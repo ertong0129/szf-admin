@@ -371,11 +371,45 @@ html, body {
   background: rgba(6, 12, 14, 0.72);
   color: #ffe7a0;
   font-size: 11px;
-  letter-spacing: 2px;
-  text-align: center;
-  padding: 2px 0;
+  letter-spacing: 1px;
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 6px;
   pointer-events: none;
 }
+#map-coord { color: #8ad4d6; letter-spacing: 0; }
+.map-tools {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+}
+.map-tools button {
+  flex: 1;
+  background: rgba(8, 28, 30, 0.9);
+  border: 1px solid #2ec4c8;
+  color: #e8f6c8;
+  font-family: inherit;
+  font-size: 12px;
+  letter-spacing: 1px;
+  padding: 3px 0;
+  cursor: pointer;
+}
+.map-tools button:hover { color: #ffe7a0; border-color: #ffe7a0; }
+.pk-mode {
+  pointer-events: auto;
+  margin-top: 4px;
+  background: rgba(8, 28, 30, 0.85);
+  border: 1px solid #2ec4c8;
+  color: #8ad4d6;
+  font-family: inherit;
+  font-size: 12px;
+  letter-spacing: 2px;
+  padding: 2px 8px;
+  cursor: pointer;
+}
+.pk-mode.all { color: #ff8a6a; border-color: #c8312a; }
+.pk-mode.karma { color: #ffd36a; border-color: #d4af37; }
+.quest-box[hidden] { display: none !important; }
 .quest-box, .log-box {
   background: rgba(8, 22, 24, 0.86);
   border: 1px solid #2ec4c8;
@@ -411,6 +445,13 @@ html, body {
 .q-go:hover { background: rgba(46, 196, 200, 0.14); }
 .q-go b { color: #ffe7a0; display: block; font-size: 13px; }
 .q-where { color: #6fdf7a !important; }
+.q-sec { color: #8ad4d6; font-size: 11px; letter-spacing: 2px; margin: 4px 0 2px; }
+.q-link {
+  color: #6fdf7a;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.q-link.mob { color: #ffb347; }
 .log-box { max-height: 150px; overflow: hidden; pointer-events: none; }
 .log-box p { color: var(--muted); }
 
@@ -702,3 +743,94 @@ html, body {
   .dock-xp { left: 52%; }
   .chat-box { width: min(260px, 30vw); height: 110px; }
 }
+
+#map-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 12;
+  background: rgba(0, 0, 0, 0.45);
+  display: grid;
+  place-items: center;
+}
+#map-overlay[hidden] { display: none !important; }
+.map-win {
+  width: min(880px, 94vw);
+  background: rgba(8, 22, 24, 0.96);
+  border: 1px solid #2ec4c8;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+  padding: 10px 12px 12px;
+}
+.map-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.map-tabs button {
+  background: #0d2426;
+  border: 1px solid #2ec4c8;
+  color: #e8f6c8;
+  font-family: inherit;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+.map-tabs button.on { background: #16383c; color: #ffe7a0; }
+#map-overlay-title { color: #ffe7a0; letter-spacing: 2px; margin-left: 8px; }
+.map-tabs .close { margin-left: auto; border: 0; background: transparent; color: #ffe7a0; font-size: 20px; cursor: pointer; }
+.map-pane { display: flex; gap: 10px; align-items: stretch; }
+#map-world.map-pane { flex-direction: column; }
+#region-canvas {
+  flex: 1;
+  min-width: 0;
+  height: 420px;
+  background: #071214;
+  border: 1px solid #2ec4c8;
+  cursor: crosshair;
+}
+.map-side { width: 200px; flex: 0 0 200px; }
+.map-side h5 { color: #ffe7a0; letter-spacing: 2px; margin-bottom: 6px; font-size: 12px; }
+#map-npc-list { max-height: 300px; overflow: auto; }
+.map-npc, .map-pt {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px dashed rgba(46, 196, 200, 0.2);
+  color: #6fdf7a;
+  text-decoration: underline;
+  font-family: inherit;
+  padding: 5px 2px;
+  cursor: pointer;
+}
+.map-pt { color: #ffd36a; }
+#map-coord-form { display: flex; gap: 4px; margin-top: 10px; }
+#map-coord-form input {
+  width: 48px;
+  background: #1c120c;
+  border: 1px solid #2ec4c8;
+  color: #ffe7a0;
+  padding: 4px;
+  font-family: inherit;
+}
+#map-coord-form button, .world-pin {
+  background: #3a1a12;
+  border: 1px solid #d4af37;
+  color: #ffe7a0;
+  font-family: inherit;
+  cursor: pointer;
+}
+.map-tip { color: #b8a57a; font-size: 12px; margin-top: 8px; line-height: 1.5; }
+.world-bg { position: relative; border: 1px solid #2ec4c8; overflow: hidden; max-height: 460px; }
+.world-bg img { display: block; width: 100%; height: auto; }
+#world-pins { position: absolute; inset: 0; }
+.world-pin {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  padding: 3px 8px;
+  font-size: 12px;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+.world-pin:hover { filter: brightness(1.2); }
+.world-pin.here { box-shadow: 0 0 0 2px #6fdf7a; }

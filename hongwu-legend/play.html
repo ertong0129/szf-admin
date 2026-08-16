@@ -36,6 +36,7 @@
               <div class="who" id="who-line">—</div>
               <div class="bar hp"><i id="hp-fill"></i><span id="hp-text"></span></div>
               <div class="bar mp"><i id="mp-fill"></i><span id="mp-text"></span></div>
+              <button type="button" id="pk-mode" class="pk-mode" title="切换 PK 模式">和平</button>
             </div>
           </div>
           <div id="target-frame" hidden>
@@ -45,10 +46,17 @@
           <div class="side-right">
             <div class="minimap-wrap">
               <canvas id="minimap" width="196" height="132"></canvas>
-              <div class="map-name" id="map-name">太平村</div>
+              <div class="map-name">
+                <span id="map-name">太平村</span>
+                <span id="map-coord">24,17</span>
+              </div>
+              <div class="map-tools">
+                <button type="button" id="btn-region-map" title="区域地图（M）">区域</button>
+                <button type="button" id="btn-world-map" title="世界地图跳转">地图</button>
+              </div>
             </div>
             <div class="quest-box">
-              <h4>任务追踪 <span class="quest-hint">点击自动寻路</span></h4>
+              <h4>任务追踪 <span class="quest-hint">点绿名自动寻路</span></h4>
               <div id="quest-track"></div>
             </div>
           </div>
@@ -90,6 +98,36 @@
       <div class="panel" id="panel-quest"></div>
       <div class="panel" id="panel-help"></div>
       <div class="panel" id="panel-shop"></div>
+      <div id="map-overlay" hidden>
+        <div class="map-win">
+          <div class="map-tabs">
+            <button type="button" data-map-tab="region" class="on">区域地图</button>
+            <button type="button" data-map-tab="world">世界地图</button>
+            <span id="map-overlay-title">太平村</span>
+            <button type="button" class="close" data-close-map="1">×</button>
+          </div>
+          <div id="map-region" class="map-pane">
+            <canvas id="region-canvas" width="640" height="420"></canvas>
+            <div class="map-side">
+              <h5>人物 / 传送</h5>
+              <div id="map-npc-list"></div>
+              <form id="map-coord-form">
+                <input id="map-cx" maxlength="4" placeholder="X" />
+                <input id="map-cy" maxlength="4" placeholder="Y" />
+                <button type="submit">寻路</button>
+              </form>
+              <p class="map-tip">点地图或人名自动寻路。M 开关。</p>
+            </div>
+          </div>
+          <div id="map-world" class="map-pane" hidden>
+            <div class="world-bg" id="world-bg">
+              <img src="assets/ingame/map/world.jpg" alt="世界地图" />
+              <div id="world-pins"></div>
+            </div>
+            <p class="map-tip">点击地名立即传送，对照原作世界地图跳转。</p>
+          </div>
+        </div>
+      </div>
       <div id="log-list" hidden></div>
 
       <div class="death-mask" id="death">

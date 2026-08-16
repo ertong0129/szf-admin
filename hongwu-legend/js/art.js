@@ -263,10 +263,10 @@
     var img = A.imgs[A.npcKey(n.id)] || A.imgs.officer;
     billboard(ctx, img, screen.x, screen.y + 8, 48, 96, false, Math.sin(time * 2) * 0.6);
     if (n.questMark) {
-      ctx.fillStyle = '#ffd36a';
+      ctx.fillStyle = n.questMark === '?' ? '#6fdf7a' : '#ffd36a';
       ctx.font = 'bold 16px serif';
       ctx.textAlign = 'center';
-      ctx.fillText('！', screen.x, screen.y - 58);
+      ctx.fillText(n.questMark === '?' ? '？' : '！', screen.x, screen.y - 58);
     }
     A.drawNameplate(ctx, screen.x, screen.y + 18, n.title || '', n.name, '#7dff7a');
   };

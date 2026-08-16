@@ -39,4 +39,14 @@ assert.strictEqual(toPoyang[toPoyang.length - 1].portal.to, 'poyang');
 var toSelf = PathFind.mapRoute(D.PORTALS, 'capital', 'capital');
 assert.deepStrictEqual(toSelf, []);
 
+assert.ok(Array.isArray(D.WORLD_NODES) && D.WORLD_NODES.length >= 5, 'world nodes');
+D.WORLD_NODES.forEach(function (n) {
+  assert.ok(D.MAP_META[n.id], n.id + ' should exist in MAP_META');
+  assert.strictEqual(typeof n.tx, 'number');
+  assert.strictEqual(typeof n.ty, 'number');
+  assert.ok(n.left && n.top, n.id + ' needs pin position');
+});
+var ids = D.WORLD_NODES.map(function (n) { return n.id; });
+assert.ok(ids.indexOf('taiping') >= 0 && ids.indexOf('capital') >= 0);
+
 console.log('path.test.js ok');
