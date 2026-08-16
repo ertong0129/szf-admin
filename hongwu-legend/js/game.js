@@ -31,6 +31,8 @@
     mouse: { x: 0, y: 0, down: false, wx: 0, wy: 0 },
     cam: { x: 0, y: 0 },
     dest: null,
+    guide: null,
+    path: [],
     time: 0,
     last: 0,
     log: [],
@@ -461,7 +463,7 @@
       var n = D.NPCS[k];
       if (n.map === id) {
         var pos = npcPos(n.id, id);
-        G.npcs.push({ id: n.id, name: n.name, x: pos.x, y: pos.y });
+        G.npcs.push({ id: n.id, name: n.name, title: n.title || '', x: pos.x, y: pos.y });
       }
     });
     if (id === 'wild') {
@@ -554,6 +556,9 @@
     if (to === 'capital') maybeCompleteTalk('chefu');
     refreshQuestUI();
     saveSilent();
+    if (G.guide) {
+      setTimeout(function () { guideStep(); }, 30);
+    }
   }
 
   /* ========== 战斗 ========== */
@@ -657,6 +662,7 @@
         addItem(p, { id: h.id, n: 1 });
         log('采集 ' + D.CONSUMABLES[h.id].name);
         noteGather(h.id);
+        if (G.guide && G.guide.wantHerb) guideStep();
         return false;
       }
       return true;
@@ -827,6 +833,7 @@
     (q.reward.items || []).forEach(function (it) { addItem(p, { id: it.id, n: it.n }); });
     toast('完成：' + q.name);
     log('任务完成：' + q.name);
+    if (G.guide && G.guide.qid === q.id) G.guide = null;
     var idx = D.QUESTS.findIndex(function (x) { return x.id === q.id; });
     if (idx >= 0 && D.QUESTS[idx + 1]) p.quests.active.push(D.QUESTS[idx + 1].id);
     refreshQuestUI();
@@ -836,14 +843,142 @@
   function refreshQuestUI() {
     var q = currentQuest();
     var el = document.getElementById('quest-track');
-    if (!q) { el.innerHTML = '<div class="q-item">风云暂歇，可继续挂机或挑战试炼。</div>'; return; }
+    if (!el) return;
+    if (!q) {
+      el.innerHTML = '<div class="q-item muted">暂无追踪任务。可挂机或挑战试炼。</div>';
+      return;
+    }
     var extra = '';
     if (q.kill) extra = '（' + (G.player.quests.progress[q.id] || 0) + '/' + q.kill.n + '）';
     if (q.gather) extra = '（' + countItem(G.player, q.gather.id) + '/' + q.gather.n + '）';
     var icon = '';
     if (q.talk && window.Art && Art.npcIcon) icon = Art.npcIcon(q.talk);
-    el.innerHTML = '<div class="q-item">' + (icon ? '<img src="' + icon + '" alt="" />' : '') +
-      '<div>' + q.name + extra + '<small>' + q.text + '<br/>地点：' + D.MAP_META[q.map].name + '</small></div></div>';
+    var where = D.MAP_META[q.map] ? D.MAP_META[q.map].name : '';
+    el.innerHTML =
+      '<button type="button" class="q-item q-go" data-quest-go="' + q.id + '">' +
+        (icon ? '<img src="' + icon + '" alt="" />' : '') +
+        '<div><b>' + q.name + extra + '</b>' +
+        '<small>' + q.text + '</small>' +
+        '<small class="q-where">地点：' + where + '　点击自动寻路</small></div>' +
+      '</button>';
+  }
+
+  function questTarget(q) {
+    if (q.talk && D.NPCS[q.talk]) return { kind: 'npc', map: D.NPCS[q.talk].map, npcId: q.talk };
+    if (q.kill) return { kind: 'kill', map: q.map, monster: q.kill.id };
+    if (q.gather) return { kind: 'herb', map: q.map, herb: q.gather.id };
+    if (q.flag === 'got_pet') return { kind: 'npc', map: 'shennong', npcId: 'xunshou' };
+    if (q.flag === 'enhanced') return { kind: 'npc', map: 'capital', npcId: 'bagong' };
+    if (q.flag === 'poyang_clear') return { kind: 'kill', map: 'poyang', monster: 'lake_boss' };
+    if (q.flag === 'escort_done') return { kind: 'npc', map: 'capital', npcId: 'yabiao' };
+    if (q.flag === 'tower5') return { kind: 'npc', map: 'capital', npcId: 'shilian' };
+    return { kind: 'map', map: q.map };
+  }
+
+  function findNpc(id) {
+    for (var i = 0; i < G.npcs.length; i++) if (G.npcs[i].id === id) return G.npcs[i];
+    return null;
+  }
+
+  function currentQuestNpcId() {
+    var q = currentQuest();
+    if (!q) return null;
+    var t = questTarget(q);
+    return t && t.npcId ? t.npcId : null;
+  }
+
+  function followQuest(q) {
+    if (!q) q = currentQuest();
+    if (!q) { toast('当前没有任务'); return; }
+    G.guide = { qid: q.id };
+    toast('自动寻路：' + q.name);
+    log('自动寻路 → ' + q.name);
+    guideStep();
+  }
+
+  function guideStep() {
+    if (!G.guide || !G.player) return;
+    var q = currentQuest();
+    if (!q || q.id !== G.guide.qid) { G.guide = null; return; }
+    var tgt = questTarget(q);
+    var destMap = tgt.map || q.map;
+    if (G.mapId !== destMap) {
+      var route = window.PathFind && PathFind.mapRoute ? PathFind.mapRoute(D.PORTALS, G.mapId, destMap) : null;
+      if (!route || !route.length) {
+        toast('无法到达' + (D.MAP_META[destMap] ? D.MAP_META[destMap].name : ''));
+        G.guide = null;
+        return;
+      }
+      var pt = route[0].portal;
+      G.guide.wantTalk = null;
+      G.guide.wantKill = null;
+      G.guide.wantHerb = null;
+      G.guide.wantPortal = pt.to;
+      setDest((pt.x + 0.5) * TILE, (pt.y + 0.5) * TILE);
+      return;
+    }
+    G.guide.wantPortal = null;
+    if (tgt.kind === 'npc') {
+      var npc = findNpc(tgt.npcId);
+      if (!npc) { toast('目标不在本地图'); return; }
+      G.guide.wantTalk = tgt.npcId;
+      G.guide.wantKill = null;
+      G.guide.wantHerb = null;
+      if (dist(G.player, npc) < 56) {
+        G.guide = null;
+        talkNpc(npc);
+        return;
+      }
+      setDest(npc.x, npc.y);
+      return;
+    }
+    if (tgt.kind === 'kill') {
+      G.guide.wantKill = tgt.monster;
+      G.guide.wantTalk = null;
+      G.guide.wantHerb = null;
+      var best = null, bd = 1e9;
+      G.entities.forEach(function (e) {
+        if (e.kind !== tgt.monster) return;
+        var d = dist(G.player, e);
+        if (d < bd) { bd = d; best = e; }
+      });
+      if (best) {
+        G.player.target = best;
+        setDest(best.x, best.y);
+      } else {
+        setDest((G.grid[0].length * 0.5) * TILE, (G.grid.length * 0.5) * TILE);
+      }
+      return;
+    }
+    if (tgt.kind === 'herb') {
+      G.guide.wantHerb = 1;
+      G.guide.wantTalk = null;
+      G.guide.wantKill = null;
+      var hb = null, hd = 1e9;
+      G.herbs.forEach(function (h) {
+        var d = dist(G.player, h);
+        if (d < hd) { hd = d; hb = h; }
+      });
+      if (hb) setDest(hb.x, hb.y);
+      else toast('附近没有可采草药');
+      return;
+    }
+    if (G.grid) setDest((G.grid[0].length * 0.5) * TILE, (G.grid.length * 0.5) * TILE);
+  }
+
+  function tickGuideArrive() {
+    if (!G.guide || G.player._moving) return;
+    var q = currentQuest();
+    if (!q || q.id !== G.guide.qid) { G.guide = null; return; }
+    if (G.guide.wantTalk) {
+      var npc = findNpc(G.guide.wantTalk);
+      if (npc && dist(G.player, npc) < 56) {
+        G.guide = null;
+        talkNpc(npc);
+      } else if (npc) setDest(npc.x, npc.y);
+      return;
+    }
+    if (G.guide.wantKill || G.guide.wantHerb || G.guide.wantPortal) guideStep();
   }
 
   /* ========== 灵宠 ========== */
@@ -936,6 +1071,7 @@
     if (mx || my) {
       G.dest = null;
       G.path = [];
+      G.guide = null;
       var len = Math.hypot(mx, my) || 1;
       tryMove(p, (mx / len) * st.speed * dt, (my / len) * st.speed * dt);
       p.facing = Math.atan2(my, mx);
@@ -952,14 +1088,19 @@
       }
     } else if (G.dest) {
       var dd = dist(p, G.dest);
-      if (dd < 8) G.dest = null;
-      else {
+      if (dd < 8) {
+        G.dest = null;
+        tickGuideArrive();
+      } else {
         var a = ang(p, G.dest);
         var ox = p.x, oy = p.y;
         tryMove(p, Math.cos(a) * st.speed * dt, Math.sin(a) * st.speed * dt);
         p.facing = a;
         p._moving = true;
-        if (Math.hypot(p.x - ox, p.y - oy) < 0.2) G.dest = null;
+        if (Math.hypot(p.x - ox, p.y - oy) < 0.2) {
+          G.dest = null;
+          tickGuideArrive();
+        }
       }
     }
     p.atkCd = Math.max(0, p.atkCd - dt);
@@ -984,6 +1125,7 @@
       if (pt._cd) pt._cd = Math.max(0, pt._cd - dt);
     });
     if (p.auto) updateAuto(dt, st);
+    else if (G.guide && G.guide.wantKill && (!p.target || p.target.hp <= 0)) guideStep();
     if (p.hp <= 0) die();
   }
 
@@ -1172,6 +1314,8 @@
         herbs: G.herbs,
         portals: G.portals,
         floats: G.floats,
+        path: G.path,
+        questNpcId: currentQuestNpcId(),
         time: G.time
       });
       drawMinimap();
@@ -1239,14 +1383,31 @@
       ctx.textAlign = 'center';
       ctx.fillText(pt.label, s.x, s.y - 18);
     });
+    if (G.path && G.path.length > 1) {
+      ctx.strokeStyle = 'rgba(255, 210, 80, 0.55)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([5, 6]);
+      ctx.beginPath();
+      G.path.forEach(function (wp, i) {
+        var s = worldToScreen((wp.x + 0.5) * TILE, (wp.y + 0.5) * TILE);
+        if (i === 0) ctx.moveTo(s.x, s.y);
+        else ctx.lineTo(s.x, s.y);
+      });
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.lineWidth = 1;
+    }
     G.npcs.forEach(function (n) {
       var s = worldToScreen(n.x, n.y);
+      n.questMark = currentQuestNpcId() === n.id;
       if (window.Art && Art.ready) Art.drawNpc(ctx, n, s, G.time);
       else {
-        drawActor(n.x, n.y, '#d4af37', 11, '！');
-        ctx.fillStyle = '#f3e6c4';
-        ctx.font = '12px serif';
+        drawActor(n.x, n.y, '#d4af37', 11, n.questMark ? '！' : '');
+        ctx.fillStyle = '#c9a227';
+        ctx.font = '11px serif';
         ctx.textAlign = 'center';
+        if (n.title) ctx.fillText(n.title, s.x, s.y - 34);
+        ctx.fillStyle = '#7dff7a';
         ctx.fillText(n.name, s.x, s.y - 22);
       }
     });
@@ -1375,6 +1536,11 @@
     var w = mini.width, h = mini.height;
     mctx.fillStyle = '#071214';
     mctx.fillRect(0, 0, w, h);
+    if (window.Art && Art.imgs && Art.imgs.radar) {
+      mctx.globalAlpha = 0.4;
+      mctx.drawImage(Art.imgs.radar, 0, 0, w, h);
+      mctx.globalAlpha = 1;
+    }
     if (!G.grid) return;
     var gw = G.grid[0].length, gh = G.grid.length;
     var sx = w / gw, sy = h / gh;
@@ -1388,16 +1554,24 @@
         mctx.fillRect(x * sx, y * sy, sx + 0.4, sy + 0.4);
       }
     }
+    if (G.path && G.path.length) {
+      mctx.fillStyle = '#ffd36a';
+      G.path.forEach(function (wp) {
+        mctx.fillRect(wp.x * sx, wp.y * sy, Math.max(2, sx), Math.max(2, sy));
+      });
+    }
     G.npcs.forEach(function (n) {
-      mctx.fillStyle = '#ffe7a0';
+      mctx.fillStyle = currentQuestNpcId() === n.id ? '#ffd36a' : '#ffe7a0';
       mctx.fillRect(n.x / TILE * sx - 1.5, n.y / TILE * sy - 1.5, 3, 3);
     });
     G.entities.forEach(function (e) {
       mctx.fillStyle = e.boss ? '#ffd36a' : '#c8312a';
       mctx.fillRect(e.x / TILE * sx - 1, e.y / TILE * sy - 1, 3, 3);
     });
-    mctx.fillStyle = '#6fdf7a';
-    mctx.fillRect(G.player.x / TILE * sx - 2, G.player.y / TILE * sy - 2, 4, 4);
+    if (G.player) {
+      mctx.fillStyle = '#6fdf7a';
+      mctx.fillRect(G.player.x / TILE * sx - 2, G.player.y / TILE * sy - 2, 4, 4);
+    }
     var nameEl = document.getElementById('map-name');
     if (nameEl && D.MAP_META[G.mapId]) nameEl.textContent = D.MAP_META[G.mapId].name;
   }
@@ -1420,6 +1594,20 @@
     setBar('hp', p.hp, st.maxHp);
     setBar('mp', p.mp, st.maxMp);
     setBar('xp', p.exp, F.xpToNext(p.level));
+    var tf = document.getElementById('target-frame');
+    if (tf) {
+      var t = p.target;
+      if (t && t.hp > 0) {
+        tf.hidden = false;
+        document.getElementById('target-name').textContent = (t.boss ? '★ ' : '') + t.name + '  Lv.' + t.level;
+        var ratio = t.hp / Math.max(1, t.maxHp);
+        document.getElementById('target-hp').style.width = (100 * ratio) + '%';
+        var tht = document.getElementById('target-hp-text');
+        if (tht) tht.textContent = Math.floor(t.hp) + '/' + Math.floor(t.maxHp);
+      } else {
+        tf.hidden = true;
+      }
+    }
     renderSkills();
   }
 
@@ -1442,6 +1630,7 @@
     html += '<div class="util-slot" id="slot-hp"><div class="key">Q</div><div class="name">金创</div></div>';
     html += '<div class="util-slot" id="slot-mp"><div class="key">R</div><div class="name">内力</div></div>';
     html += '<div class="util-slot" id="slot-auto"><div class="key">Z</div><div class="name">挂机</div></div>';
+    html += '<div class="util-slot" id="slot-pick"><div class="key">F</div><div class="name">拾取</div></div>';
     box.innerHTML = html;
   }
 
@@ -1561,7 +1750,9 @@
       document.getElementById('panel-quest').innerHTML = header('功业') +
         D.QUESTS.map(function (q) {
           var stt = p.quests.done.indexOf(q.id) >= 0 ? '已完成' : (p.quests.active.indexOf(q.id) >= 0 ? '进行中' : '未开启');
-          return '<div class="stat-line"><span>' + q.name + '<br/><small style="color:#b8a57a">' + q.text + '</small></span><span>' + stt + '</span></div>';
+          var go = p.quests.active.indexOf(q.id) >= 0
+            ? '<button class="btn" data-quest-go="' + q.id + '">寻路</button>' : '';
+          return '<div class="stat-line"><span>' + q.name + '<br/><small style="color:#b8a57a">' + q.text + '</small></span><span>' + stt + ' ' + go + '</span></div>';
         }).join('');
     } else if (id === 'help') {
       document.getElementById('panel-help').innerHTML = header('帮助') +
@@ -1576,11 +1767,24 @@
   function openShop(kind) {
     var p = G.player;
     G.shopKind = kind;
-    var list = D.SHOPS[kind] || [];
+    var list;
+    if (kind === 'mall') {
+      var seen = {};
+      list = [];
+      ['smith', 'drug'].forEach(function (k) {
+        (D.SHOPS[k] || []).forEach(function (s) {
+          if (seen[s.id]) return;
+          seen[s.id] = 1;
+          list.push(s);
+        });
+      });
+    } else {
+      list = D.SHOPS[kind] || [];
+    }
     closePanels();
     var el = document.getElementById('panel-shop');
     el.classList.add('open');
-    el.innerHTML = header('货殖') + list.map(function (s) {
+    el.innerHTML = header(kind === 'mall' ? '商城' : '货殖') + list.map(function (s) {
       return '<div class="stat-line"><span>' + D.CONSUMABLES[s.id].name + '　' + s.price + ' 两</span>' +
         '<button class="btn" data-buy="' + s.id + '" data-price="' + s.price + '">购</button></div>';
     }).join('');
@@ -1597,9 +1801,10 @@
     if (def.tower) opts += '<button class="btn" data-tower="1">进入试炼</button>';
     if (n.id === 'xunshou' && !G.player.pet) opts += '<button class="btn" data-buypet="1">以 80 两请一只幼兽</button>';
     var face = (window.Art && Art.npcPortrait) ? Art.npcPortrait(n.id) : '';
+    var who = (def.title ? def.title + ' · ' : '') + n.name;
     el.innerHTML = '<div class="dialog-body">' +
       (face ? '<img class="npc-face" src="' + face + '" alt="" />' : '') +
-      '<div class="dialog-text"><div class="who">' + n.name + '</div><div>' + (def.lines[0] || '') +
+      '<div class="dialog-text"><div class="who">' + who + '</div><div>' + (def.lines[0] || '') +
       '</div><div class="opts">' + opts + '</div></div></div>';
     el.classList.add('open');
     G.dialogNpc = n;
@@ -1700,6 +1905,7 @@
     }
     setDest(wpos.x, wpos.y);
     p.target = null;
+    G.guide = null;
     closeDialog();
   }
 
@@ -1881,6 +2087,7 @@
       }
       if (ev.target.closest('#slot-hp')) usePotion('hp');
       if (ev.target.closest('#slot-mp')) usePotion('mp');
+      if (ev.target.closest('#slot-pick')) pickupNear();
       if (ev.target.closest('#slot-auto')) {
         G.player.auto = !G.player.auto;
         toast(G.player.auto ? '挂机开启' : '挂机关闭');
@@ -1910,6 +2117,12 @@
         addItem(G.player, { id: ev.target.dataset.buy, n: 1 });
         toast('购得物品');
         openShop(G.shopKind || 'smith');
+      }
+      if (ev.target.closest && ev.target.closest('[data-quest-go]')) {
+        var qid = ev.target.closest('[data-quest-go]').dataset.questGo;
+        var qq = D.QUESTS.find(function (x) { return x.id === qid; }) || currentQuest();
+        closePanels();
+        followQuest(qq);
       }
       if (ev.target.id === 'btn-feed') {
         if (takeItem(G.player, 'feed', 1) && G.player.pet) {
@@ -1943,6 +2156,21 @@
         closeDialog();
       }
     });
+    var shopBtn = document.getElementById('btn-shop');
+    if (shopBtn) {
+      shopBtn.addEventListener('click', function () { openShop('mall'); });
+    }
+    if (mini) {
+      mini.addEventListener('mousedown', function (ev) {
+        if (G.mode !== 'play' || !G.grid || !G.player) return;
+        var r = mini.getBoundingClientRect();
+        var gx = ((ev.clientX - r.left) / r.width) * G.grid[0].length;
+        var gy = ((ev.clientY - r.top) / r.height) * G.grid.length;
+        G.guide = null;
+        G.player.target = null;
+        setDest((gx + 0.5) * TILE, (gy + 0.5) * TILE);
+      });
+    }
     document.getElementById('btn-revive').addEventListener('click', revive);
   }
 
@@ -1977,8 +2205,8 @@
       buildMap('taiping');
       G.player.x = SPAWN.x;
       G.player.y = SPAWN.y;
-      log('洪武元年。左键点地行走，点人对话，点怪攻击。');
-      toast('左键点地面即可走路');
+      log('洪武元年。点右侧任务可自动寻路；左键点地行走，点人对话，点怪攻击。');
+      toast('点击任务追踪即可自动寻路');
     } else {
       var fix = snapWalkable(G.player.x, G.player.y);
       G.player.x = fix.x;

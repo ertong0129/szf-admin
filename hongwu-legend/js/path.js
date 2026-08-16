@@ -68,6 +68,34 @@
     return [];
   }
 
-  root.PathFind = { astar: astar };
+  function mapRoute(portals, from, to) {
+    if (from === to) return [];
+    var q = [{ map: from, via: null, prev: null }];
+    var seen = {};
+    seen[from] = 1;
+    while (q.length) {
+      var cur = q.shift();
+      var edges = portals[cur.map] || [];
+      for (var i = 0; i < edges.length; i++) {
+        var e = edges[i];
+        if (seen[e.to]) continue;
+        var node = { map: e.to, via: e, prev: cur };
+        if (e.to === to) {
+          var steps = [];
+          var n = node;
+          while (n && n.via) {
+            steps.unshift({ from: n.prev.map, portal: n.via });
+            n = n.prev;
+          }
+          return steps;
+        }
+        seen[e.to] = 1;
+        q.push(node);
+      }
+    }
+    return null;
+  }
+
+  root.PathFind = { astar: astar, mapRoute: mapRoute };
   if (typeof module !== 'undefined' && module.exports) module.exports = root.PathFind;
 })(typeof window !== 'undefined' ? window : global);

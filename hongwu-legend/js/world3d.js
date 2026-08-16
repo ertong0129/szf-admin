@@ -324,18 +324,33 @@
     return spr;
   }
 
-  function makeLabel(text, color) {
-    var tex = textTex('n:' + text + ':' + color, function (x, c) {
+  function makeLabel(text, color, title) {
+    var key = 'n:' + (title || '') + '|' + text + '|' + (color || '');
+    var tex = textTex(key, function (x, c) {
       x.clearRect(0, 0, c.width, c.height);
-      x.fillStyle = 'rgba(10,6,4,0.55)';
-      x.fillRect(18, 16, 220, 34);
-      x.font = 'bold 22px "Microsoft YaHei","PingFang SC",sans-serif';
       x.textAlign = 'center';
-      x.fillStyle = color || '#ffe7a0';
-      x.fillText(text, 128, 40);
+      if (title) {
+        x.font = '16px "Microsoft YaHei","PingFang SC",sans-serif';
+        x.strokeStyle = 'rgba(0,0,0,0.75)';
+        x.lineWidth = 4;
+        x.fillStyle = '#c9a227';
+        x.strokeText(title, 128, 22);
+        x.fillText(title, 128, 22);
+        x.font = 'bold 20px "Microsoft YaHei","PingFang SC",sans-serif';
+        x.fillStyle = color || '#7dff7a';
+        x.strokeText(text, 128, 48);
+        x.fillText(text, 128, 48);
+      } else {
+        x.font = 'bold 22px "Microsoft YaHei","PingFang SC",sans-serif';
+        x.strokeStyle = 'rgba(0,0,0,0.75)';
+        x.lineWidth = 4;
+        x.fillStyle = color || '#ffe7a0';
+        x.strokeText(text, 128, 40);
+        x.fillText(text, 128, 40);
+      }
     });
     var spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false }));
-    spr.scale.set(1.7, 0.42, 1);
+    spr.scale.set(title ? 1.85 : 1.7, title ? 0.55 : 0.42, 1);
     scene.add(spr);
     return spr;
   }
@@ -365,15 +380,27 @@
     bar.userData.tex.needsUpdate = true;
   }
 
+  function setActorLabel(a, text, color, title) {
+    var key = (title || '') + '|' + text + '|' + (color || '');
+    if (a._labelKey === key && a.label) return;
+    if (a.label) scene.remove(a.label);
+    a.label = makeLabel(text, color, title);
+    a._labelKey = key;
+  }
+
   function ensureActor(id, img, opt) {
     opt = opt || {};
-    if (actors[id]) return actors[id];
+    if (actors[id]) {
+      if (opt.label) setActorLabel(actors[id], opt.label, opt.labelColor, opt.title);
+      return actors[id];
+    }
     var a = {
       sprite: makeSprite(img, opt.sx || 1.5, opt.sy || 1.9, opt.color),
       shadow: makeShadow(),
-      label: opt.label ? makeLabel(opt.label, opt.labelColor || '#ffe7a0') : null,
+      label: null,
       bar: opt.bar ? makeBar() : null
     };
+    if (opt.label) setActorLabel(a, opt.label, opt.labelColor, opt.title);
     actors[id] = a;
     return a;
   }
@@ -409,6 +436,12 @@
         new THREE.ConeGeometry(0.12, 0.28, 5),
         new THREE.MeshStandardMaterial({ color: 0x4dff7a, emissive: 0x145520 })
       );
+    } else if (kind === 'path') {
+      mesh = new THREE.Mesh(
+        new THREE.CircleGeometry(0.1, 8),
+        new THREE.MeshBasicMaterial({ color: 0xffd24a, transparent: true, opacity: 0.7, side: THREE.DoubleSide })
+      );
+      mesh.rotation.x = -Math.PI / 2;
     } else {
       mesh = new THREE.Mesh(
         new THREE.TorusGeometry(0.42, 0.05, 8, 20),
@@ -475,8 +508,13 @@
       var nkey = art && art.npcKey ? art.npcKey(n.id) : 'officer';
       var nimg = art && art.imgs ? (art.imgs[nkey] || art.imgs.officer) : null;
       var ns = spriteSize(nkey, false);
+      var quest = state.questNpcId && state.questNpcId === n.id;
       var a = ensureActor(id, nimg, {
-        sx: ns[0], sy: ns[1], label: n.name, labelColor: '#ffe7a0'
+        sx: ns[0],
+        sy: ns[1],
+        label: (quest ? '！' : '') + n.name,
+        title: n.title || '',
+        labelColor: quest ? '#ffd36a' : '#7dff7a'
       });
       placeActor(a, px(n.x), px(n.y), 1.05, Math.sin((state.time || 0) * 2) * 0.02);
       alive[id] = 1;
@@ -531,6 +569,13 @@
       var x = ((pt.x + 0.5) * 40) / 40, z = ((pt.y + 0.5) * 40) / 40;
       ex.mesh.position.set(x, 0.08, z);
       ex.mesh.rotation.z = (state.time || 0) * 1.4;
+      extraAlive[id] = 1;
+    });
+    (state.path || []).forEach(function (wp, i) {
+      if (i % 2) return;
+      var id = 'path-' + i;
+      var ex = ensureExtra(id, 'path');
+      ex.mesh.position.set((wp.x + 0.5), 0.05, (wp.y + 0.5));
       extraAlive[id] = 1;
     });
     hideUnused(extras, extraAlive);

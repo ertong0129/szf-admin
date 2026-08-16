@@ -36,8 +36,11 @@
               <div class="who" id="who-line">—</div>
               <div class="bar hp"><i id="hp-fill"></i><span id="hp-text"></span></div>
               <div class="bar mp"><i id="mp-fill"></i><span id="mp-text"></span></div>
-              <div class="bar xp"><i id="xp-fill"></i><span id="xp-text"></span></div>
             </div>
+          </div>
+          <div id="target-frame" hidden>
+            <div id="target-name">—</div>
+            <div class="bar hp target-hp"><i id="target-hp"></i><span id="target-hp-text"></span></div>
           </div>
           <div class="side-right">
             <div class="minimap-wrap">
@@ -45,14 +48,10 @@
               <div class="map-name" id="map-name">太平村</div>
             </div>
             <div class="quest-box">
-              <h4>任务追踪</h4>
+              <h4>任务追踪 <span class="quest-hint">点击自动寻路</span></h4>
               <div id="quest-track"></div>
             </div>
           </div>
-          <div class="toast" id="toast"></div>
-          <div class="dialog" id="dialog"></div>
-        </div>
-        <div class="dock">
           <div class="chat-box">
             <div class="chat-tabs"><span class="on">附近</span><span>系统</span></div>
             <div class="chat-log" id="chat-log"></div>
@@ -61,7 +60,6 @@
               <button type="submit">发送</button>
             </form>
           </div>
-          <div class="skill-bar" id="skill-bar"></div>
           <div class="sys-btns">
             <button data-panel="char">角色</button>
             <button data-panel="bag">背包</button>
@@ -74,6 +72,13 @@
             <button id="btn-save">存档</button>
             <a href="index.html">选服</a>
           </div>
+          <div class="toast" id="toast"></div>
+          <div class="dialog" id="dialog"></div>
+        </div>
+        <div class="dock">
+          <div class="skill-bar" id="skill-bar"></div>
+          <div class="dock-xp bar xp"><i id="xp-fill"></i><span id="xp-text"></span></div>
+          <button type="button" id="btn-shop" class="shop-btn" title="商城">商</button>
         </div>
       </div>
 

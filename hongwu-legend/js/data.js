@@ -219,15 +219,15 @@
   ];
 
   D.NPCS = {
-    cunzheng: { id: 'cunzheng', name: '村正', map: 'taiping', lines: ['洪武元年，太平村刚从兵火里喘过气来。', '村外野猪成灾，壮丁又被征去守江。你若肯出手，全村感激。'] },
-    tiesmith: { id: 'tiesmith', name: '铁匠学徒', map: 'taiping', shop: 'smith', lines: ['刀钝了就来找我。京城师傅的手艺更地道。'] },
-    yaopu: { id: 'yaopu', name: '药铺掌柜', map: 'taiping', shop: 'drug', lines: ['草药能炼药。路边的乌风草、三七别浪费。'] },
-    xunshou: { id: 'xunshou', name: '驯兽师', map: 'shennong', lines: ['神农谷灵气重，奇兽出没。击败山魈，或能收服灵宠。'] },
-    chefu: { id: 'chefu', name: '车夫老周', map: 'capital', lines: ['应天城门开着。百工炉、押镖官、试炼使者都在城里。'] },
-    bagong: { id: 'bagong', name: '百工炉师傅', map: 'capital', forge: true, lines: ['炉火取《天工开物》之意。升星、开孔、镶石、炼药，都在这一炉。'] },
-    yabiao: { id: 'yabiao', name: '押镖官', map: 'capital', escort: true, lines: ['军资要送往边城方向。路上有劫镖的，护住车，银子少不了你。'] },
-    shilian: { id: 'shilian', name: '试炼使者', map: 'capital', tower: true, lines: ['英雄试炼十层，一层一波敌人。能走多远，看你的刀。'] },
-    chuansong: { id: 'chuansong', name: '渡口艄公', map: 'poyang', lines: ['水寨里刀手炮手成群，统领坐镇深处。每天都能再来。'] }
+    cunzheng: { id: 'cunzheng', name: '村正', title: '太平村知事', map: 'taiping', lines: ['洪武元年，太平村刚从兵火里喘过气来。', '村外野猪成灾，壮丁又被征去守江。你若肯出手，全村感激。'] },
+    tiesmith: { id: 'tiesmith', name: '铁匠学徒', title: '铁匠铺', map: 'taiping', shop: 'smith', lines: ['刀钝了就来找我。京城师傅的手艺更地道。'] },
+    yaopu: { id: 'yaopu', name: '药铺掌柜', title: '杂货药铺', map: 'taiping', shop: 'drug', lines: ['草药能炼药。路边的乌风草、三七别浪费。'] },
+    xunshou: { id: 'xunshou', name: '驯兽师', title: '神农谷', map: 'shennong', lines: ['神农谷灵气重，奇兽出没。击败山魈，或能收服灵宠。'] },
+    chefu: { id: 'chefu', name: '车夫老周', title: '应天车夫', map: 'capital', lines: ['应天城门开着。百工炉、押镖官、试炼使者都在城里。'] },
+    bagong: { id: 'bagong', name: '百工炉师傅', title: '天工炉', map: 'capital', forge: true, lines: ['炉火取《天工开物》之意。升星、开孔、镶石、炼药，都在这一炉。'] },
+    yabiao: { id: 'yabiao', name: '押镖官', title: '兵部押镖', map: 'capital', escort: true, lines: ['军资要送往边城方向。路上有劫镖的，护住车，银子少不了你。'] },
+    shilian: { id: 'shilian', name: '试炼使者', title: '英雄试炼', map: 'capital', tower: true, lines: ['英雄试炼十层，一层一波敌人。能走多远，看你的刀。'] },
+    chuansong: { id: 'chuansong', name: '渡口艄公', title: '鄱阳渡口', map: 'poyang', lines: ['水寨里刀手炮手成群，统领坐镇深处。每天都能再来。'] }
   };
 
   D.SHOPS = {
@@ -288,7 +288,7 @@
   D.RARITY_COLOR = { white: '#d8d0c4', green: '#6fdf7a', blue: '#6cb6ff', purple: '#c089ff', orange: '#ffb347' };
 
   D.HELP = [
-    '场景是斜视 3D（对照原作 3D 建模 + 2D 原画）。左键点地面自动寻路（黄圈落点），点NPC对话，点怪物攻击。WASD 也可走。',
+    '点右侧任务追踪可自动寻路（跨图会先走到传送点）。',
     '数字键 1-6 技能，空格普攻，F 拾取，Z 或底栏「挂机」。',
     '底栏：角色 / 背包 / 技能 / 宠物 / 天工炉 / 任务 / 系统。Esc 关窗。',
     '挂机会自动寻敌、放技能、吃药和拾取。生命过低会停手喝药。',
@@ -298,4 +298,5 @@
   ];
 
   root.GameData = D;
+  if (typeof module !== 'undefined' && module.exports) module.exports = D;
 })(typeof window !== 'undefined' ? window : global);

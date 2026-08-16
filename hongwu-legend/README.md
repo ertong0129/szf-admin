@@ -13,7 +13,7 @@ cd hongwu-legend
 node server.js
 ```
 
-**走路：** 左键点斜视 3D 地面（黄圈落点并自动寻路）。旧档若卡在房子里，进游戏会自动拉到空地。
+**走路：** 左键点斜视 3D 地面（黄圈落点并自动寻路）。**点右侧任务追踪**会跨图自动寻路并对话/打怪/采药。旧档若卡在房子里，进游戏会自动拉到空地。
 
 网上资料与创作者 demo 见 `docs/REFERENCES.md`。结论：原作是 Flash「3D 建模 + 2D 原画」斜视 ARPG；创作者公开的是 Erlang 学习服 [mgee](https://github.com/qingliangcn/mgee)，不是完整 3D 客户端。本目录用独立 WebGL 画布做 Three.js 斜视场景（房屋、树、立绘、血条、落点），对照该镜头。
 
@@ -68,7 +68,9 @@ https://gh-proxy.com/https://github.com/ertong0129/szf-admin/raw/cursor/hongwu-o
 ## 操作
 
 - **WASD / 方向键** 移动，鼠标左键点地寻路、点敌人锁定、点 NPC 对话
+- **点右侧任务追踪**（或功业面板「寻路」）自动寻路：跨图会先走到传送点，对话任务到达后自动交谈，击杀/采集会锁定最近目标
 - **1–6** 技能，**空格** 普攻，**Q / R** 吃药，**F** 拾取，**Z** 挂机
+- 底栏右侧红钮 **商** 打开商城；小地图可点击走路
 - **C** 角色 **B** 背包 **V** 技能 **P** 灵宠 **E** 百工炉 **J** 任务 **Esc** 关窗
 - 背包左键使用或装备，右键丢弃
 
@@ -76,4 +78,6 @@ https://gh-proxy.com/https://github.com/ertong0129/szf-admin/raw/cursor/hongwu-o
 
 ```bash
 node hongwu-legend/tests/formulas.test.js
+node hongwu-legend/tests/path.test.js
+node hongwu-legend/tests/server-http.test.js
 ```
