@@ -1,0 +1,1824 @@
+/* 洪武风云录 — 单机引擎 */
+(function () {
+  var F = window.Formulas;
+  var D = window.GameData;
+  var TILE = 40;
+  var SAVE_KEY = 'hongwu-legend-save-v1';
+  var BAG_CAP = 36;
+
+  var canvas = document.getElementById('world');
+  var ctx = canvas.getContext('2d');
+  var mini = document.getElementById('minimap');
+  var mctx = mini.getContext('2d');
+
+  var G = {
+    mode: 'title',
+    player: null,
+    mapId: 'taiping',
+    grid: null,
+    decals: [],
+    entities: [],
+    projectiles: [],
+    drops: [],
+    floats: [],
+    particles: [],
+    npcs: [],
+    portals: [],
+    herbs: [],
+    keys: {},
+    mouse: { x: 0, y: 0, down: false, wx: 0, wy: 0 },
+    cam: { x: 0, y: 0 },
+    dest: null,
+    time: 0,
+    last: 0,
+    log: [],
+    selectedClass: 'warrior',
+    dialogNpc: null,
+    toastT: 0,
+    escort: null,
+    towerFloor: 0,
+    waveLeft: 0
+  };
+
+  function uid() { return 'id' + Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-3); }
+  function rand(a, b) { return a + Math.random() * (b - a); }
+  function irand(a, b) { return Math.floor(rand(a, b + 1)); }
+  function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
+  function dist(a, b) { var dx = a.x - b.x, dy = a.y - b.y; return Math.hypot(dx, dy); }
+  function ang(a, b) { return Math.atan2(b.y - a.y, b.x - a.x); }
+
+  function toast(msg) {
+    var el = document.getElementById('toast');
+    el.textContent = msg;
+    el.style.display = 'block';
+    G.toastT = 2.2;
+  }
+
+  function log(msg) {
+    G.log.unshift(msg);
+    if (G.log.length > 8) G.log.pop();
+    renderLog();
+  }
+
+  function renderLog() {
+    document.getElementById('log-list').innerHTML = G.log.map(function (l) {
+      return '<p>' + l + '</p>';
+    }).join('');
+  }
+
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(function (s) { s.classList.remove('active'); });
+    document.getElementById(id).classList.add('active');
+  }
+
+  function resize() {
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
+  }
+  window.addEventListener('resize', resize);
+
+  /* ========== 角色 / 属性 ========== */
+  function emptyEquip() {
+    var e = {};
+    D.SLOTS.forEach(function (s) { e[s.id] = null; });
+    return e;
+  }
+
+  function makePlayer(name, cls) {
+    var c = D.CLASSES[cls];
+    var p = {
+      name: name || '无名',
+      cls: cls,
+      level: 1,
+      exp: 0,
+      x: 22 * TILE,
+      y: 20 * TILE,
+      facing: 0,
+      hp: 1,
+      mp: 1,
+      added: { str: 0, int: 0, agi: 0, spi: 0, con: 0 },
+      unspentAttr: 0,
+      unspentSkill: 1,
+      skills: {},
+      skillCd: {},
+      equip: emptyEquip(),
+      bag: [],
+      silver: 40,
+      gold: 0,
+      pet: null,
+      quests: { active: ['q1'], done: [], progress: {} },
+      flags: {},
+      buffs: [],
+      auto: false,
+      target: null,
+      atkCd: 0,
+      gatherCd: 0
+    };
+    D.SKILLS[cls].forEach(function (s) {
+      if (s.unlock <= 1) p.skills[s.id] = 1;
+    });
+    giveStarterGear(p);
+    addItem(p, { id: 'hp1', n: 5 });
+    addItem(p, { id: 'mp1', n: 3 });
+    var st = stats(p);
+    p.hp = st.maxHp;
+    p.mp = st.maxMp;
+    return p;
+  }
+
+  function giveStarterGear(p) {
+    D.SLOTS.forEach(function (s) {
+      p.equip[s.id] = rollEquip(s.id, 1, 'white', p.cls);
+    });
+  }
+
+  function rawAttrs(p) {
+    var c = D.CLASSES[p.cls];
+    var a = { str: c.base.str, int: c.base.int, agi: c.base.agi, spi: c.base.spi, con: c.base.con };
+    Object.keys(p.added).forEach(function (k) { a[k] += p.added[k]; });
+    eachEquip(p, function (it) {
+      ['str', 'int', 'agi', 'spi', 'con'].forEach(function (k) {
+        if (it.stats[k]) a[k] += it.stats[k];
+      });
+      (it.gems || []).forEach(function (g) {
+        if (a[g.kind] != null) a[g.kind] += F.gemStat(g.kind, g.grade);
+      });
+    });
+    return a;
+  }
+
+  function eachEquip(p, fn) {
+    D.SLOTS.forEach(function (s) {
+      if (p.equip[s.id]) fn(p.equip[s.id], s.id);
+    });
+  }
+
+  function stats(p) {
+    var c = D.CLASSES[p.cls];
+    var attrs = rawAttrs(p);
+    var d = F.attrDerive(attrs);
+    var extra = { patk: 0, matk: 0, pdef: 0, mdef: 0, hp: 0, mp: 0, aspd: 0, crit: 0, speed: 0 };
+    eachEquip(p, function (it) {
+      Object.keys(extra).forEach(function (k) {
+        if (it.stats[k]) extra[k] += it.stats[k];
+      });
+      (it.gems || []).forEach(function (g) {
+        if (extra[g.kind] != null) extra[g.kind] += F.gemStat(g.kind, g.grade);
+      });
+    });
+    var bpatk = 0, bmatk = 0, bpdef = 0, bmdef = 0, bspd = 0;
+    p.buffs.forEach(function (b) {
+      if (b.patk) bpatk += b.patk;
+      if (b.matk) bmatk += b.matk;
+      if (b.pdef) bpdef += b.pdef;
+      if (b.mdef) bmdef += b.mdef;
+      if (b.speed) bspd += b.speed;
+    });
+    var maxHp = Math.floor(c.baseHp + d.hp + extra.hp + p.level * 18);
+    var maxMp = Math.floor(c.baseMp + d.mp + extra.mp + p.level * 6);
+    return {
+      attrs: attrs,
+      maxHp: maxHp,
+      maxMp: maxMp,
+      patk: Math.floor((d.patk + extra.patk) * (1 + bpatk)),
+      matk: Math.floor((d.matk + extra.matk) * (1 + bmatk)),
+      pdef: Math.floor((d.pdef + extra.pdef) * (1 + bpdef)),
+      mdef: Math.floor((d.mdef + extra.mdef) * (1 + bmdef)),
+      aspd: 0.85 + d.aspd + extra.aspd,
+      crit: 0.05 + d.crit + extra.crit,
+      speed: c.speed * (1 + extra.speed + bspd),
+      range: c.range
+    };
+  }
+
+  function addExp(p, n) {
+    p.exp += n;
+    var up = 0;
+    while (p.exp >= F.xpToNext(p.level) && p.level < 60) {
+      p.exp -= F.xpToNext(p.level);
+      p.level += 1;
+      p.unspentAttr += 5;
+      p.unspentSkill += 1;
+      var st = stats(p);
+      p.hp = st.maxHp;
+      p.mp = st.maxMp;
+      up += 1;
+      D.SKILLS[p.cls].forEach(function (s) {
+        if (s.unlock === p.level && p.skills[s.id] == null) p.skills[s.id] = 0;
+      });
+    }
+    if (up) {
+      toast('升至 ' + p.level + ' 级');
+      log('境界提升：' + p.level + ' 级');
+      beep(520, 0.08);
+    }
+  }
+
+  /* ========== 物品 ========== */
+  function rollEquip(slot, level, rarity, cls) {
+    rarity = rarity || F.rollRarity(null, Math.max(0, level - 6));
+    var names = D.EQUIP_NAMES[slot];
+    var nm;
+    if (slot === 'weapon') {
+      var arr = names[cls] || names.warrior;
+      nm = arr[clamp(Math.floor((level - 1) / 8), 0, arr.length - 1)];
+    } else {
+      nm = names[clamp(Math.floor((level - 1) / 8), 0, names.length - 1)];
+    }
+    var base = D.EQUIP_BASE[slot];
+    var st = {};
+    Object.keys(base).forEach(function (k) {
+      var v = base[k];
+      if (k === 'crit' || k === 'speed') st[k] = +(v * (F.RARITY_MULT[rarity] || 1) * (0.8 + level * 0.03)).toFixed(3);
+      else st[k] = F.scaleEquipStat(v, level, rarity, 0);
+    });
+    if (slot === 'weapon' && cls === 'wanderer') { st.matk = Math.floor(st.matk * 1.15); st.patk = Math.floor(st.patk * 0.45); }
+    if (slot === 'weapon' && cls === 'healer') { st.matk = Math.floor(st.matk * 1.1); st.patk = Math.floor(st.patk * 0.4); }
+    return {
+      uid: uid(), type: 'equip', slot: slot, name: nm, rarity: rarity, level: level,
+      stars: 0, sockets: 0, gems: [], stats: st
+    };
+  }
+
+  function itemName(it) {
+    if (it.type === 'equip') {
+      return (it.stars ? '+' + it.stars + ' ' : '') + it.name;
+    }
+    var c = D.CONSUMABLES[it.id];
+    if (c) return c.name;
+    if (it.type === 'gem') return it.name + '·' + it.grade + '级';
+    return it.name || it.id;
+  }
+
+  function addItem(p, item) {
+    if (item.type === 'equip' || item.type === 'gem') {
+      if (p.bag.length >= BAG_CAP) { toast('背包已满'); return false; }
+      p.bag.push(item);
+      return true;
+    }
+    var found = p.bag.find(function (x) { return x.id === item.id && x.type !== 'equip' && x.type !== 'gem'; });
+    if (found) { found.n = (found.n || 1) + (item.n || 1); return true; }
+    if (p.bag.length >= BAG_CAP) { toast('背包已满'); return false; }
+    var proto = D.CONSUMABLES[item.id];
+    p.bag.push(Object.assign({ n: item.n || 1, type: proto ? proto.kind : 'item' }, proto || item, { id: item.id }));
+    return true;
+  }
+
+  function takeItem(p, id, n) {
+    n = n || 1;
+    for (var i = 0; i < p.bag.length; i++) {
+      var it = p.bag[i];
+      if (it.id === id && it.type !== 'equip') {
+        if ((it.n || 1) < n) return false;
+        it.n -= n;
+        if (it.n <= 0) p.bag.splice(i, 1);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function countItem(p, id) {
+    var n = 0;
+    p.bag.forEach(function (it) {
+      if (it.id === id) n += it.n || 1;
+    });
+    return n;
+  }
+
+  /* ========== 地图 ========== */
+  function inGrid(g, x, y) { return y >= 0 && y < g.length && x >= 0 && x < g[0].length; }
+  function setTile(g, x, y, t) { if (inGrid(g, x, y)) g[y][x] = t; }
+  function fill(g, t) {
+    for (var y = 0; y < g.length; y++) for (var x = 0; x < g[0].length; x++) g[y][x] = t;
+  }
+  function rect(g, x, y, w, h, t) {
+    for (var j = 0; j < h; j++) for (var i = 0; i < w; i++) setTile(g, x + i, y + j, t);
+  }
+  function scatter(g, t, n, ok) {
+    var w = g[0].length, h = g.length, gds = 0;
+    while (n-- > 0 && gds < 800) {
+      gds++;
+      var x = irand(1, w - 2), y = irand(1, h - 2);
+      if (!ok || ok(g[y][x], x, y)) setTile(g, x, y, t);
+    }
+  }
+
+  function makeGrid(w, h, t) {
+    var g = [];
+    for (var y = 0; y < h; y++) {
+      g[y] = [];
+      for (var x = 0; x < w; x++) g[y][x] = t;
+    }
+    return g;
+  }
+
+  function blockedTile(t, mapId) {
+    if (t === 'wall' || t === 'tree' || t === 'house' || t === 'roof' || t === 'rock') return true;
+    if (t === 'water' && mapId !== 'poyang') return true;
+    return false;
+  }
+
+  function buildMap(id) {
+    var w = 50, h = 36;
+    var g = makeGrid(w, h, 'grass');
+    G.decals = [];
+    if (id === 'taiping') {
+      fill(g, 'grass');
+      rect(g, 16, 12, 16, 12, 'dirt');
+      for (var i = 0; i < 50; i++) setTile(g, 24, i, i > 2 && i < 34 ? 'dirt' : g[Math.min(i, h - 1)][24]);
+      rect(g, 18, 14, 4, 3, 'house'); rect(g, 18, 13, 4, 1, 'roof');
+      rect(g, 26, 14, 4, 3, 'house'); rect(g, 26, 13, 4, 1, 'roof');
+      rect(g, 22, 20, 5, 3, 'house'); rect(g, 22, 19, 5, 1, 'roof');
+      rect(g, 0, 30, 50, 6, 'water');
+      scatter(g, 'tree', 70, function (t) { return t === 'grass'; });
+    } else if (id === 'wild') {
+      fill(g, 'grass');
+      scatter(g, 'tree', 140, function (t) { return t === 'grass'; });
+      scatter(g, 'dirt', 40, function (t) { return t === 'grass'; });
+      rect(g, 36, 22, 10, 8, 'dirt');
+    } else if (id === 'shennong') {
+      fill(g, 'moss');
+      rect(g, 0, 0, 50, 36, 'moss');
+      scatter(g, 'tree', 90, function (t) { return t === 'moss'; });
+      scatter(g, 'water', 18, function (t) { return t === 'moss'; });
+      rect(g, 20, 14, 10, 8, 'dirt');
+    } else if (id === 'poyang') {
+      fill(g, 'water');
+      rect(g, 2, 14, 46, 8, 'dock');
+      rect(g, 18, 6, 16, 24, 'dock');
+      rect(g, 34, 16, 10, 10, 'house');
+      scatter(g, 'rock', 12, function (t) { return t === 'dock'; });
+    } else if (id === 'capital') {
+      fill(g, 'stone');
+      rect(g, 0, 0, 50, 36, 'stone');
+      for (var x = 0; x < 50; x++) { setTile(g, x, 0, 'wall'); setTile(g, x, 35, 'wall'); }
+      for (var y = 0; y < 36; y++) { setTile(g, 0, y, 'wall'); setTile(g, 49, y, 'wall'); }
+      rect(g, 6, 6, 8, 6, 'house'); rect(g, 6, 5, 8, 1, 'roof');
+      rect(g, 20, 8, 10, 7, 'house'); rect(g, 20, 7, 10, 1, 'roof');
+      rect(g, 36, 10, 8, 6, 'house'); rect(g, 36, 9, 8, 1, 'roof');
+      rect(g, 8, 18, 34, 4, 'dirt');
+      rect(g, 22, 4, 4, 28, 'dirt');
+    } else if (id === 'tower') {
+      fill(g, 'arena');
+      for (x = 0; x < 26; x++) for (y = 0; y < 26; y++) {
+        if (x === 0 || y === 0 || x === 25 || y === 25) setTile(g, x, y, 'wall');
+        else setTile(g, x, y, 'arena');
+      }
+      w = 26; h = 26;
+      g = g.slice(0, 26).map(function (row) { return row.slice(0, 26); });
+    } else if (id === 'road') {
+      fill(g, 'grass');
+      rect(g, 0, 8, 56, 6, 'dirt');
+      w = 56; h = 22;
+      g = makeGrid(56, 22, 'grass');
+      rect(g, 0, 8, 56, 6, 'dirt');
+      scatter(g, 'tree', 50, function (t) { return t === 'grass'; });
+    }
+    G.grid = g;
+    G.mapId = id;
+    spawnMapContent(id);
+  }
+
+  function worldSize() {
+    return { w: G.grid[0].length * TILE, h: G.grid.length * TILE };
+  }
+
+  function tileAtWorld(x, y) {
+    var tx = Math.floor(x / TILE), ty = Math.floor(y / TILE);
+    if (!inGrid(G.grid, tx, ty)) return 'wall';
+    return G.grid[ty][tx];
+  }
+
+  function canWalk(x, y) {
+    return !blockedTile(tileAtWorld(x, y), G.mapId) &&
+      !blockedTile(tileAtWorld(x - 10, y), G.mapId) &&
+      !blockedTile(tileAtWorld(x + 10, y), G.mapId) &&
+      !blockedTile(tileAtWorld(x, y - 10), G.mapId) &&
+      !blockedTile(tileAtWorld(x, y + 10), G.mapId);
+  }
+
+  function spawnMapContent(id) {
+    G.entities = [];
+    G.projectiles = [];
+    G.drops = [];
+    G.npcs = [];
+    G.portals = (D.PORTALS[id] || []).map(function (p) { return Object.assign({}, p); });
+    G.herbs = [];
+    Object.keys(D.NPCS).forEach(function (k) {
+      var n = D.NPCS[k];
+      if (n.map === id) {
+        var pos = npcPos(n.id, id);
+        G.npcs.push({ id: n.id, name: n.name, x: pos.x, y: pos.y });
+      }
+    });
+    if (id === 'wild') {
+      spawnPack('boar', 10, 2);
+      spawnPack('wolf', 7, 5);
+      spawnPack('bandit', 5, 8);
+      if (G.player && G.player.level >= 16) spawnOne('world_boss', 40 * TILE, 26 * TILE);
+      scatterHerbs(12);
+    } else if (id === 'shennong') {
+      spawnPack('snake', 8, 7);
+      spawnPack('spirit', 5, 11);
+      scatterHerbs(16);
+    } else if (id === 'poyang') {
+      spawnPack('sailor', 8, 14);
+      spawnPack('cannon', 4, 16);
+      spawnOne('lake_boss', 38 * TILE, 20 * TILE);
+    } else if (id === 'tower') {
+      startTowerFloor(G.towerFloor || 1);
+    } else if (id === 'road') {
+      /* escort fills this */
+    }
+  }
+
+  function npcPos(id, map) {
+    var table = {
+      cunzheng: [20 * TILE, 16 * TILE],
+      tiesmith: [28 * TILE, 16 * TILE],
+      yaopu: [24 * TILE, 22 * TILE],
+      xunshou: [24 * TILE, 16 * TILE],
+      chefu: [10 * TILE, 20 * TILE],
+      bagong: [24 * TILE, 12 * TILE],
+      yabiao: [32 * TILE, 20 * TILE],
+      shilian: [40 * TILE, 14 * TILE],
+      chuansong: [6 * TILE, 18 * TILE]
+    };
+    var p = table[id] || [10 * TILE, 10 * TILE];
+    return { x: p[0], y: p[1] };
+  }
+
+  function spawnPack(kind, n, lv) {
+    var def = D.MONSTERS[kind];
+    for (var i = 0; i < n; i++) {
+      var tries = 0, x, y;
+      do {
+        x = rand(3, G.grid[0].length - 3) * TILE;
+        y = rand(3, G.grid.length - 3) * TILE;
+        tries++;
+      } while (!canWalk(x, y) && tries < 40);
+      spawnOne(kind, x, y, lv || def.level);
+    }
+  }
+
+  function spawnOne(kind, x, y, lv) {
+    var def = D.MONSTERS[kind];
+    var level = lv || def.level;
+    var e = {
+      uid: uid(), kind: kind, name: def.name, color: def.color,
+      x: x, y: y, r: def.radius, speed: def.speed,
+      level: level, boss: !!def.boss, magic: !!def.magic,
+      hp: F.monsterHp(level, def.boss),
+      maxHp: F.monsterHp(level, def.boss),
+      atk: F.monsterAtk(level, def.boss),
+      stun: 0, atkCd: 0, aggro: 0
+    };
+    G.entities.push(e);
+    return e;
+  }
+
+  function scatterHerbs(n) {
+    var kinds = ['herb_san', 'herb_wu', 'herb_fu', 'herb_ling'];
+    for (var i = 0; i < n; i++) {
+      var x = rand(2, G.grid[0].length - 2) * TILE;
+      var y = rand(2, G.grid.length - 2) * TILE;
+      if (!canWalk(x, y)) continue;
+      G.herbs.push({ id: kinds[i % 4], x: x, y: y });
+    }
+  }
+
+  /* ========== 传送 / 进出图 ========== */
+  function travel(to, tx, ty) {
+    var p = G.player;
+    buildMap(to);
+    p.x = (tx + 0.5) * TILE;
+    p.y = (ty + 0.5) * TILE;
+    p.target = null;
+    G.dest = null;
+    log('抵达 ' + D.MAP_META[to].name);
+    if (to === 'capital') maybeCompleteTalk('chefu');
+    refreshQuestUI();
+    saveSilent();
+  }
+
+  /* ========== 战斗 ========== */
+  function floatText(x, y, text, color) {
+    G.floats.push({ x: x, y: y, text: text, color: color || '#fff', t: 0.9 });
+  }
+
+  function burst(x, y, color, n) {
+    n = n || 8;
+    for (var i = 0; i < n; i++) {
+      G.particles.push({
+        x: x, y: y, vx: rand(-70, 70), vy: rand(-90, 20),
+        color: color, t: rand(0.25, 0.55)
+      });
+    }
+  }
+
+  function beep(freq, dur) {
+    try {
+      if (!G.ac) G.ac = new (window.AudioContext || window.webkitAudioContext)();
+      var o = G.ac.createOscillator();
+      var g = G.ac.createGain();
+      o.frequency.value = freq;
+      o.type = 'square';
+      g.gain.value = 0.03;
+      o.connect(g); g.connect(G.ac.destination);
+      o.start();
+      o.stop(G.ac.currentTime + (dur || 0.05));
+    } catch (e) { /* ignore */ }
+  }
+
+  function hurtMonster(e, dmg, crit) {
+    e.hp -= dmg;
+    e.aggro = 4;
+    floatText(e.x, e.y - 18, (crit ? '暴 ' : '') + dmg, crit ? '#ffd36a' : '#ffe8c8');
+    burst(e.x, e.y, e.color, crit ? 14 : 7);
+    if (e.hp <= 0) killMonster(e);
+  }
+
+  function killMonster(e) {
+    var p = G.player;
+    var xp = F.killXp(p.level, e.level, e.boss);
+    addExp(p, xp);
+    var sil = irand(2, 6 + e.level);
+    if (e.boss) sil *= 8;
+    p.silver += sil;
+    log('击败 ' + e.name + '，经验 +' + xp + ' 银两 +' + sil);
+    dropLoot(e);
+    noteKill(e.kind);
+    if (e.kind === 'lake_boss') { p.flags.poyang_clear = true; questCheck(); }
+    if (e.kind === 'spirit' && !p.pet && Math.random() < 0.45) grantPet();
+    if (e.kind === 'spirit' && !p.pet) {
+      /* extra chance already handled */
+    }
+    if (G.mapId === 'shennong' && !p.pet && e.kind === 'spirit') {
+      if (!p.flags.pet_hint) { toast('山魈气息未散，再寻一只或可结缘'); p.flags.pet_hint = true; }
+    }
+    G.entities = G.entities.filter(function (x) { return x !== e; });
+    if (p.target === e) p.target = null;
+    if (G.mapId === 'tower') onTowerKill();
+    if (G.mapId === 'wild' && e.kind !== 'world_boss' && G.entities.filter(function (x) { return !x.boss; }).length < 8) {
+      spawnPack(e.kind, 1, e.level);
+    }
+  }
+
+  function dropLoot(e) {
+    var p = G.player;
+    if (Math.random() < (e.boss ? 0.95 : 0.28)) {
+      var eq = rollEquip(D.SLOTS[irand(0, D.SLOTS.length - 1)].id, e.level, null, p.cls);
+      G.drops.push({ x: e.x + rand(-12, 12), y: e.y + rand(-12, 12), item: eq });
+    }
+    var def = D.MONSTERS[e.kind];
+    (def.loot || []).forEach(function (id) {
+      if (id === 'gem') {
+        if (Math.random() < (e.boss ? 0.7 : 0.12)) {
+          var gdef = D.GEMS[irand(0, D.GEMS.length - 1)];
+          G.drops.push({
+            x: e.x + rand(-10, 10), y: e.y + rand(-10, 10),
+            item: { uid: uid(), type: 'gem', id: gdef.id, name: gdef.name, kind: gdef.kind, grade: clamp(1 + Math.floor(e.level / 8), 1, 6) }
+          });
+        }
+      } else if (Math.random() < (e.boss ? 0.8 : 0.22)) {
+        G.drops.push({ x: e.x + rand(-10, 10), y: e.y + rand(-10, 10), item: { id: id, n: 1 } });
+      }
+    });
+  }
+
+  function pickupNear() {
+    var p = G.player;
+    G.drops = G.drops.filter(function (d) {
+      if (dist(p, d) < 36) {
+        if (addItem(p, d.item)) {
+          log('获得 ' + itemName(d.item));
+          return false;
+        }
+      }
+      return true;
+    });
+    G.herbs = G.herbs.filter(function (h) {
+      if (dist(p, h) < 32) {
+        addItem(p, { id: h.id, n: 1 });
+        log('采集 ' + D.CONSUMABLES[h.id].name);
+        noteGather(h.id);
+        return false;
+      }
+      return true;
+    });
+  }
+
+  function playerAttack() {
+    var p = G.player;
+    if (!p.target || p.atkCd > 0) return;
+    var st = stats(p);
+    if (dist(p, p.target) > st.range + 8) return;
+    p.facing = ang(p, p.target);
+    var magic = p.cls === 'wanderer' || p.cls === 'healer';
+    var atk = magic ? st.matk : st.patk;
+    var def = magic ? 0 : p.target.level * 1.2;
+    var crit = F.critRoll(st.crit);
+    var dmg = F.calcDamage(atk, def, 1, crit, rand(-0.08, 0.08));
+    hurtMonster(p.target, dmg, crit);
+    p.atkCd = 1 / Math.max(0.45, st.aspd);
+    beep(220, 0.03);
+  }
+
+  function castSkill(sk) {
+    var p = G.player;
+    if (!sk) return;
+    var lv = p.skills[sk.id] || 0;
+    if (lv <= 0) { toast('尚未领悟'); return; }
+    if ((p.skillCd[sk.id] || 0) > 0) return;
+    var st = stats(p);
+    if (p.mp < sk.cost) { toast('内力不足'); return; }
+    var mul = sk.mul ? sk.mul + (lv - 1) * 0.08 : 1;
+    var magic = !!sk.magic || p.cls === 'wanderer' || (p.cls === 'healer' && sk.kind !== 'heal');
+    p.mp -= sk.cost;
+    p.skillCd[sk.id] = sk.cd * Math.max(0.55, 1 - lv * 0.03);
+    p.facing = p.target ? ang(p, p.target) : p.facing;
+
+    if (sk.kind === 'heal') {
+      var h = Math.floor(st.maxHp * (sk.heal || 0.2) * (1 + lv * 0.06));
+      p.hp = Math.min(st.maxHp, p.hp + h);
+      floatText(p.x, p.y - 20, '+' + h, '#7dff9a');
+      if (sk.pet && p.pet) {
+        p.pet.hp = Math.min(p.pet.maxHp, p.pet.hp + Math.floor(h * 0.8));
+      }
+    } else if (sk.kind === 'manaburn') {
+      var r = Math.floor(st.maxMp * (sk.mana || 0.2));
+      p.mp = Math.min(st.maxMp, p.mp + r + sk.cost);
+      floatText(p.x, p.y - 20, '+' + r + ' 内', '#7ec8ff');
+    } else if (sk.kind === 'buff') {
+      p.buffs.push(Object.assign({ t: sk.buff.dur }, sk.buff));
+      toast(sk.name + ' 生效');
+    } else if (sk.kind === 'blink') {
+      var a = Math.atan2(G.mouse.wy - p.y, G.mouse.wx - p.x);
+      tryMove(p, Math.cos(a) * 110, Math.sin(a) * 110);
+    } else if (sk.kind === 'dash' && p.target) {
+      var dsh = ang(p, p.target);
+      tryMove(p, Math.cos(dsh) * 80, Math.sin(dsh) * 80);
+      hitTarget(p, p.target, mul, magic, sk);
+    } else if (sk.kind === 'nova') {
+      G.entities.forEach(function (e) {
+        if (dist(p, e) <= (sk.range || 80)) hitTarget(p, e, mul, magic, sk);
+      });
+      burst(p.x, p.y, D.CLASSES[p.cls].color, 18);
+    } else if (sk.kind === 'pierce') {
+      fireBolt(p, sk, mul, magic, true);
+    } else if (sk.kind === 'blast' || sk.kind === 'bolt' || sk.kind === 'stun' || sk.kind === 'debuff') {
+      if (sk.kind === 'melee') {
+        if (p.target && dist(p, p.target) <= (sk.range || 50)) hitTarget(p, p.target, mul, magic, sk);
+      } else {
+        fireBolt(p, sk, mul, magic, false);
+      }
+    } else if (sk.kind === 'melee') {
+      if (p.target && dist(p, p.target) <= (sk.range || 54) + 10) hitTarget(p, p.target, mul, magic, sk);
+      else toast('距离不够');
+    }
+    beep(330, 0.04);
+  }
+
+  function fireBolt(p, sk, mul, magic, pierce) {
+    var aim = p.target || { x: G.mouse.wx, y: G.mouse.wy };
+    var a = ang(p, aim);
+    G.projectiles.push({
+      x: p.x, y: p.y, vx: Math.cos(a) * 320, vy: Math.sin(a) * 320,
+      life: 0.9, r: 5, from: 'player', mul: mul, magic: magic, skill: sk,
+      pierce: pierce, hit: {}, color: D.CLASSES[p.cls].accent
+    });
+  }
+
+  function hitTarget(p, e, mul, magic, sk) {
+    var st = stats(p);
+    var atk = magic ? st.matk : st.patk;
+    var crit = F.critRoll(st.crit + (sk && sk.crit ? sk.crit : 0));
+    var dmg = F.calcDamage(atk, e.level, mul, crit, rand(-0.05, 0.05));
+    if (sk && sk.stun) e.stun = Math.max(e.stun, sk.stun);
+    if (sk && sk.debuff) e.debuff = Object.assign({ t: sk.debuff.dur }, sk.debuff);
+    hurtMonster(e, dmg, crit);
+  }
+
+  function usePotion(kind) {
+    var p = G.player;
+    var st = stats(p);
+    var order = kind === 'hp' ? ['hp2', 'hp1'] : ['mp2', 'mp1'];
+    for (var i = 0; i < order.length; i++) {
+      if (countItem(p, order[i]) > 0) {
+        takeItem(p, order[i], 1);
+        if (kind === 'hp') {
+          var h = F.potionHeal(order[i] === 'hp2' ? 2 : 1, st.maxHp);
+          p.hp = Math.min(st.maxHp, p.hp + h);
+          floatText(p.x, p.y - 16, '+' + h, '#7dff9a');
+        } else {
+          var m = F.potionHeal(order[i] === 'mp2' ? 2 : 1, st.maxMp);
+          p.mp = Math.min(st.maxMp, p.mp + m);
+          floatText(p.x, p.y - 16, '+' + m, '#7ec8ff');
+        }
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /* ========== 任务 ========== */
+  function currentQuest() {
+    var p = G.player;
+    for (var i = 0; i < D.QUESTS.length; i++) {
+      if (p.quests.active.indexOf(D.QUESTS[i].id) >= 0) return D.QUESTS[i];
+    }
+    return null;
+  }
+
+  function noteKill(kind) {
+    var q = currentQuest();
+    if (!q || !q.kill || q.kill.id !== kind) return;
+    pprog(q.id, 1);
+    questCheck();
+  }
+
+  function noteGather(id) {
+    var q = currentQuest();
+    if (!q || !q.gather || q.gather.id !== id) return;
+    questCheck();
+  }
+
+  function pprog(id, n) {
+    G.player.quests.progress[id] = (G.player.quests.progress[id] || 0) + n;
+  }
+
+  function maybeCompleteTalk(npcId) {
+    var q = currentQuest();
+    if (q && q.talk === npcId) completeQuest(q);
+  }
+
+  function questCheck() {
+    var p = G.player;
+    var q = currentQuest();
+    if (!q) return;
+    if (q.kill && (p.quests.progress[q.id] || 0) >= q.kill.n) completeQuest(q);
+    else if (q.gather && countItem(p, q.gather.id) >= q.gather.n) completeQuest(q);
+    else if (q.flag && p.flags[q.flag]) completeQuest(q);
+  }
+
+  function completeQuest(q) {
+    var p = G.player;
+    if (p.quests.done.indexOf(q.id) >= 0) return;
+    p.quests.active = p.quests.active.filter(function (id) { return id !== q.id; });
+    p.quests.done.push(q.id);
+    addExp(p, q.reward.exp || 0);
+    p.silver += q.reward.silver || 0;
+    p.gold += q.reward.gold || 0;
+    (q.reward.items || []).forEach(function (it) { addItem(p, { id: it.id, n: it.n }); });
+    toast('完成：' + q.name);
+    log('任务完成：' + q.name);
+    var idx = D.QUESTS.findIndex(function (x) { return x.id === q.id; });
+    if (idx >= 0 && D.QUESTS[idx + 1]) p.quests.active.push(D.QUESTS[idx + 1].id);
+    refreshQuestUI();
+    beep(660, 0.1);
+  }
+
+  function refreshQuestUI() {
+    var q = currentQuest();
+    var el = document.getElementById('quest-track');
+    if (!q) { el.innerHTML = '<div class="q-item">风云暂歇，可继续挂机或挑战试炼。</div>'; return; }
+    var extra = '';
+    if (q.kill) extra = '（' + (G.player.quests.progress[q.id] || 0) + '/' + q.kill.n + '）';
+    if (q.gather) extra = '（' + countItem(G.player, q.gather.id) + '/' + q.gather.n + '）';
+    el.innerHTML = '<div class="q-item">' + q.name + extra + '<small>' + q.text + '<br/>地点：' + D.MAP_META[q.map].name + '</small></div>';
+  }
+
+  /* ========== 灵宠 ========== */
+  function grantPet() {
+    var p = G.player;
+    if (p.pet) return;
+    var def = D.PETS[irand(0, D.PETS.length - 1)];
+    p.pet = {
+      id: def.id, name: def.name, color: def.color, magic: !!def.magic,
+      level: 1, exp: 0, atkMul: def.atk, hpMul: def.hp,
+      hp: 80, maxHp: 80, x: p.x - 20, y: p.y, atkCd: 0
+    };
+    syncPet(p);
+    p.flags.got_pet = true;
+    toast('灵宠结缘：' + def.name);
+    log('收服灵宠 ' + def.name);
+    questCheck();
+  }
+
+  function syncPet(p) {
+    if (!p.pet) return;
+    var st = stats(p);
+    p.pet.maxHp = Math.floor((70 + p.level * 22) * p.pet.hpMul);
+    if (p.pet.hp > p.pet.maxHp) p.pet.hp = p.pet.maxHp;
+    p.pet.atk = Math.floor(((st.patk + st.matk) * 0.28 + p.level * 2) * p.pet.atkMul);
+  }
+
+  /* ========== 押镖 / 试炼 ========== */
+  function startEscort() {
+    var p = G.player;
+    if (p.level < 8) { toast('等级不足 8 级'); return; }
+    if (p.silver < 20) { toast('押金 20 两不足'); return; }
+    p.silver -= 20;
+    G.escort = { hp: 220, maxHp: 220, x: 4 * TILE, y: 11 * TILE, t: 0, spawn: 0 };
+    travel('road', 3, 11);
+    log('护送军资出发，沿官道向东。');
+    closeDialog();
+  }
+
+  function startTowerFloor(n) {
+    G.towerFloor = n;
+    G.entities = [];
+    var count = 3 + Math.floor(n / 2);
+    for (var i = 0; i < count; i++) {
+      spawnOne('tower', rand(6, 20) * TILE, rand(6, 20) * TILE, 8 + n * 2);
+    }
+    if (n % 5 === 0) spawnOne('tower', 13 * TILE, 12 * TILE, 10 + n * 2).boss = true;
+    G.waveLeft = G.entities.length;
+    toast('试炼第 ' + n + ' 层');
+  }
+
+  function onTowerKill() {
+    if (G.entities.length === 0) {
+      if (G.towerFloor >= 5) G.player.flags.tower5 = true;
+      questCheck();
+      if (G.towerFloor >= 10) {
+        toast('十层已破');
+        addExp(G.player, 200);
+        G.player.silver += 150;
+        return;
+      }
+      startTowerFloor(G.towerFloor + 1);
+    }
+  }
+
+  /* ========== 更新 ========== */
+  function tryMove(ent, dx, dy) {
+    var nx = ent.x + dx, ny = ent.y + dy;
+    if (canWalk(nx, ent.y)) ent.x = nx;
+    if (canWalk(ent.x, ny)) ent.y = ny;
+    var ws = worldSize();
+    ent.x = clamp(ent.x, 16, ws.w - 16);
+    ent.y = clamp(ent.y, 16, ws.h - 16);
+  }
+
+  function updatePlayer(dt) {
+    var p = G.player;
+    var st = stats(p);
+    var mx = 0, my = 0;
+    if (G.keys.KeyW || G.keys.ArrowUp) my -= 1;
+    if (G.keys.KeyS || G.keys.ArrowDown) my += 1;
+    if (G.keys.KeyA || G.keys.ArrowLeft) mx -= 1;
+    if (G.keys.KeyD || G.keys.ArrowRight) mx += 1;
+    if (mx || my) {
+      G.dest = null;
+      var len = Math.hypot(mx, my) || 1;
+      tryMove(p, (mx / len) * st.speed * dt, (my / len) * st.speed * dt);
+      p.facing = Math.atan2(my, mx);
+    } else if (G.dest) {
+      var dd = dist(p, G.dest);
+      if (dd < 6) G.dest = null;
+      else {
+        var a = ang(p, G.dest);
+        tryMove(p, Math.cos(a) * st.speed * dt, Math.sin(a) * st.speed * dt);
+        p.facing = a;
+      }
+    }
+    p.atkCd = Math.max(0, p.atkCd - dt);
+    Object.keys(p.skillCd).forEach(function (k) { p.skillCd[k] = Math.max(0, p.skillCd[k] - dt); });
+    p.buffs = p.buffs.filter(function (b) { b.t -= dt; return b.t > 0; });
+    if (p.hp < st.maxHp) p.hp = Math.min(st.maxHp, p.hp + dt * (1.2 + st.attrs.con * 0.05));
+    if (p.mp < st.maxMp) p.mp = Math.min(st.maxMp, p.mp + dt * (1.6 + st.attrs.spi * 0.08));
+    if (p.target && p.target.hp <= 0) p.target = null;
+    if (p.target && dist(p, p.target) <= st.range) playerAttack();
+    else if (p.target) {
+      G.dest = { x: p.target.x, y: p.target.y };
+    }
+    pickupNear();
+    G.portals.forEach(function (pt) {
+      var px = (pt.x + 0.5) * TILE, py = (pt.y + 0.5) * TILE;
+      if (Math.hypot(p.x - px, p.y - py) < 28) {
+        if (!pt._cd) {
+          pt._cd = 1.2;
+          travel(pt.to, pt.tx, pt.ty);
+        }
+      }
+      if (pt._cd) pt._cd = Math.max(0, pt._cd - dt);
+    });
+    if (p.auto) updateAuto(dt, st);
+    if (p.hp <= 0) die();
+  }
+
+  function updateAuto(dt, st) {
+    var p = G.player;
+    if (p.hp < st.maxHp * 0.4) usePotion('hp');
+    if (p.mp < st.maxMp * 0.25) usePotion('mp');
+    if (!p.target || p.target.hp <= 0) {
+      var best = null, bd = 9999;
+      G.entities.forEach(function (e) {
+        var d = dist(p, e);
+        if (d < bd && d < 420) { bd = d; best = e; }
+      });
+      p.target = best;
+    }
+    var skills = D.SKILLS[p.cls];
+    for (var i = 0; i < skills.length; i++) {
+      var sk = skills[i];
+      if ((p.skills[sk.id] || 0) > 0 && (p.skillCd[sk.id] || 0) <= 0 && p.mp >= sk.cost) {
+        if (sk.kind === 'heal' && p.hp > st.maxHp * 0.55) continue;
+        if (sk.kind === 'manaburn' && p.mp > st.maxMp * 0.4) continue;
+        if ((sk.kind === 'bolt' || sk.kind === 'melee' || sk.kind === 'nova' || sk.kind === 'blast' || sk.kind === 'pierce' || sk.kind === 'dash' || sk.kind === 'stun') && !p.target) continue;
+        castSkill(sk);
+        break;
+      }
+    }
+  }
+
+  function updateMonsters(dt) {
+    var p = G.player;
+    var st = stats(p);
+    G.entities.forEach(function (e) {
+      if (e.stun > 0) { e.stun -= dt; return; }
+      e.atkCd = Math.max(0, e.atkCd - dt);
+      if (e.debuff) { e.debuff.t -= dt; if (e.debuff.t <= 0) e.debuff = null; }
+      var d = dist(e, p);
+      var sight = e.boss ? 260 : 170;
+      if (d < sight) e.aggro = 3;
+      if (e.aggro > 0) {
+        e.aggro -= dt;
+        var spd = e.speed * (e.debuff && e.debuff.speed ? 1 - e.debuff.speed : 1);
+        if (d > e.r + 16) {
+          var a = ang(e, p);
+          tryMove(e, Math.cos(a) * spd * dt, Math.sin(a) * spd * dt);
+        } else if (e.atkCd <= 0) {
+          var def = e.magic ? st.mdef : st.pdef;
+          var dmg = F.calcDamage(e.atk, def, 1, false, rand(-0.05, 0.05));
+          p.hp -= dmg;
+          floatText(p.x, p.y - 18, '-' + dmg, '#ff8a7a');
+          e.atkCd = e.boss ? 1.15 : 1.35;
+          beep(140, 0.04);
+        }
+      }
+    });
+  }
+
+  function updatePet(dt) {
+    var p = G.player;
+    if (!p.pet || p.pet.hp <= 0) return;
+    syncPet(p);
+    var pet = p.pet;
+    var follow = dist(pet, p) > 46;
+    if (follow && (!p.target || dist(pet, p) > 160)) {
+      var a = ang(pet, p);
+      pet.x += Math.cos(a) * 150 * dt;
+      pet.y += Math.sin(a) * 150 * dt;
+    }
+    pet.atkCd = Math.max(0, pet.atkCd - dt);
+    var t = p.target;
+    if (t && dist(pet, t) < 220) {
+      if (dist(pet, t) > 28) {
+        var b = ang(pet, t);
+        pet.x += Math.cos(b) * 140 * dt;
+        pet.y += Math.sin(b) * 140 * dt;
+      } else if (pet.atkCd <= 0) {
+        var dmg = Math.max(1, pet.atk - t.level);
+        hurtMonster(t, dmg, false);
+        pet.atkCd = 1.1;
+      }
+    }
+  }
+
+  function updateProjectiles(dt) {
+    G.projectiles = G.projectiles.filter(function (pr) {
+      pr.x += pr.vx * dt;
+      pr.y += pr.vy * dt;
+      pr.life -= dt;
+      if (pr.life <= 0) return false;
+      for (var i = 0; i < G.entities.length; i++) {
+        var e = G.entities[i];
+        if (pr.hit[e.uid]) continue;
+        if (Math.hypot(pr.x - e.x, pr.y - e.y) < e.r + 8) {
+          pr.hit[e.uid] = true;
+          hitTarget(G.player, e, pr.mul, pr.magic, pr.skill);
+          if (pr.skill && pr.skill.kind === 'blast') {
+            G.entities.forEach(function (o) {
+              if (o !== e && dist(o, e) < 56) hitTarget(G.player, o, pr.mul * 0.7, pr.magic, pr.skill);
+            });
+          }
+          if (!pr.pierce) return false;
+        }
+      }
+      return true;
+    });
+  }
+
+  function updateEscort(dt) {
+    if (G.mapId !== 'road' || !G.escort) return;
+    var cart = G.escort;
+    cart.x += 36 * dt;
+    cart.t += dt;
+    cart.spawn += dt;
+    if (cart.spawn > 6) {
+      cart.spawn = 0;
+      spawnOne('escort', cart.x + rand(-30, 30), cart.y + rand(-80, 80), 10 + G.player.level);
+    }
+    G.entities.forEach(function (e) {
+      if (e.kind === 'escort' && dist(e, cart) < 22 && e.atkCd <= 0) {
+        cart.hp -= 8;
+        e.atkCd = 1.2;
+      }
+    });
+    if (cart.hp <= 0) {
+      toast('镖车被劫，任务失败');
+      G.escort = null;
+      travel('capital', 32, 20);
+      return;
+    }
+    if (cart.x > 52 * TILE) {
+      G.player.flags.escort_done = true;
+      G.player.silver += 80;
+      addExp(G.player, 140);
+      toast('军资送达');
+      G.escort = null;
+      questCheck();
+      travel('capital', 32, 20);
+    }
+  }
+
+  function updateFx(dt) {
+    G.floats = G.floats.filter(function (f) { f.t -= dt; f.y -= 22 * dt; return f.t > 0; });
+    G.particles = G.particles.filter(function (p) {
+      p.t -= dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 80 * dt; return p.t > 0;
+    });
+    if (G.toastT > 0) {
+      G.toastT -= dt;
+      if (G.toastT <= 0) document.getElementById('toast').style.display = 'none';
+    }
+  }
+
+  function die() {
+    var p = G.player;
+    p.silver = Math.max(0, Math.floor(p.silver * 0.9));
+    p.auto = false;
+    document.getElementById('death').classList.add('open');
+  }
+
+  function revive() {
+    document.getElementById('death').classList.remove('open');
+    var p = G.player;
+    travel('taiping', 22, 20);
+    var st = stats(p);
+    p.hp = st.maxHp;
+    p.mp = st.maxMp;
+  }
+
+  /* ========== 绘制 ========== */
+  var TILE_COLOR = {
+    grass: '#3d6a32', dirt: '#8a6a3a', water: '#2a5a7a', moss: '#2f5a44',
+    tree: '#245228', house: '#6a3a28', roof: '#8b1e1e', stone: '#6a6460',
+    wall: '#3a3430', dock: '#8a6a48', rock: '#5a5854', arena: '#4a3a4a'
+  };
+
+  function draw() {
+    var w = canvas.width, h = canvas.height;
+    ctx.fillStyle = '#0a0806';
+    ctx.fillRect(0, 0, w, h);
+    if (!G.grid || !G.player) return;
+    var p = G.player;
+    G.cam.x = p.x - w / 2;
+    G.cam.y = p.y - h / 2;
+    var ws = worldSize();
+    G.cam.x = clamp(G.cam.x, 0, Math.max(0, ws.w - w));
+    G.cam.y = clamp(G.cam.y, 0, Math.max(0, ws.h - h));
+
+    var x0 = Math.floor(G.cam.x / TILE), y0 = Math.floor(G.cam.y / TILE);
+    var x1 = Math.ceil((G.cam.x + w) / TILE), y1 = Math.ceil((G.cam.y + h) / TILE);
+    for (var ty = y0; ty < y1; ty++) {
+      for (var tx = x0; tx < x1; tx++) {
+        if (!inGrid(G.grid, tx, ty)) continue;
+        var t = G.grid[ty][tx];
+        var sx = tx * TILE - G.cam.x, sy = ty * TILE - G.cam.y;
+        var col = TILE_COLOR[t] || '#333';
+        if (t === 'water') {
+          var wave = Math.sin(G.time * 2 + tx * 0.4 + ty * 0.3) * 8;
+          ctx.fillStyle = shade(col, wave);
+        } else {
+          ctx.fillStyle = shade(col, ((tx * 13 + ty * 7) % 9) - 4);
+        }
+        ctx.fillRect(sx, sy, TILE + 1, TILE + 1);
+        if (t === 'tree') {
+          ctx.fillStyle = '#2a1a10';
+          ctx.fillRect(sx + 17, sy + 22, 6, 14);
+          ctx.fillStyle = '#1f4a24';
+          ctx.beginPath(); ctx.arc(sx + 20, sy + 16, 13, 0, Math.PI * 2); ctx.fill();
+        }
+        if (t === 'roof') {
+          ctx.fillStyle = '#c9a227';
+          ctx.fillRect(sx + 4, sy + 16, TILE - 8, 3);
+        }
+      }
+    }
+
+    G.herbs.forEach(function (hb) {
+      var s = worldToScreen(hb.x, hb.y);
+      ctx.fillStyle = '#7dff9a';
+      ctx.beginPath(); ctx.arc(s.x, s.y, 4, 0, Math.PI * 2); ctx.fill();
+    });
+    G.drops.forEach(function (d) {
+      var s = worldToScreen(d.x, d.y);
+      ctx.fillStyle = d.item.rarity ? D.RARITY_COLOR[d.item.rarity] : '#f0d56a';
+      ctx.fillRect(s.x - 5, s.y - 5, 10, 10);
+    });
+    G.portals.forEach(function (pt) {
+      var s = worldToScreen((pt.x + 0.5) * TILE, (pt.y + 0.5) * TILE);
+      ctx.strokeStyle = '#d4af37';
+      ctx.globalAlpha = 0.7 + Math.sin(G.time * 3) * 0.2;
+      ctx.beginPath(); ctx.arc(s.x, s.y, 14, 0, Math.PI * 2); ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = '#f3e6c4';
+      ctx.font = '11px serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(pt.label, s.x, s.y - 18);
+    });
+    G.npcs.forEach(function (n) {
+      drawActor(n.x, n.y, '#d4af37', 11, '！');
+      var s = worldToScreen(n.x, n.y);
+      ctx.fillStyle = '#f3e6c4';
+      ctx.font = '12px serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(n.name, s.x, s.y - 22);
+    });
+    G.entities.forEach(function (e) { drawMonster(e); });
+    if (G.escort && G.mapId === 'road') {
+      var cs = worldToScreen(G.escort.x, G.escort.y);
+      ctx.fillStyle = '#c4a060';
+      ctx.fillRect(cs.x - 16, cs.y - 10, 32, 20);
+      drawBar(cs.x - 16, cs.y - 18, 32, G.escort.hp / G.escort.maxHp, '#c8312a');
+      ctx.fillStyle = '#fff'; ctx.font = '11px serif'; ctx.textAlign = 'center';
+      ctx.fillText('军资车', cs.x, cs.y + 22);
+    }
+    if (p.pet && p.pet.hp > 0) drawActor(p.pet.x, p.pet.y, p.pet.color, 8, '');
+    drawHero(p);
+    G.projectiles.forEach(function (pr) {
+      var s = worldToScreen(pr.x, pr.y);
+      ctx.fillStyle = pr.color || '#fff';
+      ctx.beginPath(); ctx.arc(s.x, s.y, 4, 0, Math.PI * 2); ctx.fill();
+    });
+    G.particles.forEach(function (pt) {
+      var s = worldToScreen(pt.x, pt.y);
+      ctx.globalAlpha = clamp(pt.t * 2, 0, 1);
+      ctx.fillStyle = pt.color;
+      ctx.fillRect(s.x, s.y, 3, 3);
+      ctx.globalAlpha = 1;
+    });
+    G.floats.forEach(function (f) {
+      var s = worldToScreen(f.x, f.y);
+      ctx.globalAlpha = clamp(f.t * 1.4, 0, 1);
+      ctx.fillStyle = f.color;
+      ctx.font = 'bold 14px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(f.text, s.x, s.y);
+      ctx.globalAlpha = 1;
+    });
+
+    var tint = D.MAP_META[G.mapId].tint;
+    ctx.fillStyle = 'rgba(' + Math.floor(tint[0] * 255) + ',' + Math.floor(tint[1] * 255) + ',' + Math.floor(tint[2] * 255) + ',0.16)';
+    ctx.fillRect(0, 0, w, h);
+    drawMinimap();
+    drawHud();
+  }
+
+  function shade(hex, d) {
+    var n = parseInt(hex.slice(1), 16);
+    var r = clamp(((n >> 16) & 255) + d, 0, 255);
+    var g = clamp(((n >> 8) & 255) + d, 0, 255);
+    var b = clamp((n & 255) + d, 0, 255);
+    return 'rgb(' + r + ',' + g + ',' + b + ')';
+  }
+
+  function worldToScreen(x, y) { return { x: x - G.cam.x, y: y - G.cam.y }; }
+
+  function drawActor(x, y, color, r, mark) {
+    var s = worldToScreen(x, y);
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    ctx.beginPath(); ctx.ellipse(s.x, s.y + r, r * 0.9, r * 0.4, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.arc(s.x, s.y, r, 0, Math.PI * 2); ctx.fill();
+    if (mark) {
+      ctx.fillStyle = '#ffd36a';
+      ctx.font = '12px serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(mark, s.x, s.y - r - 6);
+    }
+  }
+
+  function drawHero(p) {
+    var s = worldToScreen(p.x, p.y);
+    var c = D.CLASSES[p.cls];
+    ctx.save();
+    ctx.translate(s.x, s.y);
+    ctx.rotate(p.facing);
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    ctx.beginPath(); ctx.ellipse(0, 10, 12, 5, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = c.color;
+    ctx.beginPath(); ctx.arc(0, 0, 12, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = c.accent;
+    ctx.fillRect(10, -2, 14, 4);
+    ctx.restore();
+    if (p.target) {
+      var ts = worldToScreen(p.target.x, p.target.y);
+      ctx.strokeStyle = '#ffd36a';
+      ctx.beginPath(); ctx.arc(ts.x, ts.y, p.target.r + 8, 0, Math.PI * 2); ctx.stroke();
+    }
+  }
+
+  function drawMonster(e) {
+    drawActor(e.x, e.y, e.color, e.r, e.boss ? '★' : '');
+    var s = worldToScreen(e.x, e.y);
+    drawBar(s.x - 16, s.y - e.r - 10, 32, e.hp / e.maxHp, '#c8312a');
+    ctx.fillStyle = '#f3e6c4';
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(e.level + ' ' + e.name, s.x, s.y + e.r + 12);
+  }
+
+  function drawBar(x, y, w, ratio, color) {
+    ctx.fillStyle = '#1a1008';
+    ctx.fillRect(x, y, w, 4);
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, w * clamp(ratio, 0, 1), 4);
+  }
+
+  function drawMinimap() {
+    var w = mini.width, h = mini.height;
+    mctx.fillStyle = '#0a0806';
+    mctx.fillRect(0, 0, w, h);
+    if (!G.grid) return;
+    var gw = G.grid[0].length, gh = G.grid.length;
+    var sx = w / gw, sy = h / gh;
+    for (var y = 0; y < gh; y++) {
+      for (var x = 0; x < gw; x++) {
+        mctx.fillStyle = TILE_COLOR[G.grid[y][x]] || '#333';
+        mctx.fillRect(x * sx, y * sy, sx + 0.5, sy + 0.5);
+      }
+    }
+    G.entities.forEach(function (e) {
+      mctx.fillStyle = e.boss ? '#ffd36a' : '#c8312a';
+      mctx.fillRect(e.x / TILE * sx - 1, e.y / TILE * sy - 1, 3, 3);
+    });
+    mctx.fillStyle = '#6fdf7a';
+    mctx.fillRect(G.player.x / TILE * sx - 2, G.player.y / TILE * sy - 2, 4, 4);
+  }
+
+  function drawHud() {
+    var p = G.player, st = stats(p);
+    document.getElementById('who-line').textContent = p.name + ' · ' + D.CLASSES[p.cls].name + '  ' + p.level + '级';
+    document.getElementById('portrait').textContent = D.CLASSES[p.cls].name[0];
+    document.getElementById('portrait').style.color = D.CLASSES[p.cls].accent;
+    setBar('hp', p.hp, st.maxHp);
+    setBar('mp', p.mp, st.maxMp);
+    setBar('xp', p.exp, F.xpToNext(p.level));
+    renderSkills();
+  }
+
+  function setBar(id, cur, max) {
+    document.getElementById(id + '-fill').style.width = (100 * cur / Math.max(1, max)) + '%';
+    document.getElementById(id + '-text').textContent = Math.floor(cur) + '/' + Math.floor(max);
+  }
+
+  function renderSkills() {
+    var p = G.player;
+    var box = document.getElementById('skill-bar');
+    var html = D.SKILLS[p.cls].map(function (sk) {
+      var lv = p.skills[sk.id] || 0;
+      var cd = p.skillCd[sk.id] || 0;
+      var locked = lv <= 0;
+      return '<div class="skill-slot' + (locked ? ' locked' : '') + '" data-skill="' + sk.id + '">' +
+        '<div class="key">' + sk.key + '</div>' +
+        '<div class="name">' + sk.name + '</div>' +
+        (cd > 0 ? '<div class="cd">' + cd.toFixed(1) + '</div>' : '') +
+        '</div>';
+    }).join('');
+    html += '<div class="util-slot" id="slot-hp"><div class="key">Q</div><div class="name">金创</div></div>';
+    html += '<div class="util-slot" id="slot-mp"><div class="key">R</div><div class="name">内力</div></div>';
+    html += '<div class="util-slot' + (p.auto ? ' auto-on' : '') + '" id="slot-auto"><div class="key">Z</div><div class="name">挂机</div></div>';
+    box.innerHTML = html;
+  }
+
+  /* ========== 面板 ========== */
+  function closePanels() {
+    document.querySelectorAll('.panel').forEach(function (p) { p.classList.remove('open'); });
+  }
+
+  function openPanel(id) {
+    var el = document.getElementById('panel-' + id);
+    var was = el.classList.contains('open');
+    closePanels();
+    if (!was) {
+      el.classList.add('open');
+      paintPanel(id);
+    }
+  }
+
+  function paintPanel(id) {
+    var p = G.player, st = stats(p);
+    if (id === 'char') {
+      var attrs = st.attrs;
+      var rows = Object.keys(D.ATTR_LABEL).map(function (k) {
+        return '<div class="stat-line"><span>' + D.ATTR_LABEL[k] + '</span><span>' + attrs[k] +
+          (p.unspentAttr > 0 ? ' <button class="plus" data-add="' + k + '">+</button>' : '') + '</span></div>';
+      }).join('');
+      document.getElementById('panel-char').innerHTML =
+        header('角色') +
+        '<div class="grid-2"><div>' +
+        '<div class="stat-line"><span>名号</span><span>' + p.name + '</span></div>' +
+        '<div class="stat-line"><span>职业</span><span>' + D.CLASSES[p.cls].name + '</span></div>' +
+        '<div class="stat-line"><span>等级</span><span>' + p.level + '</span></div>' +
+        '<div class="stat-line"><span>银两 / 金锭</span><span>' + p.silver + ' / ' + p.gold + '</span></div>' +
+        '<div class="stat-line"><span>可分配属性</span><span>' + p.unspentAttr + '</span></div>' +
+        rows + '</div><div class="equip-list">' +
+        D.SLOTS.map(function (s) {
+          var it = p.equip[s.id];
+          return '<div class="slot-row"><span>' + s.name + '</span><span style="color:' +
+            (it ? D.RARITY_COLOR[it.rarity] : '#888') + '">' + (it ? itemName(it) : '空') + '</span></div>';
+        }).join('') +
+        '<div class="stat-line"><span>外攻 / 内攻</span><span>' + st.patk + ' / ' + st.matk + '</span></div>' +
+        '<div class="stat-line"><span>外防 / 内防</span><span>' + st.pdef + ' / ' + st.mdef + '</span></div>' +
+        '<div class="stat-line"><span>暴击</span><span>' + (st.crit * 100).toFixed(1) + '%</span></div>' +
+        '</div></div>';
+    } else if (id === 'bag') {
+      document.getElementById('panel-bag').innerHTML = header('背包') +
+        '<p style="color:#b8a57a;margin-bottom:8px">左键使用/装备，右键丢弃。银两 ' + p.silver + '</p>' +
+        '<div class="bag-grid">' + p.bag.map(function (it, i) {
+          var col = it.rarity ? D.RARITY_COLOR[it.rarity] : '#f3e6c4';
+          return '<div class="item-cell" data-bag="' + i + '" style="color:' + col + '">' + itemName(it) +
+            (it.n > 1 ? '<span class="n">' + it.n + '</span>' : '') + '</div>';
+        }).join('') + '</div>';
+    } else if (id === 'skills') {
+      document.getElementById('panel-skills').innerHTML = header('武学') +
+        '<p style="margin-bottom:8px">剩余技能点 ' + p.unspentSkill + '</p>' +
+        D.SKILLS[p.cls].map(function (sk) {
+          var lv = p.skills[sk.id] || 0;
+          return '<div class="stat-line"><span>' + sk.name + ' Lv.' + lv +
+            (p.level < sk.unlock ? '（' + sk.unlock + '级）' : '') +
+            '<br/><small style="color:#b8a57a">' + sk.desc + '</small></span>' +
+            (p.unspentSkill > 0 && p.level >= sk.unlock && lv < 8 ?
+              '<button class="plus" data-sk="' + sk.id + '">+</button>' : '') + '</div>';
+        }).join('');
+    } else if (id === 'pet') {
+      document.getElementById('panel-pet').innerHTML = header('灵宠') + (p.pet
+        ? '<p>' + p.pet.name + '　生命 ' + Math.floor(p.pet.hp) + '/' + p.pet.maxHp + '</p>' +
+          '<p style="color:#b8a57a;margin:8px 0">出战随行，自动攻击你的目标。口粮可回复生命。</p>' +
+          '<button class="btn" id="btn-feed">喂食口粮</button>'
+        : '<p>尚未结缘。前往神农谷击败山魈，有机会收服灵宠。</p>');
+    } else if (id === 'forge') {
+      document.getElementById('panel-forge').innerHTML = header('百工炉') +
+        '<p style="color:#b8a57a;margin-bottom:8px">强化石 ' + countItem(p, 'stone') +
+        '　开孔符 ' + countItem(p, 'socket') + '　银两 ' + p.silver + '</p>' +
+        '<div class="equip-list">' + D.SLOTS.map(function (s) {
+          var it = p.equip[s.id];
+          if (!it) return '';
+          return '<div class="slot-row"><span style="color:' + D.RARITY_COLOR[it.rarity] + '">' + itemName(it) +
+            ' 孔' + it.sockets + '</span><span>' +
+            '<button class="btn" data-en="' + s.id + '">升星</button> ' +
+            '<button class="btn ghost" data-so="' + s.id + '">开孔</button></span></div>';
+        }).join('') + '</div>' +
+        '<h4 style="color:#d4af37;margin:12px 0 6px">炼药</h4>' +
+        D.RECIPES.map(function (r, i) {
+          var keys = Object.keys(r.ins);
+          return '<div class="stat-line"><span>' + keys.map(function (k) {
+            return D.CONSUMABLES[k].name + '×' + r.ins[k] + '（有' + countItem(p, k) + '）';
+          }).join(' + ') + ' → ' + D.CONSUMABLES[r.out.id].name + '</span>' +
+            '<button class="btn" data-craft="' + i + '">炼</button></div>';
+        }).join('') +
+        '<h4 style="color:#d4af37;margin:12px 0 6px">镶石（点击灵石镶入当前武器）</h4>' +
+        p.bag.filter(function (it) { return it.type === 'gem'; }).map(function (it, i) {
+          return '<div class="stat-line"><span>' + itemName(it) + '</span><button class="btn ghost" data-gem="' + it.uid + '">镶武器</button></div>';
+        }).join('') || '<p>背包暂无灵石</p>';
+    } else if (id === 'quest') {
+      document.getElementById('panel-quest').innerHTML = header('功业') +
+        D.QUESTS.map(function (q) {
+          var stt = p.quests.done.indexOf(q.id) >= 0 ? '已完成' : (p.quests.active.indexOf(q.id) >= 0 ? '进行中' : '未开启');
+          return '<div class="stat-line"><span>' + q.name + '<br/><small style="color:#b8a57a">' + q.text + '</small></span><span>' + stt + '</span></div>';
+        }).join('');
+    } else if (id === 'help') {
+      document.getElementById('panel-help').innerHTML = header('帮助') +
+        D.HELP.map(function (h) { return '<p style="margin:6px 0;color:#d8c8a0">' + h + '</p>'; }).join('');
+    }
+  }
+
+  function header(title) {
+    return '<h3>' + title + '<button class="close" data-close="1">×</button></h3>';
+  }
+
+  function openShop(kind) {
+    var p = G.player;
+    G.shopKind = kind;
+    var list = D.SHOPS[kind] || [];
+    closePanels();
+    var el = document.getElementById('panel-shop');
+    el.classList.add('open');
+    el.innerHTML = header('货殖') + list.map(function (s) {
+      return '<div class="stat-line"><span>' + D.CONSUMABLES[s.id].name + '　' + s.price + ' 两</span>' +
+        '<button class="btn" data-buy="' + s.id + '" data-price="' + s.price + '">购</button></div>';
+    }).join('');
+  }
+
+  /* ========== 对话 ========== */
+  function talkNpc(n) {
+    var def = D.NPCS[n.id];
+    var el = document.getElementById('dialog');
+    var opts = '<button class="btn ghost" data-bye="1">告辞</button>';
+    if (def.shop) opts += '<button class="btn" data-openshop="' + def.shop + '">买卖</button>';
+    if (def.forge) opts += '<button class="btn" data-openforge="1">开炉</button>';
+    if (def.escort) opts += '<button class="btn" data-escort="1">接下押镖（押金20两）</button>';
+    if (def.tower) opts += '<button class="btn" data-tower="1">进入试炼</button>';
+    if (n.id === 'xunshou' && !G.player.pet) opts += '<button class="btn" data-buypet="1">以 80 两请一只幼兽</button>';
+    el.innerHTML = '<div class="who">' + n.name + '</div><div>' + (def.lines[0] || '') + '</div><div class="opts">' + opts + '</div>';
+    el.classList.add('open');
+    G.dialogNpc = n;
+    maybeCompleteTalk(n.id);
+    if (n.id === 'bagong') maybeCompleteTalk('chefu');
+  }
+
+  function closeDialog() {
+    document.getElementById('dialog').classList.remove('open');
+    G.dialogNpc = null;
+  }
+
+  /* ========== 存档 ========== */
+  function serialize() {
+    return JSON.stringify({
+      v: 1, player: G.player, mapId: G.mapId, towerFloor: G.towerFloor, log: G.log.slice(0, 5)
+    });
+  }
+
+  function saveSilent() {
+    try { localStorage.setItem(SAVE_KEY, serialize()); } catch (e) { /* ignore */ }
+  }
+
+  function saveNow() {
+    saveSilent();
+    toast('进度已记入本机');
+  }
+
+  function hasSave() {
+    try { return !!localStorage.getItem(SAVE_KEY); } catch (e) { return false; }
+  }
+
+  function loadSave() {
+    try {
+      var raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) return false;
+      var data = JSON.parse(raw);
+      if (!data || !data.player) return false;
+      G.player = data.player;
+      G.player.buffs = G.player.buffs || [];
+      G.player.skillCd = {};
+      G.player.target = null;
+      G.player.auto = false;
+      G.log = data.log || [];
+      G.towerFloor = data.towerFloor || 0;
+      buildMap(data.mapId || 'taiping');
+      renderLog();
+      refreshQuestUI();
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /* ========== 输入 ========== */
+  function screenToWorld(clientX, clientY) {
+    var r = canvas.getBoundingClientRect();
+    return { x: clientX - r.left + G.cam.x, y: clientY - r.top + G.cam.y };
+  }
+
+  function onPointer(ev) {
+    if (G.mode !== 'play') return;
+    var wpos = screenToWorld(ev.clientX, ev.clientY);
+    G.mouse.wx = wpos.x;
+    G.mouse.wy = wpos.y;
+    var p = G.player;
+    for (var i = 0; i < G.npcs.length; i++) {
+      if (dist(wpos, G.npcs[i]) < 28) { talkNpc(G.npcs[i]); return; }
+    }
+    var nearest = null, nd = 40;
+    G.entities.forEach(function (e) {
+      var d = dist(wpos, e);
+      if (d < nd) { nd = d; nearest = e; }
+    });
+    if (nearest) {
+      p.target = nearest;
+      closeDialog();
+      return;
+    }
+    G.dest = { x: wpos.x, y: wpos.y };
+    p.target = null;
+    closeDialog();
+  }
+
+  function useBagItem(index, discard) {
+    var p = G.player;
+    var it = p.bag[index];
+    if (!it) return;
+    if (discard) {
+      p.bag.splice(index, 1);
+      toast('弃去 ' + itemName(it));
+      paintPanel('bag');
+      return;
+    }
+    if (it.type === 'equip') {
+      var old = p.equip[it.slot];
+      p.equip[it.slot] = it;
+      p.bag.splice(index, 1);
+      if (old) p.bag.push(old);
+      toast('装备 ' + itemName(it));
+    } else if (it.potion === 'hp') {
+      takeItem(p, it.id, 1);
+      var st = stats(p);
+      var h = F.potionHeal(it.tier || 1, st.maxHp);
+      p.hp = Math.min(st.maxHp, p.hp + h);
+    } else if (it.potion === 'mp') {
+      takeItem(p, it.id, 1);
+      var st2 = stats(p);
+      var m = F.potionHeal(it.tier || 1, st2.maxMp);
+      p.mp = Math.min(st2.maxMp, p.mp + m);
+    } else if (it.kind === 'feed' || it.id === 'feed') {
+      if (!p.pet) { toast('没有灵宠'); return; }
+      takeItem(p, 'feed', 1);
+      p.pet.hp = Math.min(p.pet.maxHp, p.pet.hp + 60);
+      toast('灵宠进食');
+    } else {
+      toast(itemName(it));
+    }
+    paintPanel('bag');
+  }
+
+  function enhanceSlot(slot) {
+    var p = G.player;
+    var it = p.equip[slot];
+    if (!it) return;
+    if (it.stars >= 10) { toast('已至满星'); return; }
+    var cost = F.enhanceCost(it.stars, it.level);
+    if (p.silver < cost) { toast('银两不足 ' + cost); return; }
+    if (!takeItem(p, 'stone', 1)) { toast('缺少强化石'); return; }
+    p.silver -= cost;
+    if (Math.random() < F.enhanceChance(it.stars)) {
+      it.stars += 1;
+      Object.keys(it.stats).forEach(function (k) {
+        if (k === 'crit' || k === 'speed') it.stats[k] = +(it.stats[k] * 1.08).toFixed(3);
+        else it.stats[k] = Math.floor(it.stats[k] * 1.08);
+      });
+      toast(itemName(it) + ' 升星成功');
+      p.flags.enhanced = true;
+      questCheck();
+    } else {
+      toast('炉火不稳，升星失败');
+    }
+    paintPanel('forge');
+  }
+
+  function socketSlot(slot) {
+    var p = G.player;
+    var it = p.equip[slot];
+    if (!it) return;
+    if (it.sockets >= 3) { toast('孔位已满'); return; }
+    var cost = F.socketCost(it.sockets);
+    if (p.silver < cost) { toast('银两不足'); return; }
+    if (!takeItem(p, 'socket', 1)) { toast('缺少开孔符'); return; }
+    p.silver -= cost;
+    it.sockets += 1;
+    toast('开孔成功');
+    paintPanel('forge');
+  }
+
+  function inlayGem(uid) {
+    var p = G.player;
+    var it = p.equip.weapon;
+    if (!it) return;
+    if ((it.gems || []).length >= (it.sockets || 0)) { toast('先开孔'); return; }
+    var idx = p.bag.findIndex(function (x) { return x.uid === uid; });
+    if (idx < 0) return;
+    var gem = p.bag.splice(idx, 1)[0];
+    it.gems = it.gems || [];
+    it.gems.push(gem);
+    toast('镶入 ' + itemName(gem));
+    paintPanel('forge');
+  }
+
+  function craftRecipe(i) {
+    var p = G.player;
+    var r = D.RECIPES[i];
+    var keys = Object.keys(r.ins);
+    for (var k = 0; k < keys.length; k++) {
+      if (countItem(p, keys[k]) < r.ins[keys[k]]) { toast('材料不足'); return; }
+    }
+    keys.forEach(function (id) { takeItem(p, id, r.ins[id]); });
+    addItem(p, { id: r.out.id, n: r.out.n });
+    toast('炼成 ' + D.CONSUMABLES[r.out.id].name);
+    paintPanel('forge');
+  }
+
+  function bindPlayEvents() {
+    canvas.addEventListener('mousedown', onPointer);
+    canvas.addEventListener('mousemove', function (ev) {
+      var wpos = screenToWorld(ev.clientX, ev.clientY);
+      G.mouse.wx = wpos.x;
+      G.mouse.wy = wpos.y;
+    });
+    window.addEventListener('keydown', function (ev) {
+      G.keys[ev.code] = true;
+      if (G.mode !== 'play') return;
+      if (ev.code === 'Escape') { closePanels(); closeDialog(); return; }
+      if (ev.code === 'KeyC') openPanel('char');
+      if (ev.code === 'KeyB') openPanel('bag');
+      if (ev.code === 'KeyV') openPanel('skills');
+      if (ev.code === 'KeyP') openPanel('pet');
+      if (ev.code === 'KeyE') openPanel('forge');
+      if (ev.code === 'KeyJ') openPanel('quest');
+      if (ev.code === 'KeyN' || ev.code === 'Slash') openPanel('help');
+      if (ev.code === 'KeyF') pickupNear();
+      if (ev.code === 'KeyZ') {
+        G.player.auto = !G.player.auto;
+        toast(G.player.auto ? '挂机开启' : '挂机关闭');
+      }
+      if (ev.code === 'KeyQ') usePotion('hp');
+      if (ev.code === 'KeyR') usePotion('mp');
+      if (ev.code === 'Space') { ev.preventDefault(); playerAttack(); }
+      var map = { Digit1: 0, Digit2: 1, Digit3: 2, Digit4: 3, Digit5: 4, Digit6: 5 };
+      if (map[ev.code] != null) castSkill(D.SKILLS[G.player.cls][map[ev.code]]);
+    });
+    window.addEventListener('keyup', function (ev) { G.keys[ev.code] = false; });
+
+    document.querySelector('.menu-left').addEventListener('click', function (ev) {
+      var btn = ev.target.closest('button');
+      if (!btn) return;
+      if (btn.id === 'btn-save') saveNow();
+      else if (btn.dataset.panel) openPanel(btn.dataset.panel);
+    });
+    document.getElementById('skill-bar').addEventListener('click', function (ev) {
+      var slot = ev.target.closest('.skill-slot');
+      if (slot) {
+        var sk = D.SKILLS[G.player.cls].find(function (s) { return s.id === slot.dataset.skill; });
+        castSkill(sk);
+        return;
+      }
+      if (ev.target.closest('#slot-hp')) usePotion('hp');
+      if (ev.target.closest('#slot-mp')) usePotion('mp');
+      if (ev.target.closest('#slot-auto')) {
+        G.player.auto = !G.player.auto;
+        toast(G.player.auto ? '挂机开启' : '挂机关闭');
+      }
+    });
+    document.getElementById('play-screen').addEventListener('click', function (ev) {
+      if (ev.target.dataset.close) closePanels();
+      if (ev.target.dataset.add && G.player.unspentAttr > 0) {
+        G.player.added[ev.target.dataset.add] += 1;
+        G.player.unspentAttr -= 1;
+        paintPanel('char');
+      }
+      if (ev.target.dataset.sk && G.player.unspentSkill > 0) {
+        G.player.skills[ev.target.dataset.sk] = (G.player.skills[ev.target.dataset.sk] || 0) + 1;
+        G.player.unspentSkill -= 1;
+        paintPanel('skills');
+      }
+      if (ev.target.dataset.bag != null) useBagItem(+ev.target.dataset.bag, false);
+      if (ev.target.dataset.en) enhanceSlot(ev.target.dataset.en);
+      if (ev.target.dataset.so) socketSlot(ev.target.dataset.so);
+      if (ev.target.dataset.gem) inlayGem(ev.target.dataset.gem);
+      if (ev.target.dataset.craft != null) craftRecipe(+ev.target.dataset.craft);
+      if (ev.target.dataset.buy) {
+        var price = +ev.target.dataset.price;
+        if (G.player.silver < price) { toast('银两不足'); return; }
+        G.player.silver -= price;
+        addItem(G.player, { id: ev.target.dataset.buy, n: 1 });
+        toast('购得物品');
+        openShop(G.shopKind || 'smith');
+      }
+      if (ev.target.id === 'btn-feed') {
+        if (takeItem(G.player, 'feed', 1) && G.player.pet) {
+          G.player.pet.hp = Math.min(G.player.pet.maxHp, G.player.pet.hp + 60);
+          toast('灵宠进食');
+          paintPanel('pet');
+        } else toast('没有口粮');
+      }
+    });
+    document.getElementById('play-screen').addEventListener('contextmenu', function (ev) {
+      var cell = ev.target.closest('[data-bag]');
+      if (cell) {
+        ev.preventDefault();
+        useBagItem(+cell.dataset.bag, true);
+      }
+    });
+    document.getElementById('dialog').addEventListener('click', function (ev) {
+      if (ev.target.dataset.bye) closeDialog();
+      if (ev.target.dataset.openshop) { closeDialog(); openShop(ev.target.dataset.openshop); }
+      if (ev.target.dataset.openforge) { closeDialog(); openPanel('forge'); }
+      if (ev.target.dataset.escort) startEscort();
+      if (ev.target.dataset.tower) {
+        closeDialog();
+        G.towerFloor = 1;
+        travel('tower', 12, 20);
+      }
+      if (ev.target.dataset.buypet) {
+        if (G.player.silver < 80) { toast('银两不足'); return; }
+        G.player.silver -= 80;
+        grantPet();
+        closeDialog();
+      }
+    });
+    document.getElementById('btn-revive').addEventListener('click', revive);
+  }
+
+  /* ========== 主循环 ========== */
+  function loop(ts) {
+    if (!G.last) G.last = ts;
+    var dt = Math.min(0.05, (ts - G.last) / 1000);
+    G.last = ts;
+    G.time += dt;
+    if (G.mode === 'play' && G.player && !document.getElementById('death').classList.contains('open')) {
+      updatePlayer(dt);
+      updateMonsters(dt);
+      updatePet(dt);
+      updateProjectiles(dt);
+      updateEscort(dt);
+      updateFx(dt);
+      G.saveAcc = (G.saveAcc || 0) + dt;
+      if (G.saveAcc > 15) { G.saveAcc = 0; saveSilent(); }
+    } else if (G.mode === 'play') {
+      updateFx(dt);
+    }
+    if (G.mode === 'play') draw();
+    requestAnimationFrame(loop);
+  }
+
+  function enterPlay(fromSave) {
+    G.mode = 'play';
+    showScreen('play-screen');
+    resize();
+    if (!fromSave) {
+      buildMap('taiping');
+      G.player.x = 22 * TILE;
+      G.player.y = 20 * TILE;
+      log('洪武元年。太平村外，江湖未远。');
+      toast('与村正交谈，开启功业');
+    }
+    refreshQuestUI();
+    renderLog();
+    saveSilent();
+  }
+
+  /* ========== 标题 / 创角 ========== */
+  function paintClasses() {
+    var box = document.getElementById('class-grid');
+    box.innerHTML = Object.keys(D.CLASSES).map(function (id) {
+      var c = D.CLASSES[id];
+      return '<div class="class-card' + (G.selectedClass === id ? ' selected' : '') + '" data-cls="' + id + '">' +
+        '<h3 style="color:' + c.accent + '">' + c.name + '</h3>' +
+        '<div class="weapon">兵器 · ' + c.weapon + '</div>' +
+        '<p>' + c.desc + '</p></div>';
+    }).join('');
+    document.getElementById('class-tip').textContent = D.CLASSES[G.selectedClass].tip;
+  }
+
+  function boot() {
+    document.getElementById('btn-continue').disabled = !hasSave();
+    document.getElementById('btn-new').addEventListener('click', function () {
+      showScreen('create-screen');
+      paintClasses();
+    });
+    document.getElementById('btn-continue').addEventListener('click', function () {
+      if (loadSave()) enterPlay(true);
+      else toast('没有可用存档');
+    });
+    document.getElementById('btn-analysis').addEventListener('click', function () {
+      var box = document.getElementById('analysis-box');
+      box.hidden = !box.hidden;
+    });
+    document.getElementById('btn-back-title').addEventListener('click', function () {
+      showScreen('title-screen');
+    });
+    document.getElementById('class-grid').addEventListener('click', function (ev) {
+      var card = ev.target.closest('[data-cls]');
+      if (!card) return;
+      G.selectedClass = card.dataset.cls;
+      paintClasses();
+    });
+    document.getElementById('btn-enter').addEventListener('click', function () {
+      var name = (document.getElementById('name-input').value || '').trim() || randomName();
+      G.player = makePlayer(name, G.selectedClass);
+      enterPlay(false);
+    });
+    bindPlayEvents();
+    requestAnimationFrame(loop);
+  }
+
+  function randomName() {
+    var a = ['沈', '陆', '萧', '叶', '苏', '白', '顾', '江'];
+    var b = ['行舟', '听雨', '无锋', '清和', '望舒', '未央', '拾光'];
+    return a[irand(0, a.length - 1)] + b[irand(0, b.length - 1)];
+  }
+
+  boot();
+})();
