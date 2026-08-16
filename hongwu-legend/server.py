@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""洪武风云录本地服务端（无第三方依赖，给没有 Node 的机器用）。"""
+"""大明传说本地服务端（无第三方依赖，给没有 Node 的机器用）。"""
 from __future__ import print_function
 
 import hashlib
@@ -22,7 +22,7 @@ ROOT = os.path.abspath(os.path.dirname(__file__))
 DATA = os.path.join(ROOT, "data")
 STORE = os.path.join(DATA, "store.json")
 PORT = int(os.environ.get("PORT") or "8088")
-VERSION = "20260816h"
+VERSION = "20260816i"
 HOST = os.environ.get("HOST") or "0.0.0.0"
 WORLD = {}
 CHAT = {}
@@ -106,7 +106,7 @@ def default_store():
     return {
         "users": {"demo": {"pass": hash_pass("123456"), "roles": {}, "created": int(time.time() * 1000)}},
         "tokens": {},
-        "chat": [{"who": "系统", "text": "欢迎来到洪武风云录。测试号 demo / 123456", "t": int(time.time() * 1000)}],
+        "chat": [{"who": "系统", "text": "欢迎来到大明传说。测试号 demo / 123456", "t": int(time.time() * 1000)}],
     }
 
 
@@ -162,7 +162,7 @@ MIME = {
 }
 
 SERVERS = [
-    {"id": "s1", "name": "双线1服 · 洪武风云", "status": "火爆"},
+    {"id": "s1", "name": "双线1服 · 大明传说", "status": "火爆"},
     {"id": "s2", "name": "双线2服 · 永乐新章", "status": "畅通"},
     {"id": "s3", "name": "双线3服 · 万历征途", "status": "新服"},
 ]
@@ -428,7 +428,7 @@ def main():
     ensure()
     httpd, port = serve(PORT)
     href = "http://127.0.0.1:%s/" % port
-    print("洪武风云录服务端 " + href)
+    print("大明传说服务端 " + href)
     for ip in lan_ips():
         print("局域网请打开 http://%s:%s/" % (ip, port))
     print("朋友用同一局域网地址，各自注册账号后选同一服务器。")

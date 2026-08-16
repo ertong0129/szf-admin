@@ -2,6 +2,8 @@ var assert = require('assert');
 var D = require('../js/data.js');
 var F = require('../js/formulas.js');
 
+assert.strictEqual(D.GAME_TITLE, '大明传说');
+
 assert.strictEqual(D.PK_MODES.map(function (m) { return m.id; }).join(','),
   'peace,all,nation,party,clan,karma');
 

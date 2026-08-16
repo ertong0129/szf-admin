@@ -1,5 +1,5 @@
 /**
- * 洪武风云录本地服务端（无需 npm 依赖）
+ * 大明传说本地服务端（无需 npm 依赖）
  * 提供静态资源、账号、选服存档、附近聊天。
  */
 var http = require('http');
@@ -14,7 +14,7 @@ var ROOT = path.resolve(__dirname);
 var DATA = path.join(ROOT, 'data');
 var PORT = parseInt(process.env.PORT || '8088', 10);
 var STORE = path.join(DATA, 'store.json');
-var VERSION = '20260816h';
+var VERSION = '20260816i';
 var WorldHub = require('./js/worldhub.js');
 var HOST = process.env.HOST || '0.0.0.0';
 
@@ -28,7 +28,7 @@ function defaultStore() {
       demo: { pass: hash('123456'), roles: {}, created: Date.now() }
     },
     tokens: {},
-    chat: [{ who: '系统', text: '欢迎来到洪武风云录。测试号 demo / 123456', t: Date.now() }],
+    chat: [{ who: '系统', text: '欢迎来到大明传说。测试号 demo / 123456', t: Date.now() }],
     social: { friends: {}, clans: {}, clanOf: {} }
   };
 }
@@ -212,7 +212,7 @@ function sidOf(req, u, body) {
 }
 
 var SERVERS = [
-  { id: 's1', name: '双线1服 · 洪武风云', status: '火爆' },
+  { id: 's1', name: '双线1服 · 大明传说', status: '火爆' },
   { id: 's2', name: '双线2服 · 永乐新章', status: '畅通' },
   { id: 's3', name: '双线3服 · 万历征途', status: '新服' }
 ];
@@ -400,7 +400,7 @@ function tryListen(port, last) {
   function onListen() {
     server.removeListener('error', onError);
     var href = 'http://127.0.0.1:' + port + '/';
-    console.log('洪武风云录服务端 ' + href);
+    console.log('大明传说服务端 ' + href);
     lanIps().forEach(function (ip) {
       console.log('局域网请打开 http://' + ip + ':' + port + '/');
     });

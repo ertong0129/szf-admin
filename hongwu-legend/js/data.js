@@ -1,11 +1,11 @@
 /**
- * 洪武风云录 — 原创内容数据
+ * 大明传说 — 原创内容数据
  * 玩法结构致敬旧页游 ARPG，文案、数值与系统均为重写。
  */
 (function (root) {
   var D = {};
 
-  D.GAME_TITLE = '洪武风云录';
+  D.GAME_TITLE = '大明传说';
   D.GAME_SUB = '页游即时战斗单机志';
 
   D.CLASSES = {

@@ -1,5 +1,5 @@
 /**
- * 洪武风云录 — 主循环、进游戏、创角
+ * 大明传说 — 主循环、进游戏、创角
  * 挂到 window.Hongwu，运行时互相调用，方便以后按文件扩展。
  */
 (function (H) {
@@ -85,6 +85,7 @@
 
   H.boot = function () {
     if (!document.getElementById('play-screen')) return;
+    if (D.GAME_TITLE) document.title = D.GAME_TITLE;
     localStorage.setItem('hongwu-server', H.currentServer());
     var nationBox = document.getElementById('nation-pick');
     if (nationBox) {

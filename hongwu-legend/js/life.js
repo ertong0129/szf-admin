@@ -1,5 +1,5 @@
 /**
- * 洪武风云录 — 信件、传奇目标、日常、明朝贵族、元宝、官职、时装、师徒、宠物洗灵
+ * 大明传说 — 信件、传奇目标、日常、明朝贵族、元宝、官职、时装、师徒、宠物洗灵
  * 对照 MingGame.swf 界面文案落地，挂到 window.Hongwu。
  */
 (function (H) {
@@ -27,7 +27,7 @@
     }
     p.daily.act = p.daily.act || 0;
     if (!p.mail.length) {
-      H.pushMail(p, '系统', '欢迎来到洪武风云录', '测试号可用 demo / 123456。钱庄可兑元宝。I 看明朝贵族。L 信件，Y 传奇目标。', true);
+      H.pushMail(p, '系统', '欢迎来到大明传说', '测试号可用 demo / 123456。钱庄可兑元宝。I 看明朝贵族。L 信件，Y 传奇目标。', true);
     }
     H.refreshOffice(p, true);
     H.ensureVip(p);

@@ -55,7 +55,7 @@
     if (!API.online) {
       return Promise.resolve({
         servers: [
-          { id: 's1', name: '双线1服 · 洪武风云', status: '火爆' },
+          { id: 's1', name: '双线1服 · 大明传说', status: '火爆' },
           { id: 's2', name: '双线2服 · 永乐新章', status: '畅通' }
         ]
       });

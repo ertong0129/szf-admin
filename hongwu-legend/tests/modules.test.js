@@ -23,6 +23,14 @@ for (var i = 1; i < order.length; i++) {
 }
 
 assert.ok(play.indexOf('src="js/game.js"') < 0, 'play.html 不应再加载已拆分的 game.js');
+assert.ok(play.indexOf('大明传说') >= 0, 'play.html 标题应为大明传说');
+assert.ok(play.indexOf('明朝传奇') < 0, 'play.html 玩家可见文案不应再写明朝传奇');
+assert.ok(play.indexOf('洪武风云') < 0, 'play.html 不应再写洪武风云');
+
+var index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+assert.ok(index.indexOf('大明传说') >= 0, 'index.html 标题应为大明传说');
+assert.ok(index.indexOf('明朝传奇') < 0, 'index.html 玩家可见文案不应再写明朝传奇');
+assert.ok(index.indexOf('洪武风云') < 0, 'index.html 不应再写洪武风云');
 
 var boot = fs.readFileSync(path.join(root, 'js/boot.js'), 'utf8');
 assert.ok(boot.indexOf('H.boot()') >= 0, 'boot.js 应启动 H.boot()');

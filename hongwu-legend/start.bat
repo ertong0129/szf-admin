@@ -1,9 +1,9 @@
 @echo off
 setlocal EnableExtensions
 cd /d "%~dp0"
-title 洪武风云录
+title 大明传说
 echo.
-echo  洪武风云录 · 本地服
+echo  大明传说 · 本地服
 echo  --------------------------------
 echo  正在启动，浏览器会在服务就绪后自动打开。
 echo  不要关这个黑窗口，关掉就停服。
