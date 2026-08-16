@@ -251,7 +251,7 @@
     tiesmith: { id: 'tiesmith', name: '铁匠', title: '装备锻造师', map: 'taiping', shop: 'smith', lines: ['刀钝了就来找我。京城师傅的手艺更地道。'] },
     yaopu: { id: 'yaopu', name: '王翠翘', title: '杂货商人', map: 'taiping', shop: 'drug', lines: ['草药能炼药。路边的乌风草、三七别浪费。'] },
     shanshan: { id: 'shanshan', name: '姗姗', title: '仓库管理员', map: 'taiping', warehouse: true, lines: ['第一个仓库免费。东西多了就寄我这儿，最多开四仓。'] },
-    qianzhuang: { id: 'qianzhuang', name: '钱庄老板', title: '钱庄', map: 'taiping', bank: true, lines: ['银子兑成银票更稳妥。五百两一张五锭银票。'] },
+    qianzhuang: { id: 'qianzhuang', name: '钱庄老板', title: '钱庄', map: 'taiping', bank: true, lines: ['银子兑成银票更稳妥。五百两一张五锭银票。也可买入或卖出元宝。'] },
     zhangsanfeng: { id: 'zhangsanfeng', name: '张三丰', title: '技能大师', map: 'taiping', skills: true, lines: ['打开技能界面（V），点亮武学、分配技能点。'] },
     xiaoliu: { id: 'xiaoliu', name: '受伤的小六', title: '村民', map: 'taiping', lines: ['野猪林的獠牙太狠。你若去清剿，也算帮了村里。'] },
     xunyang: { id: 'xunyang', name: '宠物驯养师', title: '驯养', map: 'taiping', lines: ['幼兽要去神农谷找驯兽师。村里只能问问路。'] },
@@ -264,7 +264,7 @@
     shuibing: { id: 'shuibing', name: '明军水兵', title: '鄱阳湖大战', map: 'capital', poyang: true, lines: ['陈友谅部骁将张定边往来冲突。选个难度进湖，半个时辰内了结。副本内可原地复活，不能传送。'] },
     lishizhen: { id: 'lishizhen', name: '李时珍', title: '医生', map: 'capital', shop: 'drug', lines: ['金创药、内力药，伤病时别硬扛。'] },
     yiyi: { id: 'yiyi', name: '依依', title: '仓库管理员', map: 'capital', warehouse: true, lines: ['京城仓库。第一仓免费，后面开仓要银两。'] },
-    shenwansan: { id: 'shenwansan', name: '沈万三', title: '钱庄老板', map: 'capital', bank: true, lines: ['银子兑银票，银票再兑回银子。钱庄的老规矩。'] },
+    shenwansan: { id: 'shenwansan', name: '沈万三', title: '钱庄老板', map: 'capital', bank: true, lines: ['银子兑银票。钱庄也可买卖元宝：一百两买一枚，卖出八十两。'] },
     jineng: { id: 'jineng', name: '技能大师', title: '武学', map: 'capital', skills: true, lines: ['V 打开技能。有技能点就点亮、升级。'] },
     chuansong: { id: 'chuansong', name: '水军都头', title: '离开副本', map: 'poyang', lines: ['湖上杀声未歇。要走，从我这儿离开副本。'] },
     muying: { id: 'muying', name: '沐英', title: '西平侯', map: 'capital', portal: true, lines: ['沐英在此。捕鱼儿海、大明宝藏、校场竞技，我可送你一程。'] },
@@ -305,10 +305,23 @@
       { id: 'flower', price: 8 },
       { id: 'wine', price: 12 },
       { id: 'skill_book', price: 60 }
+    ],
+    gold: [
+      { id: 'wash_dan', gold: 8 },
+      { id: 'insight_dan', gold: 10 },
+      { id: 'train_pai', gold: 6 },
+      { id: 'bag_token', gold: 20 },
+      { id: 'scroll', gold: 5 },
+      { id: 'hero_pack', gold: 12 },
+      { id: 'skill_book', gold: 15 },
+      { id: 'pet_book', gold: 12 },
+      { id: 'mount_token', gold: 10 },
+      { id: 'flower', gold: 2 },
+      { id: 'wine', gold: 3 }
     ]
   };
 
-  D.BANK = { silverPerNote: 500 };
+  D.BANK = { silverPerNote: 500, yuanbaoBuy: 100, yuanbaoSell: 80 };
   D.ENERGY_MAX = 4000;
   D.MOUNT_LEVEL = 18;
   D.WAREHOUSE = { cap: 36, maxTabs: 4, unlock: [0, 200, 500, 1000] };
@@ -469,7 +482,8 @@
     'PK 六模式对其他玩家生效。安全区不能打人。红名不能坐车夫；PK≥18 红名，≥30 死亡入狱回村。',
     '点右侧任务追踪绿名可自动寻路。挂机（Z）自动寻敌、放技能、吃药、拾取。',
     '副本：京城明军水兵进鄱阳湖大战；英雄副本传送人按关挑战。沐英传送捕鱼儿海、大明宝藏、竞技场。',
-    'L 信件，Y 传奇目标，O 排行，U 日常。除恶令、天降异宝、活跃度在日常面板。宠物可洗灵/提悟/训练。',
+    'L 信件，Y 传奇目标，O 排行，U 日常，I 明朝贵族。除恶令、天降异宝、活跃度在日常面板。宠物可洗灵/提悟/训练。',
+    '元宝分不绑定与绑定。优先消耗绑定元宝。钱庄用银两买入元宝计入贵族经验；任务奖励为绑定元宝。I 查看明朝贵族特权与每日礼包。',
     '太平村与京城篝火旁打坐饮酒加经验。野外死亡可回村或原地健康复活（耗银）。资料对照 MingGame.swf 与 91wan。'
   ];
 
@@ -478,7 +492,8 @@
     pet: 'title/pet.png', forge: 'title/tglp.png', quest: 'title/goal.png',
     social: 'title/family.png', help: 'title/setting.png', shop: 'title/market.png',
     mail: 'title/setting.png', achieve: 'title/goal.png', rank: 'title/rank.png',
-    daily: 'title/Activity.png', warehouse: 'title/package.png'
+    daily: 'title/Activity.png', warehouse: 'title/package.png',
+    vip: 'title/DailyRecharge.png'
   };
 
   D.CHAT_FACES = [
@@ -520,6 +535,27 @@
     { id: 'ink', name: '墨羽', min: 10, desc: '略有侠气的劲装。', glow: 'rgba(80,100,180,0.85)' },
     { id: 'gold', name: '金缕', min: 20, desc: '京城裁缝的时新样式。', glow: 'rgba(212,175,55,0.9)' },
     { id: 'crimson', name: '绯云', min: 30, desc: '军功赏赐的赤袍。', glow: 'rgba(200,50,50,0.9)' }
+  ];
+
+  D.VIP = [
+    { lv: 0, name: '白身', energy: 0, bag: 0, dungeon: 0, exp: 0, sit: 0, revive: 1, gift: 0, shopOff: 0, wh: 0 },
+    { lv: 1, name: '一品贵族', energy: 200, bag: 6, dungeon: 1, exp: 0.05, sit: 0.1, revive: 0.9, gift: 2, shopOff: 0, wh: 0 },
+    { lv: 2, name: '二品贵族', energy: 400, bag: 12, dungeon: 1, exp: 0.08, sit: 0.15, revive: 0.85, gift: 4, shopOff: 0.05, wh: 1 },
+    { lv: 3, name: '三品贵族', energy: 600, bag: 12, dungeon: 2, exp: 0.1, sit: 0.2, revive: 0.8, gift: 6, shopOff: 0.05, wh: 1 },
+    { lv: 4, name: '四品贵族', energy: 800, bag: 18, dungeon: 2, exp: 0.12, sit: 0.25, revive: 0.75, gift: 8, shopOff: 0.08, wh: 1 },
+    { lv: 5, name: '五品贵族', energy: 1000, bag: 18, dungeon: 3, exp: 0.15, sit: 0.3, revive: 0.7, gift: 12, shopOff: 0.08, wh: 2 },
+    { lv: 6, name: '六品贵族', energy: 1200, bag: 24, dungeon: 3, exp: 0.18, sit: 0.35, revive: 0.65, gift: 16, shopOff: 0.1, wh: 2 },
+    { lv: 7, name: '七品贵族', energy: 1500, bag: 24, dungeon: 4, exp: 0.2, sit: 0.4, revive: 0.6, gift: 20, shopOff: 0.1, wh: 2 },
+    { lv: 8, name: '八品贵族', energy: 1800, bag: 30, dungeon: 4, exp: 0.22, sit: 0.45, revive: 0.55, gift: 28, shopOff: 0.12, wh: 3 },
+    { lv: 9, name: '九品贵族', energy: 2200, bag: 36, dungeon: 5, exp: 0.25, sit: 0.5, revive: 0.5, gift: 36, shopOff: 0.15, wh: 3 },
+    { lv: 10, name: '十品国公', energy: 3000, bag: 48, dungeon: 6, exp: 0.3, sit: 0.6, revive: 0.4, gift: 50, shopOff: 0.2, wh: 3 }
+  ];
+
+  D.RECHARGE_PACKS = [
+    { id: 'r10', name: '10 元宝', gold: 10, silver: 900, firstBonus: 5 },
+    { id: 'r50', name: '50 元宝', gold: 50, silver: 4200, firstBonus: 20 },
+    { id: 'r100', name: '100 元宝', gold: 100, silver: 8000, firstBonus: 40 },
+    { id: 'r500', name: '500 元宝', gold: 500, silver: 38000, firstBonus: 200 }
   ];
 
   D.ACHIEVE = [

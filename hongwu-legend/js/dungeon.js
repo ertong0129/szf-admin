@@ -37,9 +37,12 @@
       H.toast('等级不足 ' + spec.minLevel + ' 级');
       return false;
     }
-    if (spec.daily && (p.dungeon[id] || 0) >= spec.daily) {
-      H.toast('你今天的挑战次数已满');
-      return false;
+    if (spec.daily) {
+      var cap = H.dungeonDaily ? H.dungeonDaily(id) : spec.daily;
+      if ((p.dungeon[id] || 0) >= cap) {
+        H.toast('你今天的挑战次数已满');
+        return false;
+      }
     }
     return true;
   }

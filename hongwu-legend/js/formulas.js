@@ -185,6 +185,25 @@
     return Math.floor((6 + level * 0.8) * (party ? 1.4 : 1));
   };
 
+  F.VIP_NEED = [0, 10, 50, 120, 300, 600, 1200, 2500, 5000, 10000, 20000];
+
+  F.vipLevel = function (exp) {
+    var n = exp || 0;
+    var lv = 0;
+    for (var i = 0; i < F.VIP_NEED.length; i++) {
+      if (n >= F.VIP_NEED[i]) lv = i;
+    }
+    return lv;
+  };
+
+  F.yuanbaoBuyCost = function (n) {
+    return (n || 1) * 100;
+  };
+
+  F.yuanbaoSellGain = function (n) {
+    return (n || 1) * 80;
+  };
+
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = F;
   }

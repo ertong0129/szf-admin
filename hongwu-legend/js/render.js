@@ -403,9 +403,14 @@
     var en = document.getElementById('energy-line');
     if (en) {
       H.ensureDaily(p);
-      en.textContent = '精力 ' + (p.energy || 0) + '/' + (D.ENERGY_MAX || 4000) + (p.sit ? '　打坐中' : '') +
+      en.textContent = '精力 ' + (p.energy || 0) + '/' + (H.energyMax ? H.energyMax(p) : (D.ENERGY_MAX || 4000)) + (p.sit ? '　打坐中' : '') +
         (p.sit && H.nearCampfire && H.nearCampfire() ? '　篝火' : '') +
         (p.mount && p.mount.riding ? '　骑乘' : '');
+    }
+    var goldEl = document.getElementById('gold-line');
+    if (goldEl) {
+      var vn = H.vipBonus ? H.vipBonus(p).name : '';
+      goldEl.textContent = '元宝 ' + (p.gold || 0) + ' / 绑定 ' + (p.bindGold || 0) + (vn ? '　' + vn : '');
     }
     var mailBtn = document.querySelector('[data-panel="mail"]');
     if (mailBtn && p.mail) {

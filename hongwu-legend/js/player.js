@@ -9,7 +9,9 @@
   var BAG_CAP = H.BAG_CAP, SPAWN = H.SPAWN, SAVE_KEY = H.SAVE_KEY;
 
   H.bagCap = function (p) {
-    return (H.BAG_CAP || 36) + ((p && p.bagExpand) || 0) * 12;
+    var extra = 0;
+    if (H.vipBonus) extra = (H.vipBonus(p).bag || 0);
+    return (H.BAG_CAP || 36) + ((p && p.bagExpand) || 0) * 12 + extra;
   };
 
   H.emptyEquip = function () {
@@ -39,6 +41,9 @@
       bag: [],
       silver: 40,
       gold: 0,
+      bindGold: 5,
+      vipExp: 0,
+      rechargeFirst: {},
       pet: null,
       quests: { active: ['q1'], done: [], progress: {} },
       flags: {},
@@ -157,6 +162,10 @@
   }
 
   H.addExp = function (p, n) {
+    if (H.vipBonus) {
+      var vb = H.vipBonus(p);
+      if (vb && vb.exp) n = Math.floor(n * (1 + vb.exp));
+    }
     p.exp += n;
     var up = 0;
     while (p.exp >= F.xpToNext(p.level) && p.level < 60) {
@@ -305,7 +314,7 @@
     if (!p) return;
     H.ensureDungeon(p);
     var day = H.dungeonDay();
-    p.energy = p.energy == null ? (D.ENERGY_MAX || 4000) : p.energy;
+    p.energy = p.energy == null ? (H.energyMax ? H.energyMax(p) : (D.ENERGY_MAX || 4000)) : p.energy;
     p.warehouse = p.warehouse || { tabs: 1, items: [[], [], [], []] };
     if (!p.warehouse.items) p.warehouse.items = [[], [], [], []];
     while (p.warehouse.items.length < 4) p.warehouse.items.push([]);
@@ -317,7 +326,7 @@
     }
     if (p._energyDay !== day) {
       p._energyDay = day;
-      p.energy = D.ENERGY_MAX || 4000;
+      p.energy = H.energyMax ? H.energyMax(p) : (D.ENERGY_MAX || 4000);
     }
     H.grantMount(p, true);
   }

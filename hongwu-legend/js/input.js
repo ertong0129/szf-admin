@@ -101,6 +101,7 @@
       if (ev.code === 'KeyY') { ev.preventDefault(); H.openPanel('achieve'); }
       if (ev.code === 'KeyO') { ev.preventDefault(); H.openPanel('rank'); }
       if (ev.code === 'KeyU') { ev.preventDefault(); H.openPanel('daily'); }
+      if (ev.code === 'KeyI') { ev.preventDefault(); H.openPanel('vip'); }
       if (ev.code === 'KeyK') {
         ev.preventDefault();
         if (G.stalling) {
@@ -196,6 +197,7 @@
     });
     document.getElementById('play-screen').addEventListener('click', function (ev) {
       if (ev.target.dataset.close) H.closePanels();
+      if (ev.target.dataset.panel) H.openPanel(ev.target.dataset.panel);
       if (ev.target.dataset.add && G.player.unspentAttr > 0) {
         G.player.added[ev.target.dataset.add] += 1;
         G.player.unspentAttr -= 1;
@@ -284,6 +286,15 @@
       if (ev.target.dataset.panelPaint) H.paintPanel(ev.target.dataset.panelPaint);
       if (ev.target.dataset.rankTab) H.paintRank(ev.target.dataset.rankTab);
       if (ev.target.dataset.chueTake) H.takeDailyChue();
+      if (ev.target.dataset.buyGold) H.buyGoldItem(ev.target.dataset.buyGold);
+      if (ev.target.dataset.recharge) H.rechargePack(ev.target.dataset.recharge);
+      if (ev.target.dataset.vipGift) H.claimVipGift();
+      if (ev.target.dataset.ybBuy) H.bankYuanbao('buy', +ev.target.dataset.ybBuy);
+      if (ev.target.dataset.ybSell) H.bankYuanbao('sell', +ev.target.dataset.ybSell);
+      if (ev.target.dataset.shopPay) {
+        G.shopPay = ev.target.dataset.shopPay;
+        H.openShop('mall');
+      }
       if (ev.target.dataset.face) {
         var inp = document.getElementById('chat-input');
         if (inp) {
@@ -369,6 +380,8 @@
       if (ev.target.dataset.openskills) { H.closeDialog(); H.openPanel('skills'); }
       if (ev.target.dataset.npcTravel) H.npcTravel(ev.target.dataset.npcTravel);
       if (ev.target.dataset.bank) { H.bankExchange(ev.target.dataset.bank); H.closeDialog(); }
+      if (ev.target.dataset.ybBuy) H.bankYuanbao('buy', +ev.target.dataset.ybBuy);
+      if (ev.target.dataset.ybSell) H.bankYuanbao('sell', +ev.target.dataset.ybSell);
       if (ev.target.dataset.merit === 'take') H.takeMerit();
       if (ev.target.dataset.merit === 'turn') H.turnMerit();
       if (ev.target.dataset.merit === 'hint') {

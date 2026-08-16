@@ -61,5 +61,10 @@ assert.ok(F.reviveHereCost(10) > F.reviveHereCost(1));
 assert.ok(F.petWashRange().max > F.petWashRange().min);
 assert.ok(F.sitFireXp(10, true) > F.sitFireXp(10, false));
 assert.ok(F.recolorChance('white') > F.recolorChance('purple'));
+assert.strictEqual(F.vipLevel(0), 0);
+assert.strictEqual(F.vipLevel(10), 1);
+assert.ok(F.vipLevel(20000) >= 10);
+assert.strictEqual(F.yuanbaoBuyCost(2), 200);
+assert.strictEqual(F.yuanbaoSellGain(2), 160);
 
 console.log('formulas.test.js ok');

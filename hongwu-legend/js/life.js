@@ -1,16 +1,13 @@
 /**
- * 洪武风云录 — 信件、传奇目标、日常、官职、时装、师徒、宠物洗灵
+ * 洪武风云录 — 信件、传奇目标、日常、明朝贵族、元宝、官职、时装、师徒、宠物洗灵
  * 对照 MingGame.swf 界面文案落地，挂到 window.Hongwu。
  */
 (function (H) {
   var G = H.G, D = H.D, F = H.F, TILE = H.TILE;
 
-  H.bagCap = function (p) {
-    return (H.BAG_CAP || 36) + ((p && p.bagExpand) || 0) * 12;
-  };
-
   H.ensureLife = function (p) {
     if (!p) return;
+    H.ensureVip(p);
     H.ensureDaily(p);
     p.bagExpand = p.bagExpand || 0;
     p.mail = p.mail || [];
@@ -23,16 +20,201 @@
     p.medalId = p.medalId || '';
     p.mentor = p.mentor || { master: '', pupil: '', moral: 0 };
     p.arenaScore = p.arenaScore || 0;
-    p.daily = p.daily || { day: '', chue: null, yibao: 0, wine: 0, act: 0, actClaimed: false };
+    p.daily = p.daily || { day: '', chue: null, yibao: 0, wine: 0, act: 0, actClaimed: false, vipGift: false };
     var day = H.dungeonDay();
     if (p.daily.day !== day) {
-      p.daily = { day: day, chue: null, yibao: 0, wine: 0, act: 0, actClaimed: false };
+      p.daily = { day: day, chue: null, yibao: 0, wine: 0, act: 0, actClaimed: false, vipGift: false };
     }
     p.daily.act = p.daily.act || 0;
     if (!p.mail.length) {
-      H.pushMail(p, '系统', '欢迎来到洪武风云录', '测试号可用 demo / 123456。L 看信件，Y 传奇目标，京城找沐英进捕鱼儿海与大明宝藏。', true);
+      H.pushMail(p, '系统', '欢迎来到洪武风云录', '测试号可用 demo / 123456。钱庄可兑元宝。I 看明朝贵族。L 信件，Y 传奇目标。', true);
     }
     H.refreshOffice(p, true);
+    H.ensureVip(p);
+  };
+
+  H.bagCap = function (p) {
+    var v = H.vipBonus(p);
+    return (H.BAG_CAP || 36) + ((p && p.bagExpand) || 0) * 12 + (v.bag || 0);
+  };
+
+  H.vipLevel = function (p) {
+    return F.vipLevel((p && p.vipExp) || 0);
+  };
+
+  H.vipBonus = function (p) {
+    var list = D.VIP || [];
+    var lv = H.vipLevel(p);
+    return list[lv] || list[0] || { lv: 0, name: '白身', energy: 0, bag: 0, dungeon: 0, exp: 0, sit: 0, revive: 1, gift: 0, shopOff: 0, wh: 0 };
+  };
+
+  H.energyMax = function (p) {
+    return (D.ENERGY_MAX || 4000) + (H.vipBonus(p).energy || 0);
+  };
+
+  H.dungeonDaily = function (id) {
+    var spec = D.INSTANCES[id] || {};
+    return (spec.daily || 0) + (H.vipBonus(G.player).dungeon || 0);
+  };
+
+  H.ensureVip = function (p) {
+    if (!p) return;
+    p.gold = p.gold || 0;
+    p.bindGold = p.bindGold || 0;
+    p.vipExp = p.vipExp || 0;
+    p.rechargeFirst = p.rechargeFirst || {};
+    var v = H.vipBonus(p);
+    if (p.warehouse) {
+      var want = 1 + (v.wh || 0);
+      if (p.warehouse.tabs < want) p.warehouse.tabs = Math.min((D.WAREHOUSE && D.WAREHOUSE.maxTabs) || 4, want);
+    }
+  };
+
+  H.addYuanbao = function (n, bind, creditVip) {
+    var p = G.player;
+    if (!p || !n) return;
+    H.ensureVip(p);
+    if (bind) p.bindGold += n;
+    else {
+      p.gold += n;
+      if (creditVip) {
+        var old = H.vipLevel(p);
+        p.vipExp += n;
+        var now = H.vipLevel(p);
+        if (now > old) {
+          var row = H.vipBonus(p);
+          H.toast('明朝贵族升至 ' + row.name);
+          H.pushMail(p, '明朝贵族', '贵族进阶', '累计充值元宝已达 ' + p.vipExp + '，现为 ' + row.name + '。', true);
+          H.log('明朝贵族：' + row.name);
+        }
+      }
+    }
+  };
+
+  H.spendYuanbao = function (n) {
+    var p = G.player;
+    H.ensureVip(p);
+    n = n || 0;
+    if (n <= 0) return true;
+    if ((p.bindGold + p.gold) < n) {
+      H.toast('你的元宝不足');
+      return false;
+    }
+    var fromBind = Math.min(p.bindGold, n);
+    p.bindGold -= fromBind;
+    n -= fromBind;
+    if (n > 0) p.gold -= n;
+    if (fromBind) H.log('优先使用绑定元宝 ×' + fromBind);
+    return true;
+  };
+
+  H.goldPrice = function (gold) {
+    var off = H.vipBonus(G.player).shopOff || 0;
+    return Math.max(1, Math.ceil((gold || 1) * (1 - off)));
+  };
+
+  H.buyGoldItem = function (id) {
+    var p = G.player;
+    var row = null;
+    (D.SHOPS.gold || []).forEach(function (s) { if (s.id === id) row = s; });
+    if (!row) return;
+    var cost = H.goldPrice(row.gold);
+    if (!H.spendYuanbao(cost)) return;
+    H.addItem(p, { id: id, n: 1 });
+    H.toast('购得 ' + D.CONSUMABLES[id].name + '（' + cost + ' 元宝）');
+    H.paintVip();
+    if (document.getElementById('panel-shop') && document.getElementById('panel-shop').classList.contains('open')) {
+      H.openShop('mall');
+    }
+  };
+
+  H.bankYuanbao = function (dir, n) {
+    var p = G.player;
+    H.ensureVip(p);
+    n = Math.max(1, n || 1);
+    if (dir === 'buy') {
+      var cost = F.yuanbaoBuyCost(n);
+      if (p.silver < cost) { H.toast('银两不足 ' + cost); return; }
+      p.silver -= cost;
+      H.addYuanbao(n, false, true);
+      H.toast('成功购买元宝 ×' + n);
+    } else {
+      if (p.gold < n) { H.toast('不绑定元宝不足'); return; }
+      p.gold -= n;
+      p.silver += F.yuanbaoSellGain(n);
+      H.toast('成功出售元宝 ×' + n + '，得银 ' + F.yuanbaoSellGain(n));
+    }
+    H.closeDialog();
+  };
+
+  H.rechargePack = function (id) {
+    var p = G.player;
+    var pack = null;
+    (D.RECHARGE_PACKS || []).forEach(function (x) { if (x.id === id) pack = x; });
+    if (!pack) return;
+    if (p.silver < pack.silver) { H.toast('银两不足 ' + pack.silver); return; }
+    p.silver -= pack.silver;
+    H.addYuanbao(pack.gold, false, true);
+    if (!p.rechargeFirst[id] && pack.firstBonus) {
+      p.rechargeFirst[id] = true;
+      H.addYuanbao(pack.firstBonus, true, false);
+      H.pushMail(p, '明朝贵族', '首次充值加赠', pack.name + ' 首次加赠绑定元宝 ' + pack.firstBonus + '。', true);
+    }
+    H.toast('获得元宝 ' + pack.gold);
+    H.paintVip();
+  };
+
+  H.claimVipGift = function () {
+    var p = G.player;
+    H.ensureLife(p);
+    var v = H.vipBonus(p);
+    if (v.lv < 1) { H.toast('成为明朝贵族后可领取每日礼包'); return; }
+    if (p.daily.vipGift) { H.toast('今日贵族礼包已领取'); return; }
+    p.daily.vipGift = true;
+    H.addYuanbao(v.gift, true, false);
+    H.addExp(p, 40 + v.lv * 12);
+    p.silver += 20 * v.lv;
+    H.pushMail(p, '明朝贵族', '每日礼包', v.name + ' 礼包：绑定元宝 ' + v.gift + '。', true);
+    H.toast('领取贵族每日礼包');
+    H.paintVip();
+  };
+
+  H.paintVip = function () {
+    var el = document.getElementById('panel-vip');
+    if (!el) return;
+    var p = G.player;
+    H.ensureLife(p);
+    var v = H.vipBonus(p);
+    var nextNeed = F.VIP_NEED[v.lv + 1];
+    var prog = nextNeed == null ? '已满阶' : ('再累计 ' + (nextNeed - p.vipExp) + ' 不绑定元宝升至 ' + ((D.VIP[v.lv + 1] && D.VIP[v.lv + 1].name) || ''));
+    var giftBtn = p.daily.vipGift
+      ? '<p>今日礼包已领取。</p>'
+      : '<button class="btn" data-vip-gift="1">领取每日礼包</button>';
+    var packs = (D.RECHARGE_PACKS || []).map(function (pk) {
+      var first = p.rechargeFirst[pk.id] ? '' : '　首次加赠绑定 ' + pk.firstBonus;
+      return '<div class="stat-line"><span>' + pk.name + '　' + pk.silver + ' 两' + first +
+        '</span><button class="btn" data-recharge="' + pk.id + '">兑入</button></div>';
+    }).join('');
+    var goods = (D.SHOPS.gold || []).map(function (s) {
+      var cost = H.goldPrice(s.gold);
+      return '<div class="stat-line"><span>' + D.CONSUMABLES[s.id].name + '　' + cost + ' 元宝</span>' +
+        '<button class="btn" data-buy-gold="' + s.id + '">购</button></div>';
+    }).join('');
+    el.innerHTML = H.header('明朝贵族', 'vip') +
+      '<p>不绑定元宝 <b>' + p.gold + '</b>　绑定元宝 <b>' + p.bindGold + '</b></p>' +
+      '<p>当前 ' + v.name + '（贵族 ' + v.lv + '）　累计 ' + p.vipExp + '</p>' +
+      '<p style="color:#b8a57a;margin:6px 0">' + prog + '</p>' +
+      '<p style="color:#b8a57a">精力 +' + v.energy + '　背包 +' + v.bag + '　副本次数 +' + v.dungeon +
+      '　经验 +' + Math.floor(v.exp * 100) + '%　商城折扣 ' + Math.floor(v.shopOff * 100) + '%</p>' +
+      '<h4 style="color:#d4af37;margin:10px 0 4px">每日礼包</h4>' + giftBtn +
+      '<h4 style="color:#d4af37;margin:12px 0 4px">银两兑元宝</h4>' +
+      '<p style="color:#b8a57a;margin-bottom:6px">局域网无真实充值。钱庄与下列档位用银两兑不绑定元宝，计入贵族。</p>' + packs +
+      '<p style="margin:8px 0">零买：' +
+      '<button class="btn ghost" data-yb-buy="1">买 1</button> ' +
+      '<button class="btn ghost" data-yb-buy="10">买 10</button> ' +
+      '<button class="btn ghost" data-yb-sell="1">卖 1</button></p>' +
+      '<h4 style="color:#d4af37;margin:12px 0 4px">元宝商城</h4>' +
+      '<p style="color:#b8a57a">优先使用绑定元宝。</p>' + goods;
   };
 
   H.pushMail = function (p, from, title, body, unread) {
@@ -165,7 +347,10 @@
     var p = G.player;
     if (!p.pet) { H.toast('请先选择需要洗灵的宠物'); return; }
     if (!H.takeItem(p, 'wash_dan', 1) && !H.takeItem(p, 'pet_stone', 2)) {
-      H.toast('缺少洗灵丹（或宠物灵石×2）'); return;
+      if (!H.spendYuanbao(8)) {
+        H.toast('缺少洗灵丹（或宠物灵石×2 / 8 元宝）'); return;
+      }
+      H.toast('使用绑定元宝进行洗灵');
     }
     var rng = F.petWashRange();
     var v = H.irand(rng.min, rng.max);
@@ -181,7 +366,9 @@
   H.insightPet = function () {
     var p = G.player;
     if (!p.pet) { H.toast('请先选择需要提悟的宠物'); return; }
-    if (!H.takeItem(p, 'insight_dan', 1)) { H.toast('缺少提悟丹'); return; }
+    if (!H.takeItem(p, 'insight_dan', 1)) {
+      if (!H.spendYuanbao(10)) { H.toast('缺少提悟丹（或 10 元宝）'); return; }
+    }
     p.pet.insight = p.pet.insight || 0;
     if (Math.random() < F.petInsightChance(p.pet.insight)) {
       p.pet.insight += 1;
@@ -271,6 +458,8 @@
     p._sitAcc = 0;
     var party = !!(G.netParty && G.netParty.members && G.netParty.members.length > 1);
     var xp = F.sitFireXp(p.level, party);
+    var sitB = H.vipBonus(p).sit || 0;
+    if (sitB) xp = Math.floor(xp * (1 + sitB));
     if (H.countItem(p, 'wine') > 0 && (p.daily.wine || 0) < 20) {
       H.takeItem(p, 'wine', 1);
       p.daily.wine = (p.daily.wine || 0) + 1;
@@ -385,6 +574,9 @@
     document.getElementById('panel-daily').innerHTML = H.header('日常', 'daily') +
       '<h4 style="color:#d4af37;margin:8px 0 4px">活跃度</h4>' +
       '<p>今日活跃度 ' + (p.daily.act || 0) + '/100。除恶、异宝、副本、押镖、赠花、篝火饮酒可提升。</p>' +
+      '<h4 style="color:#d4af37;margin:12px 0 4px">明朝贵族</h4>' +
+      '<p>' + H.vipBonus(p).name + '　礼包 ' + (p.daily.vipGift ? '已领' : '未领') +
+      '　<button class="btn ghost" data-panel="vip">打开贵族</button></p>' +
       '<h4 style="color:#d4af37;margin:12px 0 4px">除恶令</h4>' + chHtml +
       '<h4 style="color:#d4af37;margin:12px 0 4px">天降异宝</h4>' +
       '<p>京城采集异宝 ' + (p.daily.yibao || 0) + '/5。每天京城刷新。</p>' +

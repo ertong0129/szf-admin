@@ -292,6 +292,7 @@
       if (hereBtn) {
         hereBtn.hidden = false;
         var cost = F.reviveHereCost(p.level);
+    if (H.vipBonus) cost = Math.floor(cost * (H.vipBonus(p).revive || 1));
         hereBtn.textContent = '原地健康复活（' + cost + ' 两）';
       }
     }
@@ -319,6 +320,7 @@
   H.reviveHere = function () {
     var p = G.player;
     var cost = F.reviveHereCost(p.level);
+    if (H.vipBonus) cost = Math.floor(cost * (H.vipBonus(p).revive || 1));
     if (p.silver < cost) { H.toast('银两不足，无法原地复活'); return; }
     p.silver -= cost;
     G.deathKind = 'here';

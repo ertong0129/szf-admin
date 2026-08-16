@@ -429,12 +429,13 @@ html, body {
 .pk-mode.party { color: #6fdf7a; border-color: #2a8f4a; }
 .pk-mode.clan { color: #c089ff; border-color: #6b3fa0; }
 .pk-mode.karma { color: #ffd36a; border-color: #d4af37; }
-#energy-line, #online-line {
+#energy-line, #online-line, #gold-line {
   margin-top: 2px;
   font-size: 11px;
   color: #8ad4d6;
   letter-spacing: 1px;
 }
+#gold-line { color: #ffd36a; }
 .nation-pick { display: flex; gap: 8px; justify-content: center; margin: 8px 0; }
 .nation-pick button {
   background: rgba(8,28,30,0.85);

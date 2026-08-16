@@ -192,9 +192,11 @@
         '<div class="stat-line"><span>等级</span><span>' + p.level + '</span></div>' +
         '<div class="stat-line"><span>阵营 / PK</span><span>' + (p.nation === 'yuan' ? '北元' : '大明') +
         '　' + (p.pkValue || 0) + ((p.pkValue || 0) >= 18 ? ' 红名' : '') + '</span></div>' +
-        '<div class="stat-line"><span>银两 / 金锭</span><span>' + p.silver + ' / ' + p.gold + '</span></div>' +
+        '<div class="stat-line"><span>银两</span><span>' + p.silver + '</span></div>' +
+        '<div class="stat-line"><span>元宝 / 绑定</span><span>' + (p.gold || 0) + ' / ' + (p.bindGold || 0) + '</span></div>' +
+        '<div class="stat-line"><span>明朝贵族</span><span>' + ((H.vipBonus && H.vipBonus(p).name) || '白身') + '</span></div>' +
         '<div class="stat-line"><span>官职</span><span>' + ((H.officeOf && H.officeOf(p).name) || '白身') + '</span></div>' +
-        '<div class="stat-line"><span>精力</span><span>' + (p.energy || 0) + ' / ' + (D.ENERGY_MAX || 4000) + '</span></div>' +
+        '<div class="stat-line"><span>精力</span><span>' + (p.energy || 0) + ' / ' + (H.energyMax ? H.energyMax(p) : (D.ENERGY_MAX || 4000)) + '</span></div>' +
         '<div class="stat-line"><span>可分配属性</span><span>' + p.unspentAttr + '</span></div>' +
         rows + '</div><div class="equip-list">' +
         D.SLOTS.map(function (s) {
@@ -315,6 +317,8 @@
       H.paintRank();
     } else if (id === 'daily' && H.paintDaily) {
       H.paintDaily();
+    } else if (id === 'vip' && H.paintVip) {
+      H.paintVip();
     }
   }
 
@@ -393,7 +397,26 @@
     H.closePanels();
     var el = document.getElementById('panel-shop');
     el.classList.add('open');
-    el.innerHTML = H.header(kind === 'mall' ? '商城' : '货殖', 'shop') + list.map(function (s) {
+    var pay = G.shopPay || 'silver';
+    var tabs = '';
+    if (kind === 'mall') {
+      tabs = '<div class="rank-tabs">' +
+        '<button type="button" class="' + (pay !== 'gold' ? 'on' : '') + '" data-shop-pay="silver">银两</button>' +
+        '<button type="button" class="' + (pay === 'gold' ? 'on' : '') + '" data-shop-pay="gold">元宝商城</button></div>';
+    }
+    var body;
+    if (kind === 'mall' && pay === 'gold') {
+      body = (D.SHOPS.gold || []).map(function (s) {
+        var cost = H.goldPrice ? H.goldPrice(s.gold) : s.gold;
+        return '<div class="stat-line"><span>' + D.CONSUMABLES[s.id].name + '　' + cost + ' 元宝</span>' +
+          '<button class="btn" data-buy-gold="' + s.id + '">购</button></div>';
+      }).join('');
+      el.innerHTML = H.header('元宝商城', 'shop') + tabs +
+        '<p style="color:#b8a57a;margin-bottom:8px">你当前拥有元宝 ' + (p.gold || 0) +
+        '　绑定 ' + (p.bindGold || 0) + '。优先使用绑定元宝。</p>' + body;
+      return;
+    }
+    el.innerHTML = H.header(kind === 'mall' ? '商城' : '货殖', 'shop') + tabs + list.map(function (s) {
       return '<div class="stat-line"><span>' + D.CONSUMABLES[s.id].name + '　' + s.price + ' 两</span>' +
         '<button class="btn" data-buy="' + s.id + '" data-price="' + s.price + '">购</button></div>';
     }).join('');
@@ -410,6 +433,9 @@
     if (def.bank) {
       opts += '<button class="btn" data-bank="to">兑银票（500两）</button>';
       opts += '<button class="btn ghost" data-bank="from">银票兑银</button>';
+      opts += '<button class="btn" data-yb-buy="1">买入元宝（100两）</button>';
+      opts += '<button class="btn ghost" data-yb-buy="10">买入10元宝</button>';
+      opts += '<button class="btn ghost" data-yb-sell="1">卖出元宝（80两）</button>';
     }
     if (def.skills) opts += '<button class="btn" data-openskills="1">技能</button>';
     if (def.travel) opts += '<button class="btn" data-npc-travel="' + def.travel + '">乘车前往</button>';

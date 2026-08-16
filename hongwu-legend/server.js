@@ -14,7 +14,7 @@ var ROOT = path.resolve(__dirname);
 var DATA = path.join(ROOT, 'data');
 var PORT = parseInt(process.env.PORT || '8088', 10);
 var STORE = path.join(DATA, 'store.json');
-var VERSION = '20260816g';
+var VERSION = '20260816h';
 var WorldHub = require('./js/worldhub.js');
 var HOST = process.env.HOST || '0.0.0.0';
 

@@ -60,7 +60,10 @@
     p.quests.done.push(q.id);
     H.addExp(p, q.reward.exp || 0);
     p.silver += q.reward.silver || 0;
-    p.gold += q.reward.gold || 0;
+    if (q.reward.gold) {
+      if (H.addYuanbao) H.addYuanbao(q.reward.gold, true, false);
+      else p.gold += q.reward.gold;
+    }
     (q.reward.items || []).forEach(function (it) { H.addItem(p, { id: it.id, n: it.n }); });
     H.toast('完成：' + q.name);
     H.log('任务完成：' + q.name);
