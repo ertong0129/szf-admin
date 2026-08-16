@@ -37,6 +37,7 @@
               <div class="bar hp"><i id="hp-fill"></i><span id="hp-text"></span></div>
               <div class="bar mp"><i id="mp-fill"></i><span id="mp-text"></span></div>
               <button type="button" id="pk-mode" class="pk-mode" title="切换 PK 模式">和平</button>
+              <div id="energy-line">精力 4000/4000</div>
             </div>
           </div>
           <div id="target-frame" hidden>
@@ -114,6 +115,7 @@
       <div class="panel" id="panel-quest"></div>
       <div class="panel" id="panel-help"></div>
       <div class="panel" id="panel-shop"></div>
+      <div class="panel" id="panel-warehouse"></div>
       <div id="map-overlay" hidden>
         <div class="map-win">
           <div class="map-tabs">
@@ -132,7 +134,7 @@
                 <input id="map-cy" maxlength="4" placeholder="Y" />
                 <button type="submit">寻路</button>
               </form>
-              <p class="map-tip">点地图或人名自动寻路。M 开关。</p>
+              <p class="map-tip">点地图或人名自动寻路。深蓝自己、黄 NPC、淡蓝出口。M 开关。</p>
             </div>
           </div>
           <div id="map-world" class="map-pane" hidden>
@@ -140,7 +142,7 @@
               <img src="assets/ingame/map/world.jpg" alt="世界地图" />
               <div id="world-pins"></div>
             </div>
-            <p class="map-tip">点击地名立即传送，对照原作世界地图跳转。</p>
+            <p class="map-tip">点击地名自动寻路；背包有传送卷则瞬移。对照 91wan 地图资料。</p>
           </div>
         </div>
       </div>

@@ -18,6 +18,9 @@
     return sum;
   };
 
+  /* 对照 91wan 资料「属性加点」：力+1 外攻+2 生命+2；智+1.3 内攻 +3 内力；
+     敏+1 外防 +1.5 内防 +0.2 攻速；精+2 生命 +2 内力；体+25 生命 +1 重击。
+     医仙主精神，单机另给精神少量内攻，避免治疗职业打不动。 */
   F.attrDerive = function (attrs) {
     var str = attrs.str || 0;
     var intel = attrs.int || 0;
@@ -25,15 +28,47 @@
     var spi = attrs.spi || 0;
     var con = attrs.con || 0;
     return {
-      patk: str * 1 + agi * 0.25,
+      patk: str * 2,
       matk: intel * 1.3 + spi * 0.35,
-      pdef: agi * 1 + con * 0.4,
-      mdef: spi * 1.5 + intel * 0.25,
-      hp: con * 25 + str * 2,
-      mp: spi * 8 + intel * 3,
+      pdef: agi * 1,
+      mdef: agi * 1.5,
+      hp: con * 25 + str * 2 + spi * 2,
+      mp: intel * 3 + spi * 2,
       aspd: agi * 0.002,
-      crit: agi * 0.0012
+      crit: con * 0.01
     };
+  };
+
+  F.ENERGY_MAX = 4000;
+
+  F.mountSpeedMul = function (rarity) {
+    var t = { white: 1.15, green: 1.22, blue: 1.32, purple: 1.44, orange: 1.58 };
+    return t[rarity] || 1.15;
+  };
+
+  F.mountUpgradeChance = function (rarity) {
+    var t = { white: 0.7, green: 0.55, blue: 0.4, purple: 0.25 };
+    return t[rarity] == null ? 0 : t[rarity];
+  };
+
+  F.meritBand = function (level) {
+    var bands = [
+      { min: 10, max: 19, exp: 280, silver: 40, kill: { id: 'boar', n: 6 } },
+      { min: 20, max: 29, exp: 491, silver: 50, kill: { id: 'wolf', n: 8 } },
+      { min: 30, max: 39, exp: 832, silver: 70, kill: { id: 'bandit', n: 8 } },
+      { min: 40, max: 49, exp: 1210, silver: 90, kill: { id: 'snake', n: 8 } },
+      { min: 50, max: 59, exp: 1617, silver: 110, kill: { id: 'spirit', n: 6 } },
+      { min: 60, max: 80, exp: 2049, silver: 130, kill: { id: 'spirit', n: 8 } }
+    ];
+    for (var i = 0; i < bands.length; i++) {
+      if (level >= bands[i].min && level <= bands[i].max) return bands[i];
+    }
+    return null;
+  };
+
+  F.meritReward = function (base, count) {
+    var n = Math.max(0, Math.min(9, count | 0));
+    return Math.floor(base * (1 + n * 0.08));
   };
 
   F.clamp = function (n, min, max) {

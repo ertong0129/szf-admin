@@ -22,7 +22,7 @@ ROOT = os.path.abspath(os.path.dirname(__file__))
 DATA = os.path.join(ROOT, "data")
 STORE = os.path.join(DATA, "store.json")
 PORT = int(os.environ.get("PORT") or "8088")
-VERSION = "20260816d"
+VERSION = "20260816e"
 
 
 def hash_pass(s):

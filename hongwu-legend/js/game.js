@@ -134,12 +134,17 @@
       flags: {},
       buffs: [],
       auto: false,
+      sit: false,
       pkMode: 'peace',
+      energy: D.ENERGY_MAX || 4000,
       target: null,
       atkCd: 0,
       gatherCd: 0,
       towerUnlock: 1,
-      dungeon: { day: '', poyang: 0, tower: 0 }
+      dungeon: { day: '', poyang: 0, tower: 0 },
+      warehouse: { tabs: 1, items: [[], [], [], []] },
+      mount: { owned: false, riding: false, rarity: 'white' },
+      merit: { day: '', count: 0, active: false, kill: null, need: 0, got: 0 }
     };
     D.SKILLS[cls].forEach(function (s) {
       if (s.unlock <= 1) p.skills[s.id] = 1;
@@ -147,6 +152,7 @@
     giveStarterGear(p);
     addItem(p, { id: 'hp1', n: 5 });
     addItem(p, { id: 'mp1', n: 3 });
+    addItem(p, { id: 'scroll', n: 2 });
     var st = stats(p);
     p.hp = st.maxHp;
     p.mp = st.maxMp;
@@ -213,9 +219,27 @@
       mdef: Math.floor((d.mdef + extra.mdef) * (1 + bmdef)),
       aspd: 0.85 + d.aspd + extra.aspd,
       crit: 0.05 + d.crit + extra.crit,
-      speed: c.speed * (1 + extra.speed + bspd),
+      speed: c.speed * (1 + extra.speed + bspd) * mountMul(p),
       range: c.range
     };
+  }
+
+  function mountMul(p) {
+    if (!p || !p.mount || !p.mount.owned || !p.mount.riding) return 1;
+    return F.mountSpeedMul ? F.mountSpeedMul(p.mount.rarity) : 1.15;
+  }
+
+  function grantMount(p, silent) {
+    if (!p) return;
+    p.mount = p.mount || { owned: false, riding: false, rarity: 'white' };
+    if (p.mount.owned) return;
+    if (p.level < (D.MOUNT_LEVEL || 18)) return;
+    p.mount.owned = true;
+    p.mount.rarity = p.mount.rarity || 'white';
+    if (!silent) {
+      toast('系统赠送坐骑，可在角色面板骑乘');
+      log('获得坐骑（白）');
+    }
   }
 
   function addExp(p, n) {
@@ -238,6 +262,7 @@
       toast('升至 ' + p.level + ' 级');
       log('境界提升：' + p.level + ' 级');
       beep(520, 0.08);
+      grantMount(p, false);
     }
   }
 
@@ -447,6 +472,7 @@
   }
 
   function setDest(x, y) {
+    if (G.player) G.player.sit = false;
     var goal = snapWalkable(x, y);
     G.clickFx = { x: goal.x, y: goal.y, t: 0.7 };
     G.dest = goal;
@@ -500,12 +526,23 @@
       tiesmith: [28 * TILE, 17.6 * TILE],
       yaopu: [20.5 * TILE, 23.2 * TILE],
       xunshou: [24 * TILE, 16 * TILE],
-      chefu: [10 * TILE, 20 * TILE],
+      chefu: [24.5 * TILE, 5.2 * TILE],
+      shanshan: [33 * TILE, 22 * TILE],
+      qianzhuang: [15 * TILE, 22 * TILE],
+      zhangsanfeng: [13 * TILE, 16 * TILE],
+      xiaoliu: [22.5 * TILE, 20 * TILE],
+      xunyang: [30 * TILE, 12 * TILE],
+      jingche: [10 * TILE, 20 * TILE],
+      xuda: [18 * TILE, 14 * TILE],
       bagong: [24 * TILE, 12 * TILE],
       yabiao: [32 * TILE, 20 * TILE],
       shilian: [40 * TILE, 14 * TILE],
       chuansong: [6 * TILE, 18 * TILE],
-      shuibing: [36 * TILE, 22 * TILE]
+      shuibing: [36 * TILE, 22 * TILE],
+      lishizhen: [28 * TILE, 26 * TILE],
+      yiyi: [14 * TILE, 26 * TILE],
+      shenwansan: [12 * TILE, 16 * TILE],
+      jineng: [22 * TILE, 18 * TILE]
     };
     var p = table[id] || [10 * TILE, 10 * TILE];
     return { x: p[0], y: p[1] };
@@ -562,7 +599,6 @@
     G.dest = null;
     G.path = [];
     log('抵达 ' + D.MAP_META[to].name);
-    if (to === 'capital') maybeCompleteTalk('chefu');
     if (!(D.MAP_META[to] && D.MAP_META[to].instance)) {
       G.instance = null;
       G.hold = false;
@@ -615,13 +651,17 @@
 
   function killMonster(e) {
     var p = G.player;
-    var xp = F.killXp(p.level, e.level, e.boss);
+    ensureDaily(p);
+    var tired = (p.energy || 0) <= 0;
+    if (!tired) p.energy = Math.max(0, (p.energy || 0) - 1);
+    var xp = tired ? 1 : F.killXp(p.level, e.level, e.boss);
     addExp(p, xp);
-    var sil = irand(2, 6 + e.level);
-    if (e.boss) sil *= 8;
+    var sil = tired ? 0 : irand(2, 6 + e.level);
+    if (e.boss && !tired) sil *= 8;
     p.silver += sil;
-    log('击败 ' + e.name + '，经验 +' + xp + ' 银两 +' + sil);
-    dropLoot(e);
+    log('击败 ' + e.name + '，经验 +' + xp + (tired ? '（精力耗尽）' : ' 银两 +' + sil));
+    if (!tired) dropLoot(e);
+    else toast('精力耗尽：经验为 1，无掉落');
     noteKill(e.kind);
     if (e.kind === 'lake_boss') { p.flags.poyang_clear = true; questCheck(); }
     if (e.kind === 'spirit' && !p.pet && Math.random() < 0.45) grantPet();
@@ -687,6 +727,7 @@
   function playerAttack() {
     var p = G.player;
     if (!p.target || p.atkCd > 0) return;
+    p.sit = false;
     var st = stats(p);
     if (dist(p, p.target) > st.range + 8) return;
     p.facing = ang(p, p.target);
@@ -703,6 +744,7 @@
   function castSkill(sk) {
     var p = G.player;
     if (!sk) return;
+    p.sit = false;
     var lv = p.skills[sk.id] || 0;
     if (lv <= 0) { toast('尚未领悟'); return; }
     if ((p.skillCd[sk.id] || 0) > 0) return;
@@ -808,9 +850,15 @@
 
   function noteKill(kind) {
     var q = currentQuest();
-    if (!q || !q.kill || q.kill.id !== kind) return;
-    pprog(q.id, 1);
-    questCheck();
+    if (q && q.kill && q.kill.id === kind) {
+      pprog(q.id, 1);
+      questCheck();
+    }
+    var p = G.player;
+    if (p.merit && p.merit.active && p.merit.kill === kind) {
+      p.merit.got = (p.merit.got || 0) + 1;
+      refreshQuestUI();
+    }
   }
 
   function noteGather(id) {
@@ -909,6 +957,15 @@
     html += q ? questLineHtml(q) : '<div class="q-item muted">暂无进行中的任务。</div>';
     html += '<div class="q-sec">可接任务</div>';
     html += nxt ? questLineHtml(nxt) : '<div class="q-item muted">暂无可接。可挂机或挑战试炼。</div>';
+    if (G.player && G.player.merit && G.player.merit.active) {
+      var md = D.MONSTERS[G.player.merit.kill];
+      html += '<div class="q-sec">循环任务</div>';
+      html += '<div class="q-item"><div><b>建功立业</b>击杀 <span class="q-link mob" data-merit-go="1">' +
+        (md ? md.name : '敌军') + '</span>（' + (G.player.merit.got || 0) + '/' + G.player.merit.need + '）</div></div>';
+    } else if (G.player && G.player.level >= 10) {
+      html += '<div class="q-sec">循环任务</div>';
+      html += '<div class="q-item"><div><b>建功立业</b>找京城 <span class="q-link" data-merit-go="1">徐达</span> 领取</div></div>';
+    }
     el.innerHTML = html;
   }
 
@@ -949,6 +1006,10 @@
       var t = questTarget(nxt);
       if (t && t.npcId === n.id && t.map === G.mapId) return '!';
     }
+    if (n.id === 'xuda' && G.player) {
+      if (meritReady()) return '?';
+      if (G.player.level >= 10 && !(G.player.merit && G.player.merit.active)) return '!';
+    }
     return '';
   }
 
@@ -977,11 +1038,29 @@
     guideStep();
   }
 
+  function followMerit() {
+    if (inInstance()) { toast('在副本地图中不能自动寻路'); return; }
+    var p = G.player;
+    if (p.merit && p.merit.active && p.merit.kill) {
+      G.guide = { tgt: { kind: 'kill', map: meritKillMap(p.merit.kill), monster: p.merit.kill } };
+    } else {
+      G.guide = { tgt: { kind: 'npc', map: 'capital', npcId: 'xuda' } };
+    }
+    toast('自动寻路：建功立业');
+    guideStep();
+  }
+
   function followNpcOnMap(npcId) {
     if (inInstance()) { toast('在副本地图中不能自动寻路'); return; }
-    G.guide = { tgt: { kind: 'npc', map: G.mapId, npcId: npcId } };
-    toast('自动寻路：' + (D.NPCS[npcId] ? D.NPCS[npcId].name : '人物'));
+    var def = D.NPCS[npcId];
+    G.guide = { tgt: { kind: 'npc', map: (def && def.map) || G.mapId, npcId: npcId } };
+    toast('自动寻路：' + (def ? def.name : '人物'));
     guideStep();
+  }
+
+  function meritKillMap(kind) {
+    if (kind === 'spirit' || kind === 'snake') return 'shennong';
+    return 'wild';
   }
 
   function guideStep() {
@@ -1107,11 +1186,181 @@
     return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
   }
 
+  function ensureDaily(p) {
+    if (!p) return;
+    ensureDungeon(p);
+    var day = dungeonDay();
+    p.energy = p.energy == null ? (D.ENERGY_MAX || 4000) : p.energy;
+    p.warehouse = p.warehouse || { tabs: 1, items: [[], [], [], []] };
+    if (!p.warehouse.items) p.warehouse.items = [[], [], [], []];
+    while (p.warehouse.items.length < 4) p.warehouse.items.push([]);
+    p.mount = p.mount || { owned: false, riding: false, rarity: 'white' };
+    p.merit = p.merit || { day: '', count: 0, active: false, kill: null, need: 0, got: 0 };
+    if (p.merit.day !== day) {
+      p.merit.day = day;
+      p.merit.count = 0;
+    }
+    if (p._energyDay !== day) {
+      p._energyDay = day;
+      p.energy = D.ENERGY_MAX || 4000;
+    }
+    grantMount(p, true);
+  }
+
   function ensureDungeon(p) {
     p.dungeon = p.dungeon || { day: '', poyang: 0, tower: 0 };
     var day = dungeonDay();
     if (p.dungeon.day !== day) p.dungeon = { day: day, poyang: 0, tower: 0 };
     if (!p.towerUnlock) p.towerUnlock = 1;
+  }
+
+  function meritReady() {
+    var p = G.player;
+    return !!(p && p.merit && p.merit.active && (p.merit.got || 0) >= (p.merit.need || 1));
+  }
+
+  function takeMerit() {
+    var p = G.player;
+    ensureDaily(p);
+    if (p.level < 10) { toast('10 级后再来领建功立业'); return; }
+    if (p.merit.active) { toast('先把当前差事做完'); return; }
+    var band = F.meritBand(p.level);
+    if (!band) { toast('当前等级没有建功差事'); return; }
+    p.merit.active = true;
+    p.merit.kill = band.kill.id;
+    p.merit.need = band.kill.n;
+    p.merit.got = 0;
+    toast('建功立业：击杀 ' + D.MONSTERS[band.kill.id].name + ' ×' + band.kill.n);
+    refreshQuestUI();
+    closeDialog();
+  }
+
+  function turnMerit() {
+    var p = G.player;
+    if (!meritReady()) { toast('差事尚未完成'); return; }
+    var band = F.meritBand(p.level);
+    var exp = F.meritReward(band ? band.exp : 280, p.merit.count);
+    var sil = F.meritReward(band ? band.silver : 40, p.merit.count);
+    addExp(p, exp);
+    p.silver += sil;
+    p.merit.count += 1;
+    p.merit.active = false;
+    p.merit.kill = null;
+    toast('建功立业完成，经验 +' + exp + ' 银两 +' + sil + '（今日第' + p.merit.count + '次）');
+    log('建功立业 ×' + p.merit.count);
+    refreshQuestUI();
+    closeDialog();
+  }
+
+  function bankExchange(dir) {
+    var p = G.player;
+    var rate = (D.BANK && D.BANK.silverPerNote) || 500;
+    if (dir === 'to') {
+      if (p.silver < rate) { toast('银两不足 ' + rate); return; }
+      p.silver -= rate;
+      addItem(p, { id: 'yinpiao', n: 1 });
+      toast('兑得五锭银票');
+    } else {
+      if (countItem(p, 'yinpiao') < 1) { toast('没有银票'); return; }
+      takeItem(p, 'yinpiao', 1);
+      p.silver += rate;
+      toast('兑回 ' + rate + ' 两');
+    }
+  }
+
+  function stashIn(i) {
+    var p = G.player;
+    ensureDaily(p);
+    var it = p.bag[i];
+    if (!it) return;
+    var tab = p.warehouse.items[G.whTab || 0];
+    var cap = (D.WAREHOUSE && D.WAREHOUSE.cap) || 36;
+    if (tab.length >= cap) { toast('本仓库已满'); return; }
+    p.bag.splice(i, 1);
+    tab.push(it);
+    paintWarehouse();
+  }
+
+  function stashOut(i) {
+    var p = G.player;
+    ensureDaily(p);
+    var tab = p.warehouse.items[G.whTab || 0];
+    var it = tab[i];
+    if (!it) return;
+    if (!addItem(p, it)) return;
+    tab.splice(i, 1);
+    paintWarehouse();
+  }
+
+  function unlockWarehouse(i) {
+    var p = G.player;
+    var spec = D.WAREHOUSE || { maxTabs: 4, unlock: [0, 200, 500, 1000] };
+    if (i !== p.warehouse.tabs) { toast('请先开通上一仓'); return; }
+    if (i >= spec.maxTabs) return;
+    var cost = spec.unlock[i] || 0;
+    if (p.silver < cost) { toast('银两不足'); return; }
+    p.silver -= cost;
+    p.warehouse.tabs += 1;
+    G.whTab = i;
+    toast('开通仓库' + (i + 1));
+    paintWarehouse();
+  }
+
+  function toggleSit() {
+    var p = G.player;
+    if (!p) return;
+    p.sit = !p.sit;
+    if (p.sit) {
+      p.auto = false;
+      p.target = null;
+      G.dest = null;
+      G.path = [];
+      G.guide = null;
+      toast('开始打坐');
+    } else toast('起身');
+  }
+
+  function selectNearestMob() {
+    var p = G.player;
+    var best = null, bd = 1e9;
+    G.entities.forEach(function (e) {
+      var d = dist(p, e);
+      if (d < bd) { bd = d; best = e; }
+    });
+    if (best) {
+      p.target = best;
+      p.sit = false;
+      toast('选中 ' + best.name);
+    } else toast('附近没有可攻击目标');
+  }
+
+  function showNearby() {
+    var names = G.npcs.map(function (n) { return n.name; });
+    G.entities.slice(0, 4).forEach(function (e) { names.push(e.name); });
+    toast('附近：' + (names.join('、') || '无人'));
+  }
+
+  function npcTravel(spec) {
+    var parts = (spec || '').split(':');
+    if (parts.length < 3) return;
+    closeDialog();
+    travel(parts[0], +parts[1], +parts[2]);
+  }
+
+  function upgradeMount() {
+    var p = G.player;
+    if (!p.mount || !p.mount.owned) return;
+    var ch = F.mountUpgradeChance(p.mount.rarity);
+    if (!ch) { toast('坐骑已是橙色'); return; }
+    if (countItem(p, 'mount_token') < 1) { toast('没有坐骑提速牌'); return; }
+    takeItem(p, 'mount_token', 1);
+    if (Math.random() < ch) {
+      var order = F.RARITY;
+      var idx = order.indexOf(p.mount.rarity);
+      p.mount.rarity = order[Math.min(order.length - 1, idx + 1)];
+      toast('提速成功：' + D.RARITY_NAME[p.mount.rarity]);
+    } else toast('提速失败');
+    paintPanel('char');
   }
 
   function canEnterDungeon(id) {
@@ -1314,12 +1563,13 @@
     var p = G.player;
     var st = stats(p);
     var mx = 0, my = 0;
-    if (G.keys.KeyW || G.keys.ArrowUp) my -= 1;
-    if (G.keys.KeyS || G.keys.ArrowDown) my += 1;
-    if (G.keys.KeyA || G.keys.ArrowLeft) mx -= 1;
-    if (G.keys.KeyD || G.keys.ArrowRight) mx += 1;
+    if (G.keys.ArrowUp) my -= 1;
+    if (G.keys.ArrowDown) my += 1;
+    if (G.keys.ArrowLeft) mx -= 1;
+    if (G.keys.ArrowRight) mx += 1;
     p._moving = false;
     if (mx || my) {
+      p.sit = false;
       G.dest = null;
       G.path = [];
       G.guide = null;
@@ -1327,6 +1577,11 @@
       tryMove(p, (mx / len) * st.speed * dt, (my / len) * st.speed * dt);
       p.facing = Math.atan2(my, mx);
       p._moving = true;
+    } else if (p.sit) {
+      G.dest = null;
+      G.path = [];
+      p.hp = Math.min(st.maxHp, p.hp + dt * (12 + st.attrs.con * 0.4));
+      p.mp = Math.min(st.maxMp, p.mp + dt * (14 + st.attrs.spi * 0.5));
     } else if (G.path && G.path.length) {
       var wp = G.path[0];
       var wx = (wp.x + 0.5) * TILE, wy = (wp.y + 0.5) * TILE;
@@ -1360,9 +1615,9 @@
     if (p.hp < st.maxHp) p.hp = Math.min(st.maxHp, p.hp + dt * (1.2 + st.attrs.con * 0.05));
     if (p.mp < st.maxMp) p.mp = Math.min(st.maxMp, p.mp + dt * (1.6 + st.attrs.spi * 0.08));
     if (p.target && p.target.hp <= 0) p.target = null;
-    if (p.target && dist(p, p.target) <= st.range) playerAttack();
-    else if (p.target) {
-      setDest(p.target.x, p.target.y);
+    if (!p.sit) {
+      if (p.target && dist(p, p.target) <= st.range) playerAttack();
+      else if (p.target) setDest(p.target.x, p.target.y);
     }
     pickupNear();
     G.portals.forEach(function (pt) {
@@ -1881,7 +2136,7 @@
       });
     }
     G.portals.forEach(function (pt) {
-      ctx.fillStyle = '#6cb6ff';
+      ctx.fillStyle = '#8ad4d6';
       ctx.fillRect((pt.x + 0.5) * sx - 2, (pt.y + 0.5) * sy - 2, 4, 4);
       if (labeled) {
         ctx.fillStyle = '#8ad4d6';
@@ -1891,7 +2146,7 @@
       }
     });
     G.npcs.forEach(function (n) {
-      ctx.fillStyle = n.questMark ? '#ffd36a' : '#ffe7a0';
+      ctx.fillStyle = '#ffd36a';
       ctx.fillRect(n.x / TILE * sx - 2, n.y / TILE * sy - 2, 4, 4);
       if (labeled) {
         ctx.fillStyle = '#6fdf7a';
@@ -1905,7 +2160,7 @@
       ctx.fillRect(e.x / TILE * sx - 1, e.y / TILE * sy - 1, 3, 3);
     });
     if (G.player) {
-      ctx.fillStyle = '#6fdf7a';
+      ctx.fillStyle = '#1e4a8a';
       ctx.fillRect(G.player.x / TILE * sx - 3, G.player.y / TILE * sy - 3, 6, 6);
       if (labeled) {
         ctx.fillStyle = '#ffe7a0';
@@ -2063,7 +2318,15 @@
       toast('找明军水兵进入鄱阳湖大战');
       return;
     }
-    travel(id, node.tx, node.ty);
+    if (countItem(G.player, 'scroll') > 0) {
+      takeItem(G.player, 'scroll', 1);
+      travel(id, node.tx, node.ty);
+      toast('使用传送卷抵达' + node.name);
+      return;
+    }
+    G.guide = { tgt: { kind: 'map', map: id } };
+    toast('寻路前往' + node.name + '（有传送卷可瞬移）');
+    guideStep();
   }
 
   function refreshInstanceHud() {
@@ -2125,6 +2388,9 @@
     btn.textContent = mode.name;
     btn.classList.toggle('all', mode.id === 'all');
     btn.classList.toggle('karma', mode.id === 'karma');
+    btn.classList.toggle('nation', mode.id === 'nation');
+    btn.classList.toggle('party', mode.id === 'party');
+    btn.classList.toggle('clan', mode.id === 'clan');
   }
 
   function drawHud() {
@@ -2146,6 +2412,12 @@
     setBar('mp', p.mp, st.maxMp);
     setBar('xp', p.exp, F.xpToNext(p.level));
     refreshPkMode();
+    var en = document.getElementById('energy-line');
+    if (en) {
+      ensureDaily(p);
+      en.textContent = '精力 ' + (p.energy || 0) + '/' + (D.ENERGY_MAX || 4000) + (p.sit ? '　打坐中' : '') +
+        (p.mount && p.mount.riding ? '　骑乘' : '');
+    }
     var tf = document.getElementById('target-frame');
     if (tf) {
       var t = p.target;
@@ -2179,10 +2451,10 @@
         '<div class="name">' + sk.name + '</div>' +
         '<div class="cd" hidden></div></div>';
     }).join('');
-    html += '<div class="util-slot" id="slot-hp"><div class="key">Q</div><div class="name">金创</div></div>';
-    html += '<div class="util-slot" id="slot-mp"><div class="key">R</div><div class="name">内力</div></div>';
+    html += '<div class="util-slot" id="slot-hp"><div class="key">7</div><div class="name">金创</div></div>';
+    html += '<div class="util-slot" id="slot-mp"><div class="key">8</div><div class="name">内力</div></div>';
     html += '<div class="util-slot" id="slot-auto"><div class="key">Z</div><div class="name">挂机</div></div>';
-    html += '<div class="util-slot" id="slot-pick"><div class="key">F</div><div class="name">拾取</div></div>';
+    html += '<div class="util-slot" id="slot-pick"><div class="key">空格</div><div class="name">拾取</div></div>';
     box.innerHTML = html;
   }
 
@@ -2216,6 +2488,7 @@
 
   function openPanel(id) {
     var el = document.getElementById('panel-' + id);
+    if (!el) return;
     var was = el.classList.contains('open');
     closePanels();
     if (!was) {
@@ -2234,11 +2507,15 @@
       }).join('');
       document.getElementById('panel-char').innerHTML =
         header('角色') +
+        '<div class="char-tabs"><button type="button" class="on" data-char-tab="attr">属性</button>' +
+        '<button type="button" data-char-tab="mount">坐骑</button></div>' +
+        '<div id="char-attr">' +
         '<div class="grid-2"><div>' +
         '<div class="stat-line"><span>名号</span><span>' + p.name + '</span></div>' +
         '<div class="stat-line"><span>职业</span><span>' + D.CLASSES[p.cls].name + '</span></div>' +
         '<div class="stat-line"><span>等级</span><span>' + p.level + '</span></div>' +
         '<div class="stat-line"><span>银两 / 金锭</span><span>' + p.silver + ' / ' + p.gold + '</span></div>' +
+        '<div class="stat-line"><span>精力</span><span>' + (p.energy || 0) + ' / ' + (D.ENERGY_MAX || 4000) + '</span></div>' +
         '<div class="stat-line"><span>可分配属性</span><span>' + p.unspentAttr + '</span></div>' +
         rows + '</div><div class="equip-list">' +
         D.SLOTS.map(function (s) {
@@ -2249,7 +2526,9 @@
         '<div class="stat-line"><span>外攻 / 内攻</span><span>' + st.patk + ' / ' + st.matk + '</span></div>' +
         '<div class="stat-line"><span>外防 / 内防</span><span>' + st.pdef + ' / ' + st.mdef + '</span></div>' +
         '<div class="stat-line"><span>暴击</span><span>' + (st.crit * 100).toFixed(1) + '%</span></div>' +
-        '</div></div>';
+        '<div class="stat-line"><span>移速</span><span>' + Math.floor(st.speed) + '</span></div>' +
+        '</div></div></div>' +
+        '<div id="char-mount" hidden>' + mountPanelHtml(p) + '</div>';
     } else if (id === 'bag') {
       document.getElementById('panel-bag').innerHTML = header('背包') +
         '<p style="color:#b8a57a;margin-bottom:8px">左键使用/装备，右键丢弃。银两 ' + p.silver + '</p>' +
@@ -2310,7 +2589,56 @@
     } else if (id === 'help') {
       document.getElementById('panel-help').innerHTML = header('帮助') +
         D.HELP.map(function (h) { return '<p style="margin:6px 0;color:#d8c8a0">' + h + '</p>'; }).join('');
+    } else if (id === 'warehouse') {
+      paintWarehouse();
     }
+  }
+
+  function mountPanelHtml(p) {
+    ensureDaily(p);
+    if (!p.mount.owned) {
+      return '<p style="color:#b8a57a">达到 ' + (D.MOUNT_LEVEL || 18) + ' 级时系统赠送坐骑。</p>';
+    }
+    var col = D.RARITY_COLOR[p.mount.rarity] || '#d8d0c4';
+    var mul = F.mountSpeedMul(p.mount.rarity);
+    var next = F.mountUpgradeChance(p.mount.rarity);
+    return '<p>坐骑品质 <span style="color:' + col + '">' + (D.RARITY_NAME[p.mount.rarity] || p.mount.rarity) +
+      '</span>　移速 ×' + mul.toFixed(2) + '</p>' +
+      '<p style="color:#b8a57a;margin:8px 0">提速牌 ' + countItem(p, 'mount_token') +
+      '　成功率 ' + (next ? Math.floor(next * 100) + '%' : '已满') + '</p>' +
+      '<button class="btn" data-mount-ride="1">' + (p.mount.riding ? '下马' : '骑乘') + '</button> ' +
+      (next ? '<button class="btn ghost" data-mount-up="1">提升速度</button>' : '') +
+      '<button class="btn ghost" data-buy="mount_token" data-price="40">购提速牌 40 两</button>';
+  }
+
+  function paintWarehouse() {
+    var p = G.player;
+    ensureDaily(p);
+    G.whTab = G.whTab || 0;
+    if (G.whTab >= p.warehouse.tabs) G.whTab = 0;
+    var spec = D.WAREHOUSE || { cap: 36, maxTabs: 4, unlock: [0, 200, 500, 1000] };
+    var tabs = '';
+    for (var i = 0; i < spec.maxTabs; i++) {
+      var open = i < p.warehouse.tabs;
+      tabs += '<button type="button" class="' + (G.whTab === i ? 'on' : '') + '" data-wh-tab="' + i + '"' +
+        (open ? '' : ' data-wh-unlock="' + i + '"') + '>' + (open ? '仓库' + (i + 1) : '开通 ' + spec.unlock[i] + '两') +
+        '</button>';
+    }
+    var stash = p.warehouse.items[G.whTab] || [];
+    document.getElementById('panel-warehouse').innerHTML = header('仓库') +
+      '<p style="color:#b8a57a;margin-bottom:6px">第一仓免费，最多四仓。左键：背包→仓 / 仓→背包。</p>' +
+      '<div class="char-tabs">' + tabs + '</div>' +
+      '<div class="grid-2"><div><h4 style="color:#d4af37">背包</h4><div class="bag-grid">' +
+      p.bag.map(function (it, i) {
+        var col = it.rarity ? D.RARITY_COLOR[it.rarity] : '#f3e6c4';
+        return '<div class="item-cell" data-wh-in="' + i + '" style="color:' + col + '">' + itemName(it) +
+          (it.n > 1 ? '<span class="n">' + it.n + '</span>' : '') + '</div>';
+      }).join('') + '</div></div><div><h4 style="color:#d4af37">仓库</h4><div class="bag-grid">' +
+      stash.map(function (it, i) {
+        var col = it.rarity ? D.RARITY_COLOR[it.rarity] : '#f3e6c4';
+        return '<div class="item-cell" data-wh-out="' + i + '" style="color:' + col + '">' + itemName(it) +
+          (it.n > 1 ? '<span class="n">' + it.n + '</span>' : '') + '</div>';
+      }).join('') + '</div></div></div>';
   }
 
   function header(title) {
@@ -2324,7 +2652,7 @@
     if (kind === 'mall') {
       var seen = {};
       list = [];
-      ['smith', 'drug'].forEach(function (k) {
+      ['smith', 'drug', 'mall'].forEach(function (k) {
         (D.SHOPS[k] || []).forEach(function (s) {
           if (seen[s.id]) return;
           seen[s.id] = 1;
@@ -2351,6 +2679,18 @@
     var opts = '<button class="btn ghost" data-bye="1">告辞</button>';
     if (def.shop) opts += '<button class="btn" data-openshop="' + def.shop + '">买卖</button>';
     if (def.forge) opts += '<button class="btn" data-openforge="1">开炉</button>';
+    if (def.warehouse) opts += '<button class="btn" data-openwh="1">仓库</button>';
+    if (def.bank) {
+      opts += '<button class="btn" data-bank="to">兑银票（500两）</button>';
+      opts += '<button class="btn ghost" data-bank="from">银票兑银</button>';
+    }
+    if (def.skills) opts += '<button class="btn" data-openskills="1">技能</button>';
+    if (def.travel) opts += '<button class="btn" data-npc-travel="' + def.travel + '">乘车前往</button>';
+    if (def.merit) {
+      if (meritReady()) opts += '<button class="btn" data-merit="turn">交还建功立业</button>';
+      else if (!(G.player.merit && G.player.merit.active)) opts += '<button class="btn" data-merit="take">领取建功立业</button>';
+      else opts += '<button class="btn ghost" data-merit="hint">查看差事</button>';
+    }
     if (def.escort) opts += '<button class="btn" data-escort="1">接下押镖（押金20两）</button>';
     if (def.tower) {
       ensureDungeon(G.player);
@@ -2373,7 +2713,6 @@
     el.classList.add('open');
     G.dialogNpc = n;
     maybeCompleteTalk(n.id);
-    if (n.id === 'bagong') maybeCompleteTalk('chefu');
   }
 
   function openTowerSelect() {
@@ -2438,7 +2777,7 @@
     G.player.auto = false;
     G.player.pkMode = G.player.pkMode || 'peace';
     G.player.towerUnlock = G.player.towerUnlock || 1;
-    ensureDungeon(G.player);
+    ensureDaily(G.player);
     G.log = data.log || [];
     G.towerFloor = data.towerFloor || 0;
     var mapId = data.mapId || 'taiping';
@@ -2653,23 +2992,35 @@
       }
       G.keys[ev.code] = true;
       if (G.mode !== 'play') return;
-      if (ev.code === 'Escape') { closePanels(); closeDialog(); return; }
+      if (ev.code === 'Escape') {
+        var anyOpen = document.querySelector('.panel.open') || document.querySelector('#dialog.open');
+        closePanels();
+        closeDialog();
+        if (!anyOpen) openPanel('help');
+        return;
+      }
       if (ev.code === 'KeyM') { ev.preventDefault(); openMapOverlay('region'); return; }
       if (ev.code === 'KeyC') openPanel('char');
       if (ev.code === 'KeyB') openPanel('bag');
       if (ev.code === 'KeyV') openPanel('skills');
       if (ev.code === 'KeyP') openPanel('pet');
       if (ev.code === 'KeyE') openPanel('forge');
-      if (ev.code === 'KeyJ') openPanel('quest');
+      if (ev.code === 'KeyQ' || ev.code === 'KeyJ') openPanel('quest');
+      if (ev.code === 'KeyS') { ev.preventDefault(); openShop(G.shopKind || 'mall'); }
+      if (ev.code === 'KeyD') { ev.preventDefault(); toggleSit(); }
+      if (ev.code === 'KeyA') { ev.preventDefault(); playerAttack(); }
       if (ev.code === 'KeyN' || ev.code === 'Slash') openPanel('help');
-      if (ev.code === 'KeyF') pickupNear();
+      if (ev.code === 'KeyF') showNearby();
+      if (ev.code === 'KeyR') toast('单机无好友列表');
+      if (ev.code === 'Backquote') { ev.preventDefault(); selectNearestMob(); }
       if (ev.code === 'KeyZ') {
+        G.player.sit = false;
         G.player.auto = !G.player.auto;
-        toast(G.player.auto ? '挂机开启' : '挂机关闭');
+        toast(G.player.auto ? '自动打怪已开启' : '自动打怪已关闭');
       }
-      if (ev.code === 'KeyQ') usePotion('hp');
-      if (ev.code === 'KeyR') usePotion('mp');
-      if (ev.code === 'Space') { ev.preventDefault(); playerAttack(); }
+      if (ev.code === 'Digit7') usePotion('hp');
+      if (ev.code === 'Digit8') usePotion('mp');
+      if (ev.code === 'Space') { ev.preventDefault(); pickupNear(); }
       var map = { Digit1: 0, Digit2: 1, Digit3: 2, Digit4: 3, Digit5: 4, Digit6: 5 };
       if (map[ev.code] != null) castSkill(D.SKILLS[G.player.cls][map[ev.code]]);
     });
@@ -2685,8 +3036,9 @@
         if (!btn) return;
         if (btn.id === 'btn-save') saveNow();
         else if (btn.id === 'btn-auto') {
+          G.player.sit = false;
           G.player.auto = !G.player.auto;
-          toast(G.player.auto ? '挂机开启' : '挂机关闭');
+          toast(G.player.auto ? '自动打怪已开启' : '自动打怪已关闭');
         } else if (btn.dataset.panel) openPanel(btn.dataset.panel);
       });
     }
@@ -2713,8 +3065,9 @@
       if (ev.target.closest('#slot-mp')) usePotion('mp');
       if (ev.target.closest('#slot-pick')) pickupNear();
       if (ev.target.closest('#slot-auto')) {
+        G.player.sit = false;
         G.player.auto = !G.player.auto;
-        toast(G.player.auto ? '挂机开启' : '挂机关闭');
+        toast(G.player.auto ? '自动打怪已开启' : '自动打怪已关闭');
       }
     });
     document.getElementById('play-screen').addEventListener('click', function (ev) {
@@ -2740,13 +3093,47 @@
         G.player.silver -= price;
         addItem(G.player, { id: ev.target.dataset.buy, n: 1 });
         toast('购得物品');
-        openShop(G.shopKind || 'smith');
+        if (document.getElementById('panel-char') && document.getElementById('panel-char').classList.contains('open')) {
+          paintPanel('char');
+        } else {
+          openShop(G.shopKind || 'smith');
+        }
       }
       if (ev.target.closest && ev.target.closest('[data-quest-go]')) {
         var qid = ev.target.closest('[data-quest-go]').dataset.questGo;
         var qq = D.QUESTS.find(function (x) { return x.id === qid; }) || currentQuest();
         closePanels();
         followQuest(qq);
+      }
+      if (ev.target.closest && ev.target.closest('[data-merit-go]')) {
+        closePanels();
+        followMerit();
+      }
+      if (ev.target.dataset.charTab) {
+        document.querySelectorAll('[data-char-tab]').forEach(function (b) {
+          b.classList.toggle('on', b.dataset.charTab === ev.target.dataset.charTab);
+        });
+        var attr = document.getElementById('char-attr');
+        var mt = document.getElementById('char-mount');
+        if (attr) attr.hidden = ev.target.dataset.charTab !== 'attr';
+        if (mt) mt.hidden = ev.target.dataset.charTab !== 'mount';
+      }
+      if (ev.target.dataset.mountRide) {
+        if (G.player.mount && G.player.mount.owned) {
+          G.player.mount.riding = !G.player.mount.riding;
+          toast(G.player.mount.riding ? '上马' : '下马');
+          paintPanel('char');
+        }
+      }
+      if (ev.target.dataset.mountUp) upgradeMount();
+      var whIn = ev.target.closest && ev.target.closest('[data-wh-in]');
+      if (whIn) stashIn(+whIn.dataset.whIn);
+      var whOut = ev.target.closest && ev.target.closest('[data-wh-out]');
+      if (whOut) stashOut(+whOut.dataset.whOut);
+      if (ev.target.dataset.whUnlock != null) unlockWarehouse(+ev.target.dataset.whUnlock);
+      if (ev.target.dataset.whTab != null && ev.target.dataset.whUnlock == null) {
+        G.whTab = +ev.target.dataset.whTab;
+        paintWarehouse();
       }
       if (ev.target.id === 'btn-feed') {
         if (takeItem(G.player, 'feed', 1) && G.player.pet) {
@@ -2767,6 +3154,17 @@
       if (ev.target.dataset.bye) closeDialog();
       if (ev.target.dataset.openshop) { closeDialog(); openShop(ev.target.dataset.openshop); }
       if (ev.target.dataset.openforge) { closeDialog(); openPanel('forge'); }
+      if (ev.target.dataset.openwh) { closeDialog(); openPanel('warehouse'); }
+      if (ev.target.dataset.openskills) { closeDialog(); openPanel('skills'); }
+      if (ev.target.dataset.npcTravel) npcTravel(ev.target.dataset.npcTravel);
+      if (ev.target.dataset.bank) { bankExchange(ev.target.dataset.bank); closeDialog(); }
+      if (ev.target.dataset.merit === 'take') takeMerit();
+      if (ev.target.dataset.merit === 'turn') turnMerit();
+      if (ev.target.dataset.merit === 'hint') {
+        var m = G.player.merit;
+        var nm = D.MONSTERS[m.kill];
+        toast('还差 ' + Math.max(0, m.need - (m.got || 0)) + ' 只' + (nm ? nm.name : ''));
+      }
       if (ev.target.dataset.escort) startEscort();
       if (ev.target.dataset.openTower) { closeDialog(); openTowerSelect(); }
       if (ev.target.dataset.towerAuto) { closeDialog(); enterTower(G.player.towerUnlock || 1, true); }
@@ -2883,8 +3281,8 @@
       buildMap('taiping');
       G.player.x = SPAWN.x;
       G.player.y = SPAWN.y;
-      log('洪武元年。点右侧任务可自动寻路；左键点地行走，点人对话，点怪攻击。');
-      toast('点击任务追踪即可自动寻路');
+      log('洪武元年。点右侧任务可自动寻路。Q 任务，空格拾取，A 攻击，D 打坐，Z 挂机。');
+      toast('快捷键已对照原作资料');
     } else {
       var fix = snapWalkable(G.player.x, G.player.y);
       G.player.x = fix.x;

@@ -11,11 +11,25 @@ assert.strictEqual(F.totalXpToLevel(1), 0);
 assert.strictEqual(F.totalXpToLevel(3), F.xpToNext(1) + F.xpToNext(2));
 
 var d = F.attrDerive({ str: 10, int: 0, agi: 0, spi: 0, con: 0 });
-approx(d.patk, 10);
+approx(d.patk, 20);
 approx(d.hp, 20);
 
 d = F.attrDerive({ str: 0, int: 0, agi: 0, spi: 0, con: 4 });
 approx(d.hp, 100);
+approx(d.crit, 0.04);
+
+d = F.attrDerive({ str: 0, int: 10, agi: 0, spi: 0, con: 0 });
+approx(d.matk, 13);
+approx(d.mp, 30);
+
+d = F.attrDerive({ str: 0, int: 0, agi: 10, spi: 0, con: 0 });
+approx(d.pdef, 10);
+approx(d.mdef, 15);
+
+assert.strictEqual(F.ENERGY_MAX, 4000);
+assert.ok(F.mountSpeedMul('orange') > F.mountSpeedMul('white'));
+assert.ok(F.meritBand(25) && F.meritBand(25).exp === 491);
+assert.ok(F.meritReward(100, 0) < F.meritReward(100, 9));
 
 assert.strictEqual(F.calcDamage(20, 0, 1, false, 0), 20);
 assert.strictEqual(F.calcDamage(20, 20, 1, false, 0), 11);

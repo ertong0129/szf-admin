@@ -14,7 +14,7 @@ var ROOT = path.resolve(__dirname);
 var DATA = path.join(ROOT, 'data');
 var PORT = parseInt(process.env.PORT || '8088', 10);
 var STORE = path.join(DATA, 'store.json');
-var VERSION = '20260816d';
+var VERSION = '20260816e';
 
 function hash(s) {
   return crypto.createHash('sha256').update(String(s)).digest('hex');

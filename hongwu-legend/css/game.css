@@ -408,7 +408,30 @@ html, body {
   cursor: pointer;
 }
 .pk-mode.all { color: #ff8a6a; border-color: #c8312a; }
+.pk-mode.nation { color: #8ab4ff; border-color: #4a7ad4; }
+.pk-mode.party { color: #6fdf7a; border-color: #2a8f4a; }
+.pk-mode.clan { color: #c089ff; border-color: #6b3fa0; }
 .pk-mode.karma { color: #ffd36a; border-color: #d4af37; }
+#energy-line {
+  margin-top: 2px;
+  font-size: 11px;
+  color: #8ad4d6;
+  letter-spacing: 1px;
+}
+.char-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.char-tabs button {
+  background: rgba(8, 28, 30, 0.85);
+  border: 1px solid #2ec4c8;
+  color: #8ad4d6;
+  font-family: inherit;
+  padding: 3px 10px;
+  cursor: pointer;
+}
+.char-tabs button.on { color: #ffe7a0; border-color: #ffe7a0; }
 .quest-box[hidden] { display: none !important; }
 .quest-box, .log-box {
   background: rgba(8, 22, 24, 0.86);

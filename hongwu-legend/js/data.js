@@ -175,7 +175,10 @@
     socket: { id: 'socket', name: '开孔符', kind: 'mat', desc: '为装备开孔。' },
     feed: { id: 'feed', name: '灵兽口粮', kind: 'feed', desc: '喂食出战灵宠，回复其生命。' },
     badge: { id: 'badge', name: '腰牌', kind: 'mat', desc: '鄱阳湖缴获。使用可换经验。' },
-    hero_pack: { id: 'hero_pack', name: '英雄礼包', kind: 'pack', desc: '通关礼包。打开可得灵石或药水。' }
+    hero_pack: { id: 'hero_pack', name: '英雄礼包', kind: 'pack', desc: '通关礼包。打开可得灵石或药水。' },
+    scroll: { id: 'scroll', name: '传送卷', kind: 'mat', desc: '世界地图点地名可消耗一张瞬移。没有则自动寻路。' },
+    mount_token: { id: 'mount_token', name: '坐骑提速牌', kind: 'mat', desc: '角色面板坐骑页提升坐骑速度，不一定成功。' },
+    yinpiao: { id: 'yinpiao', name: '五锭银票', kind: 'mat', desc: '钱庄兑换。500 两银子 = 1 张，可再兑回银两。' }
   };
 
   D.RECIPES = [
@@ -215,7 +218,7 @@
     { id: 'q2', name: '村外野猪', kill: { id: 'boar', n: 6 }, map: 'wild', text: '前往野猪林，清除 6 头山野猪。', reward: { exp: 90, silver: 40, items: [{ id: 'hp1', n: 3 }] } },
     { id: 'q3', name: '采药济世', gather: { id: 'herb_san', n: 5 }, map: 'wild', text: '采集 5 株三七，交给村中备用。', reward: { exp: 80, silver: 30, items: [{ id: 'hp1', n: 2 }] } },
     { id: 'q4', name: '灵兽结缘', flag: 'got_pet', map: 'shennong', text: '前往神农谷，收服一只灵宠。', reward: { exp: 120, silver: 50, items: [{ id: 'feed', n: 5 }] } },
-    { id: 'q5', name: '进京述职', talk: 'chefu', map: 'capital', text: '随车夫进入应天京城，拜见百工炉师傅。', reward: { exp: 100, silver: 60 } },
+    { id: 'q5', name: '进京述职', talk: 'chefu', map: 'taiping', text: '找太平村车夫，进入应天京城，再拜见百工炉师傅。', reward: { exp: 100, silver: 60 } },
     { id: 'q6', name: '百工初试', flag: 'enhanced', map: 'capital', text: '在百工炉将任意装备升星一次。', reward: { exp: 110, silver: 80, items: [{ id: 'stone', n: 3 }] } },
     { id: 'q7', name: '鄱阳水患', flag: 'poyang_clear', map: 'capital', text: '找京城明军水兵，进入鄱阳湖大战，击败张定边。', reward: { exp: 220, silver: 160, items: [{ id: 'hp2', n: 3 }] } },
     { id: 'q8', name: '护送军资', flag: 'escort_done', map: 'capital', text: '从京城护送军资到边城方向。', reward: { exp: 180, silver: 140 } },
@@ -225,14 +228,25 @@
 
   D.NPCS = {
     cunzheng: { id: 'cunzheng', name: '村正', title: '太平村知事', map: 'taiping', lines: ['洪武元年，太平村刚从兵火里喘过气来。', '村外野猪成灾，壮丁又被征去守江。你若肯出手，全村感激。'] },
-    tiesmith: { id: 'tiesmith', name: '铁匠学徒', title: '铁匠铺', map: 'taiping', shop: 'smith', lines: ['刀钝了就来找我。京城师傅的手艺更地道。'] },
-    yaopu: { id: 'yaopu', name: '药铺掌柜', title: '杂货药铺', map: 'taiping', shop: 'drug', lines: ['草药能炼药。路边的乌风草、三七别浪费。'] },
+    chefu: { id: 'chefu', name: '车夫', title: '太平车夫', map: 'taiping', travel: 'capital:8:30', lines: ['要进京，坐我这车。应天城里徐达、百工炉、明军水兵都在。'] },
+    tiesmith: { id: 'tiesmith', name: '铁匠', title: '装备锻造师', map: 'taiping', shop: 'smith', lines: ['刀钝了就来找我。京城师傅的手艺更地道。'] },
+    yaopu: { id: 'yaopu', name: '王翠翘', title: '杂货商人', map: 'taiping', shop: 'drug', lines: ['草药能炼药。路边的乌风草、三七别浪费。'] },
+    shanshan: { id: 'shanshan', name: '姗姗', title: '仓库管理员', map: 'taiping', warehouse: true, lines: ['第一个仓库免费。东西多了就寄我这儿，最多开四仓。'] },
+    qianzhuang: { id: 'qianzhuang', name: '钱庄老板', title: '钱庄', map: 'taiping', bank: true, lines: ['银子兑成银票更稳妥。五百两一张五锭银票。'] },
+    zhangsanfeng: { id: 'zhangsanfeng', name: '张三丰', title: '技能大师', map: 'taiping', skills: true, lines: ['打开技能界面（V），点亮武学、分配技能点。'] },
+    xiaoliu: { id: 'xiaoliu', name: '受伤的小六', title: '村民', map: 'taiping', lines: ['野猪林的獠牙太狠。你若去清剿，也算帮了村里。'] },
+    xunyang: { id: 'xunyang', name: '宠物驯养师', title: '驯养', map: 'taiping', lines: ['幼兽要去神农谷找驯兽师。村里只能问问路。'] },
     xunshou: { id: 'xunshou', name: '驯兽师', title: '神农谷', map: 'shennong', lines: ['神农谷灵气重，奇兽出没。击败山魈，或能收服灵宠。'] },
-    chefu: { id: 'chefu', name: '车夫老周', title: '应天车夫', map: 'capital', lines: ['应天城门开着。百工炉、押镖官、明军水兵、英雄副本传送人都在城里。'] },
+    jingche: { id: 'jingche', name: '车夫', title: '京城车夫', map: 'capital', travel: 'taiping:24:4', lines: ['要回太平村，我送你一程。'] },
+    xuda: { id: 'xuda', name: '徐达', title: '将军', map: 'capital', merit: true, lines: ['建功立业，每日可来领差事。前十次赏银逐次增加。'] },
     bagong: { id: 'bagong', name: '百工炉师傅', title: '天工炉', map: 'capital', forge: true, lines: ['炉火取《天工开物》之意。升星、开孔、镶石、炼药，都在这一炉。'] },
     yabiao: { id: 'yabiao', name: '押镖官', title: '兵部押镖', map: 'capital', escort: true, lines: ['军资要送往边城方向。路上有劫镖的，护住车，银子少不了你。'] },
     shilian: { id: 'shilian', name: '英雄副本传送人', title: '大明英雄副本', map: 'capital', tower: true, lines: ['大明英雄副本按关挑战。通关可暂停休息，下次从下一关继续。副本内不能地图跳转。'] },
     shuibing: { id: 'shuibing', name: '明军水兵', title: '鄱阳湖大战', map: 'capital', poyang: true, lines: ['陈友谅部骁将张定边往来冲突。选个难度进湖，半个时辰内了结。副本内可原地复活，不能传送。'] },
+    lishizhen: { id: 'lishizhen', name: '李时珍', title: '医生', map: 'capital', shop: 'drug', lines: ['金创药、内力药，伤病时别硬扛。'] },
+    yiyi: { id: 'yiyi', name: '依依', title: '仓库管理员', map: 'capital', warehouse: true, lines: ['京城仓库。第一仓免费，后面开仓要银两。'] },
+    shenwansan: { id: 'shenwansan', name: '沈万三', title: '钱庄老板', map: 'capital', bank: true, lines: ['银子兑银票，银票再兑回银子。钱庄的老规矩。'] },
+    jineng: { id: 'jineng', name: '技能大师', title: '武学', map: 'capital', skills: true, lines: ['V 打开技能。有技能点就点亮、升级。'] },
     chuansong: { id: 'chuansong', name: '水军都头', title: '离开副本', map: 'poyang', lines: ['湖上杀声未歇。要走，从我这儿离开副本。'] }
   };
 
@@ -248,9 +262,21 @@
       { id: 'hp2', price: 22 },
       { id: 'mp1', price: 10 },
       { id: 'mp2', price: 22 },
-      { id: 'feed', price: 8 }
+      { id: 'feed', price: 8 },
+      { id: 'scroll', price: 30 }
+    ],
+    mall: [
+      { id: 'scroll', price: 30 },
+      { id: 'mount_token', price: 40 },
+      { id: 'hp1', price: 12 },
+      { id: 'mp1', price: 12 }
     ]
   };
+
+  D.BANK = { silverPerNote: 500 };
+  D.ENERGY_MAX = 4000;
+  D.MOUNT_LEVEL = 18;
+  D.WAREHOUSE = { cap: 36, maxTabs: 4, unlock: [0, 200, 500, 1000] };
 
   D.WORLD_NODES = [
     { id: 'capital', name: '应天京城', left: '50%', top: '46%', tx: 20, ty: 20, desc: '主城' },
@@ -296,6 +322,9 @@
   D.PK_MODES = [
     { id: 'peace', name: '和平' },
     { id: 'all', name: '全体' },
+    { id: 'nation', name: '国家' },
+    { id: 'party', name: '组队' },
+    { id: 'clan', name: '宗族' },
     { id: 'karma', name: '善恶' }
   ];
 
@@ -340,15 +369,16 @@
   D.RARITY_COLOR = { white: '#d8d0c4', green: '#6fdf7a', blue: '#6cb6ff', purple: '#c089ff', orange: '#ffb347' };
 
   D.HELP = [
-    '点右侧任务追踪绿名/下划线可自动寻路（跨图会先走到传送点）。',
-    'M 打开区域地图：点 NPC 或输入坐标寻路。小地图旁「地图」打开世界地图，点地名立即传送。',
-    '数字键 1-6 技能，空格普攻，F 拾取，Z 或底栏「挂机」。头像下可切换 PK 模式。',
-    '底栏：角色 / 背包 / 技能 / 宠物 / 天工炉 / 任务 / 系统。Esc 关窗。',
-    '挂机会自动寻敌、放技能、吃药和拾取。生命过低会停手喝药。',
-    '路边草药可采集；五株同类草药可在百工炉炼成金创药或内力药。',
-    '装备可升星、开孔、镶嵌灵石。品质从白到橙，橙装最稀有。',
-    '局内立绘、半身像与头像来自用户提供的 MingGame.swf 同目录公开资源；SWF 整包没有打进仓库。',
-    '副本：京城明军水兵进鄱阳湖大战（选难度、30 分钟、可原地复活）；英雄副本传送人按关挑战，通关可休息，死亡返回入口。副本内不能地图跳转。'
+    '快捷键对照 91wan 资料：C 角色　B 背包　V 技能　Q 任务　E 天工炉　M 地图　Z 挂机　S 商店　D 打坐　Esc 关窗/系统。',
+    '空格拾取，A 攻击选中，~ 选最近怪物，1–6 技能，7 金创药，8 内力药。方向键点地行走（原作为点地）。',
+    '区域地图：深蓝自己、黄 NPC、淡蓝出口。世界地图点地名自动寻路；有传送卷则瞬移。副本内不能跳转。',
+    '精力上限 4000，杀 1 怪耗 1。精力为 0 时经验为 1 且不掉落，每日 0 点重置。角色面板可查看。',
+    '18 级系统送坐骑。C 面板「坐骑」可骑乘、用提速牌升色（白→橙）。',
+    '仓库找姗姗（太平）或依依（京城）。第一仓免费，最多四仓。钱庄兑银票：500 两一张。',
+    '京城徐达「建功立业」循环任务，10 级起可接，前 10 次奖励递增。',
+    '头像下 PK：和平 / 全体 / 国家 / 组队 / 宗族 / 善恶。单机无其他玩家，模式仅作展示。',
+    '点右侧任务追踪绿名可自动寻路。挂机（Z）自动寻敌、放技能、吃药、拾取。',
+    '副本：京城明军水兵进鄱阳湖大战；英雄副本传送人按关挑战。资料来源：91wan 明朝传奇游戏资料站。'
   ];
 
   root.GameData = D;
