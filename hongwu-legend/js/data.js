@@ -173,7 +173,9 @@
     mp2: { id: 'mp2', name: '大型内力药', kind: 'potion', potion: 'mp', tier: 2, desc: '回复大量内力。' },
     stone: { id: 'stone', name: '强化石', kind: 'mat', desc: '百工炉升星消耗。' },
     socket: { id: 'socket', name: '开孔符', kind: 'mat', desc: '为装备开孔。' },
-    feed: { id: 'feed', name: '灵兽口粮', kind: 'feed', desc: '喂食出战灵宠，回复其生命。' }
+    feed: { id: 'feed', name: '灵兽口粮', kind: 'feed', desc: '喂食出战灵宠，回复其生命。' },
+    badge: { id: 'badge', name: '腰牌', kind: 'mat', desc: '鄱阳湖缴获。使用可换经验。' },
+    hero_pack: { id: 'hero_pack', name: '英雄礼包', kind: 'pack', desc: '通关礼包。打开可得灵石或药水。' }
   };
 
   D.RECIPES = [
@@ -196,12 +198,15 @@
     bandit: { id: 'bandit', name: '流寇', color: '#8a3030', level: 8, radius: 11, speed: 86, loot: ['stone', 'hp1'] },
     snake: { id: 'snake', name: '谷底锦蛇', color: '#2f6b3a', level: 7, radius: 10, speed: 90, loot: ['herb_ling', 'herb_fu'] },
     spirit: { id: 'spirit', name: '山魈', color: '#4a3a6a', level: 11, radius: 12, speed: 80, magic: true, loot: ['socket', 'gem'] },
-    sailor: { id: 'sailor', name: '水寨刀手', color: '#2a4a6a', level: 14, radius: 12, speed: 82, loot: ['stone', 'hp2'] },
-    cannon: { id: 'cannon', name: '水寨炮手', color: '#3a5a4a', level: 16, radius: 12, speed: 70, loot: ['socket', 'mp2'] },
+    sailor: { id: 'sailor', name: '刀兵', color: '#2a4a6a', level: 10, radius: 12, speed: 82, loot: ['stone', 'hp1'] },
+    xianfeng: { id: 'xianfeng', name: '先锋', color: '#3a3a6a', level: 12, radius: 12, speed: 90, loot: ['stone', 'hp2'] },
+    gongshou: { id: 'gongshou', name: '弓手', color: '#3a5a4a', level: 11, radius: 11, speed: 64, ranged: true, range: 200, loot: ['mp1', 'socket'] },
+    fujiang: { id: 'fujiang', name: '副将', color: '#4a2040', level: 14, radius: 16, speed: 78, elite: true, loot: ['badge', 'stone', 'hp2'] },
+    cannon: { id: 'cannon', name: '水寨炮手', color: '#3a5a4a', level: 16, radius: 12, speed: 70, ranged: true, range: 180, loot: ['socket', 'mp2'] },
     escort: { id: 'escort', name: '劫镖贼', color: '#6a2020', level: 12, radius: 11, speed: 96, loot: ['stone'] },
-    tower: { id: 'tower', name: '试炼武者', color: '#4a4a8a', level: 10, radius: 12, speed: 88, loot: ['stone', 'gem'] },
+    tower: { id: 'tower', name: '本关守将', color: '#4a4a8a', level: 10, radius: 12, speed: 88, loot: ['stone', 'gem'] },
     boar_boss: { id: 'boar_boss', name: '獠牙王', color: '#4a2010', level: 6, radius: 18, speed: 64, boss: true, loot: ['stone', 'socket'] },
-    lake_boss: { id: 'lake_boss', name: '水寨统领', color: '#102040', level: 18, radius: 20, speed: 70, boss: true, magic: true, loot: ['stone', 'socket', 'gem'] },
+    lake_boss: { id: 'lake_boss', name: '张定边', color: '#102040', level: 18, radius: 20, speed: 70, boss: true, loot: ['badge', 'stone', 'socket', 'gem'] },
     world_boss: { id: 'world_boss', name: '残元先锋', color: '#3a1020', level: 22, radius: 22, speed: 76, boss: true, loot: ['gem', 'socket'] }
   };
 
@@ -212,9 +217,9 @@
     { id: 'q4', name: '灵兽结缘', flag: 'got_pet', map: 'shennong', text: '前往神农谷，收服一只灵宠。', reward: { exp: 120, silver: 50, items: [{ id: 'feed', n: 5 }] } },
     { id: 'q5', name: '进京述职', talk: 'chefu', map: 'capital', text: '随车夫进入应天京城，拜见百工炉师傅。', reward: { exp: 100, silver: 60 } },
     { id: 'q6', name: '百工初试', flag: 'enhanced', map: 'capital', text: '在百工炉将任意装备升星一次。', reward: { exp: 110, silver: 80, items: [{ id: 'stone', n: 3 }] } },
-    { id: 'q7', name: '鄱阳水患', flag: 'poyang_clear', map: 'poyang', text: '清剿鄱阳水寨，击败水寨统领。', reward: { exp: 220, silver: 160, items: [{ id: 'hp2', n: 3 }] } },
+    { id: 'q7', name: '鄱阳水患', flag: 'poyang_clear', map: 'capital', text: '找京城明军水兵，进入鄱阳湖大战，击败张定边。', reward: { exp: 220, silver: 160, items: [{ id: 'hp2', n: 3 }] } },
     { id: 'q8', name: '护送军资', flag: 'escort_done', map: 'capital', text: '从京城护送军资到边城方向。', reward: { exp: 180, silver: 140 } },
-    { id: 'q9', name: '英雄试炼', flag: 'tower5', map: 'tower', text: '在英雄试炼中至少通过第 5 层。', reward: { exp: 260, silver: 200, items: [{ id: 'socket', n: 2 }] } },
+    { id: 'q9', name: '英雄试炼', flag: 'tower5', map: 'capital', text: '找大明英雄副本传送人，至少通过第 5 关。', reward: { exp: 260, silver: 200, items: [{ id: 'socket', n: 2 }] } },
     { id: 'q10', name: '残元余烬', kill: { id: 'world_boss', n: 1 }, map: 'wild', text: '野猪林深处出现残元先锋，将其击溃。', reward: { exp: 400, silver: 300, gold: 2 } }
   ];
 
@@ -223,11 +228,12 @@
     tiesmith: { id: 'tiesmith', name: '铁匠学徒', title: '铁匠铺', map: 'taiping', shop: 'smith', lines: ['刀钝了就来找我。京城师傅的手艺更地道。'] },
     yaopu: { id: 'yaopu', name: '药铺掌柜', title: '杂货药铺', map: 'taiping', shop: 'drug', lines: ['草药能炼药。路边的乌风草、三七别浪费。'] },
     xunshou: { id: 'xunshou', name: '驯兽师', title: '神农谷', map: 'shennong', lines: ['神农谷灵气重，奇兽出没。击败山魈，或能收服灵宠。'] },
-    chefu: { id: 'chefu', name: '车夫老周', title: '应天车夫', map: 'capital', lines: ['应天城门开着。百工炉、押镖官、试炼使者都在城里。'] },
+    chefu: { id: 'chefu', name: '车夫老周', title: '应天车夫', map: 'capital', lines: ['应天城门开着。百工炉、押镖官、明军水兵、英雄副本传送人都在城里。'] },
     bagong: { id: 'bagong', name: '百工炉师傅', title: '天工炉', map: 'capital', forge: true, lines: ['炉火取《天工开物》之意。升星、开孔、镶石、炼药，都在这一炉。'] },
     yabiao: { id: 'yabiao', name: '押镖官', title: '兵部押镖', map: 'capital', escort: true, lines: ['军资要送往边城方向。路上有劫镖的，护住车，银子少不了你。'] },
-    shilian: { id: 'shilian', name: '试炼使者', title: '英雄试炼', map: 'capital', tower: true, lines: ['英雄试炼十层，一层一波敌人。能走多远，看你的刀。'] },
-    chuansong: { id: 'chuansong', name: '渡口艄公', title: '鄱阳渡口', map: 'poyang', lines: ['水寨里刀手炮手成群，统领坐镇深处。每天都能再来。'] }
+    shilian: { id: 'shilian', name: '英雄副本传送人', title: '大明英雄副本', map: 'capital', tower: true, lines: ['大明英雄副本按关挑战。通关可暂停休息，下次从下一关继续。副本内不能地图跳转。'] },
+    shuibing: { id: 'shuibing', name: '明军水兵', title: '鄱阳湖大战', map: 'capital', poyang: true, lines: ['陈友谅部骁将张定边往来冲突。选个难度进湖，半个时辰内了结。副本内可原地复活，不能传送。'] },
+    chuansong: { id: 'chuansong', name: '水军都头', title: '离开副本', map: 'poyang', lines: ['湖上杀声未歇。要走，从我这儿离开副本。'] }
   };
 
   D.SHOPS = {
@@ -251,8 +257,41 @@
     { id: 'taiping', name: '太平村', left: '56%', top: '58%', tx: 24, ty: 17, desc: '新手村' },
     { id: 'wild', name: '野猪林', left: '68%', top: '48%', tx: 24, ty: 18, desc: '练级' },
     { id: 'shennong', name: '神农谷', left: '36%', top: '36%', tx: 24, ty: 18, desc: '灵宠' },
-    { id: 'poyang', name: '鄱阳水寨', left: '76%', top: '70%', tx: 8, ty: 18, desc: '水寨' }
+    { id: 'poyang', name: '鄱阳湖', left: '76%', top: '70%', tx: 8, ty: 18, desc: '副本入口在京城水兵' }
   ];
+
+  D.INSTANCES = {
+    poyang: {
+      name: '鄱阳湖大战',
+      daily: 10,
+      minLevel: 6,
+      duration: 1800,
+      revive: 'here',
+      teleport: false,
+      hideQuest: true,
+      diffs: [
+        { id: 'recruit', name: '新兵', lv: 8 },
+        { id: 'normal', name: '普通', lv: 12 },
+        { id: 'hero', name: '英雄', lv: 16 }
+      ]
+    },
+    tower: {
+      name: '大明英雄副本',
+      daily: 10,
+      minLevel: 6,
+      floors: 10,
+      autoCost: 5,
+      revive: 'entrance',
+      teleport: false,
+      hideQuest: true
+    },
+    road: {
+      name: '官道押镖',
+      revive: 'entrance',
+      teleport: false,
+      hideQuest: true
+    }
+  };
 
   D.PK_MODES = [
     { id: 'peace', name: '和平' },
@@ -264,9 +303,9 @@
     taiping: { name: '太平村', safe: true, music: 'village', tint: [0.12, 0.16, 0.08] },
     wild: { name: '野猪林', safe: false, tint: [0.08, 0.14, 0.06] },
     shennong: { name: '神农谷', safe: false, tint: [0.06, 0.12, 0.1] },
-    poyang: { name: '鄱阳水寨', safe: false, instance: true, tint: [0.04, 0.08, 0.14] },
+    poyang: { name: '鄱阳湖大战', safe: false, instance: true, tint: [0.04, 0.08, 0.14] },
     capital: { name: '应天京城', safe: true, tint: [0.14, 0.1, 0.06] },
-    tower: { name: '英雄试炼', safe: false, instance: true, tint: [0.08, 0.06, 0.12] },
+    tower: { name: '大明英雄副本', safe: false, instance: true, tint: [0.08, 0.06, 0.12] },
     road: { name: '官道押镖', safe: false, instance: true, tint: [0.12, 0.12, 0.06] }
   };
 
@@ -278,20 +317,19 @@
     wild: [
       { x: 1, y: 18, to: 'taiping', tx: 45, ty: 18, label: '太平村' },
       { x: 24, y: 1, to: 'shennong', tx: 24, ty: 32, label: '神农谷' },
-      { x: 47, y: 30, to: 'poyang', tx: 4, ty: 18, label: '鄱阳水寨' }
+      { x: 47, y: 30, to: 'poyang', tx: 4, ty: 18, label: '鄱阳湖' }
     ],
     shennong: [
       { x: 24, y: 34, to: 'wild', tx: 24, ty: 3, label: '野猪林' }
     ],
     poyang: [
-      { x: 2, y: 18, to: 'wild', tx: 45, ty: 30, label: '离开水寨' }
+      { x: 2, y: 18, to: 'capital', tx: 36, ty: 22, label: '离开副本' }
     ],
     capital: [
-      { x: 8, y: 33, to: 'taiping', tx: 24, ty: 4, label: '太平村' },
-      { x: 40, y: 6, to: 'tower', tx: 12, ty: 20, label: '英雄试炼' }
+      { x: 8, y: 33, to: 'taiping', tx: 24, ty: 4, label: '太平村' }
     ],
     tower: [
-      { x: 12, y: 22, to: 'capital', tx: 38, ty: 8, label: '回京' }
+      { x: 12, y: 22, to: 'capital', tx: 40, ty: 14, label: '离开副本' }
     ],
     road: [
       { x: 2, y: 10, to: 'capital', tx: 20, ty: 20, label: '放弃押镖' }
@@ -309,7 +347,8 @@
     '挂机会自动寻敌、放技能、吃药和拾取。生命过低会停手喝药。',
     '路边草药可采集；五株同类草药可在百工炉炼成金创药或内力药。',
     '装备可升星、开孔、镶嵌灵石。品质从白到橙，橙装最稀有。',
-    '局内立绘、半身像与头像来自用户提供的 MingGame.swf 同目录公开资源；SWF 整包没有打进仓库。'
+    '局内立绘、半身像与头像来自用户提供的 MingGame.swf 同目录公开资源；SWF 整包没有打进仓库。',
+    '副本：京城明军水兵进鄱阳湖大战（选难度、30 分钟、可原地复活）；英雄副本传送人按关挑战，通关可休息，死亡返回入口。副本内不能地图跳转。'
   ];
 
   root.GameData = D;

@@ -76,25 +76,27 @@
     wolf: 'tiger', snake: 'fox',
     bandit: 'redguard', escort: 'redguard',
     sailor: 'officer', cannon: 'officer',
+    xianfeng: 'redguard', gongshou: 'spear', fujiang: 'guard',
     tower: 'guard', spirit: 'water',
-    lake_boss: 'water', world_boss: 'boss'
+    lake_boss: 'boss', world_boss: 'boss'
   };
 
   var NPC_SRC = {
     cunzheng: 'officer', tiesmith: 'smith', yaopu: 'fairy', xunshou: 'fox',
-    chefu: 'officer', bagong: 'smith', yabiao: 'guard', shilian: 'dao', chuansong: 'wanderer'
+    chefu: 'officer', bagong: 'smith', yabiao: 'guard', shilian: 'dao',
+    shuibing: 'guard', chuansong: 'wanderer'
   };
 
   var NPC_PORTRAIT = {
     cunzheng: 'portraitCun', yaopu: 'portraitShop', xunshou: 'portraitLady',
     chefu: 'portraitCun', bagong: 'portraitMaster', yabiao: 'portraitCun',
-    shilian: 'portraitMaster', chuansong: 'portraitLady', tiesmith: 'portraitCun'
+    shilian: 'portraitMaster', shuibing: 'portraitCun', chuansong: 'portraitLady', tiesmith: 'portraitCun'
   };
 
   var NPC_ICON = {
     cunzheng: 'iconCun', tiesmith: 'iconSmith', yaopu: 'iconShop', xunshou: 'iconFarmer',
     chefu: 'iconCart', bagong: 'iconElder', yabiao: 'iconMaster', shilian: 'iconMaster',
-    chuansong: 'iconBoat'
+    chuansong: 'iconBoat', shuibing: 'iconBoat'
   };
 
   var PET_SRC = { wolf: 'tiger', crane: 'water', fox: 'fox', ape: 'tiger' };

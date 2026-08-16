@@ -49,4 +49,15 @@ D.WORLD_NODES.forEach(function (n) {
 var ids = D.WORLD_NODES.map(function (n) { return n.id; });
 assert.ok(ids.indexOf('taiping') >= 0 && ids.indexOf('capital') >= 0);
 
+assert.ok(D.INSTANCES && D.INSTANCES.poyang && D.INSTANCES.tower);
+assert.strictEqual(D.MONSTERS.lake_boss.name, '张定边');
+assert.strictEqual(D.NPCS.shuibing.map, 'capital');
+assert.ok(D.INSTANCES.poyang.diffs.length >= 3);
+assert.strictEqual(D.MAP_META.poyang.instance, true);
+assert.strictEqual(D.MAP_META.tower.instance, true);
+Object.keys(D.INSTANCES).forEach(function (id) {
+  if (id === 'road') return;
+  assert.ok(D.MAP_META[id], id + ' instance needs MAP_META');
+});
+
 console.log('path.test.js ok');

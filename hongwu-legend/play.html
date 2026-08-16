@@ -82,6 +82,22 @@
           </div>
           <div class="toast" id="toast"></div>
           <div class="dialog" id="dialog"></div>
+          <div id="instance-hud" hidden>
+            <div id="instance-title">副本</div>
+            <div id="instance-info">—</div>
+            <button type="button" id="btn-leave-instance">离开副本</button>
+          </div>
+          <div id="floor-clear" hidden>
+            <div class="floor-box">
+              <h3>本关挑战成功</h3>
+              <p id="floor-clear-text"></p>
+              <div class="btn-row">
+                <button type="button" class="btn" data-floor="continue">继续挑战</button>
+                <button type="button" class="btn ghost" data-floor="rest">休息一下</button>
+                <button type="button" class="btn ghost" data-floor="leave">离开副本</button>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="dock">
           <div class="skill-bar" id="skill-bar"></div>
@@ -132,8 +148,8 @@
 
       <div class="death-mask" id="death">
         <div>
-          <h2>身死道消</h2>
-          <p>银两略有折损，将在太平村回魂。</p>
+          <h2 id="death-title">身死道消</h2>
+          <p id="death-text">银两略有折损，将在太平村回魂。</p>
           <div class="btn-row" style="margin-top:16px">
             <button class="btn" id="btn-revive">回 村 再 战</button>
           </div>

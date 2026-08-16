@@ -834,3 +834,45 @@ html, body {
 }
 .world-pin:hover { filter: brightness(1.2); }
 .world-pin.here { box-shadow: 0 0 0 2px #6fdf7a; }
+
+#instance-hud {
+  position: absolute;
+  left: 50%;
+  top: 8px;
+  transform: translateX(-50%);
+  z-index: 6;
+  background: rgba(8, 22, 24, 0.9);
+  border: 1px solid #2ec4c8;
+  padding: 6px 12px;
+  text-align: center;
+  min-width: 220px;
+  pointer-events: auto;
+}
+#instance-hud[hidden] { display: none !important; }
+#instance-title { color: #ffe7a0; letter-spacing: 2px; font-size: 13px; }
+#instance-info { color: #8ad4d6; font-size: 12px; margin: 2px 0 6px; }
+#btn-leave-instance {
+  background: #3a1a12;
+  border: 1px solid #d4af37;
+  color: #ffe7a0;
+  font-family: inherit;
+  padding: 2px 10px;
+  cursor: pointer;
+}
+#floor-clear {
+  position: absolute;
+  inset: 0;
+  z-index: 11;
+  background: rgba(0, 0, 0, 0.55);
+  display: grid;
+  place-items: center;
+}
+#floor-clear[hidden] { display: none !important; }
+#floor-clear .floor-box {
+  background: rgba(8, 22, 24, 0.96);
+  border: 1px solid #2ec4c8;
+  padding: 18px 22px;
+  max-width: 420px;
+}
+#floor-clear h3 { color: #ffe7a0; letter-spacing: 3px; margin-bottom: 8px; }
+#floor-clear p { color: #e8f6c8; line-height: 1.6; margin-bottom: 12px; }

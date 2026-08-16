@@ -41,7 +41,13 @@
     toastT: 0,
     escort: null,
     towerFloor: 0,
-    waveLeft: 0
+    waveLeft: 0,
+    hold: false,
+    instance: null,
+    towerAuto: false,
+    towerDmg: 0,
+    towerT0: 0,
+    deathKind: 'village'
   };
 
   function uid() { return 'id' + Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-3); }
@@ -131,7 +137,9 @@
       pkMode: 'peace',
       target: null,
       atkCd: 0,
-      gatherCd: 0
+      gatherCd: 0,
+      towerUnlock: 1,
+      dungeon: { day: '', poyang: 0, tower: 0 }
     };
     D.SKILLS[cls].forEach(function (s) {
       if (s.unlock <= 1) p.skills[s.id] = 1;
@@ -478,9 +486,7 @@
       spawnPack('spirit', 5, 11);
       scatterHerbs(16);
     } else if (id === 'poyang') {
-      spawnPack('sailor', 8, 14);
-      spawnPack('cannon', 4, 16);
-      spawnOne('lake_boss', 38 * TILE, 20 * TILE);
+      spawnPoyangWave();
     } else if (id === 'tower') {
       startTowerFloor(G.towerFloor || 1);
     } else if (id === 'road') {
@@ -498,7 +504,8 @@
       bagong: [24 * TILE, 12 * TILE],
       yabiao: [32 * TILE, 20 * TILE],
       shilian: [40 * TILE, 14 * TILE],
-      chuansong: [6 * TILE, 18 * TILE]
+      chuansong: [6 * TILE, 18 * TILE],
+      shuibing: [36 * TILE, 22 * TILE]
     };
     var p = table[id] || [10 * TILE, 10 * TILE];
     return { x: p[0], y: p[1] };
@@ -527,7 +534,8 @@
       hp: F.monsterHp(level, def.boss),
       maxHp: F.monsterHp(level, def.boss),
       atk: F.monsterAtk(level, def.boss),
-      stun: 0, atkCd: 0, aggro: 0
+      stun: 0, atkCd: 0, aggro: 0,
+      ranged: !!def.ranged, range: def.range || 0, elite: !!def.elite
     };
     G.entities.push(e);
     return e;
@@ -555,6 +563,11 @@
     G.path = [];
     log('抵达 ' + D.MAP_META[to].name);
     if (to === 'capital') maybeCompleteTalk('chefu');
+    if (!(D.MAP_META[to] && D.MAP_META[to].instance)) {
+      G.instance = null;
+      G.hold = false;
+      hideFloorClear();
+    }
     refreshQuestUI();
     if (mapOverlayOpen()) refreshMapOverlay();
     saveSilent();
@@ -628,21 +641,21 @@
 
   function dropLoot(e) {
     var p = G.player;
-    if (Math.random() < (e.boss ? 0.95 : 0.28)) {
+    if (Math.random() < (e.boss || e.elite ? 0.95 : 0.28)) {
       var eq = rollEquip(D.SLOTS[irand(0, D.SLOTS.length - 1)].id, e.level, null, p.cls);
       G.drops.push({ x: e.x + rand(-12, 12), y: e.y + rand(-12, 12), item: eq });
     }
     var def = D.MONSTERS[e.kind];
     (def.loot || []).forEach(function (id) {
       if (id === 'gem') {
-        if (Math.random() < (e.boss ? 0.7 : 0.12)) {
+          if (Math.random() < (e.boss || e.elite ? 0.7 : 0.12)) {
           var gdef = D.GEMS[irand(0, D.GEMS.length - 1)];
           G.drops.push({
             x: e.x + rand(-10, 10), y: e.y + rand(-10, 10),
             item: { uid: uid(), type: 'gem', id: gdef.id, name: gdef.name, kind: gdef.kind, grade: clamp(1 + Math.floor(e.level / 8), 1, 6) }
           });
         }
-      } else if (Math.random() < (e.boss ? 0.8 : 0.22)) {
+      } else if (Math.random() < (e.boss || e.elite ? 0.8 : 0.22)) {
         G.drops.push({ x: e.x + rand(-10, 10), y: e.y + rand(-10, 10), item: { id: id, n: 1 } });
       }
     });
@@ -905,9 +918,15 @@
     if (q.gather) return { kind: 'herb', map: q.map, herb: q.gather.id };
     if (q.flag === 'got_pet') return { kind: 'npc', map: 'shennong', npcId: 'xunshou' };
     if (q.flag === 'enhanced') return { kind: 'npc', map: 'capital', npcId: 'bagong' };
-    if (q.flag === 'poyang_clear') return { kind: 'kill', map: 'poyang', monster: 'lake_boss' };
+    if (q.flag === 'poyang_clear') {
+      if (G.mapId === 'poyang') return { kind: 'kill', map: 'poyang', monster: 'lake_boss' };
+      return { kind: 'npc', map: 'capital', npcId: 'shuibing' };
+    }
     if (q.flag === 'escort_done') return { kind: 'npc', map: 'capital', npcId: 'yabiao' };
-    if (q.flag === 'tower5') return { kind: 'npc', map: 'capital', npcId: 'shilian' };
+    if (q.flag === 'tower5') {
+      if (G.mapId === 'tower') return { kind: 'kill', map: 'tower', monster: 'tower' };
+      return { kind: 'npc', map: 'capital', npcId: 'shilian' };
+    }
     return { kind: 'map', map: q.map };
   }
 
@@ -949,6 +968,7 @@
   }
 
   function followQuest(q) {
+    if (inInstance()) { toast('在副本地图中不能自动寻路'); return; }
     if (!q) q = currentQuest();
     if (!q) { toast('当前没有任务'); return; }
     G.guide = { qid: q.id };
@@ -958,6 +978,7 @@
   }
 
   function followNpcOnMap(npcId) {
+    if (inInstance()) { toast('在副本地图中不能自动寻路'); return; }
     G.guide = { tgt: { kind: 'npc', map: G.mapId, npcId: npcId } };
     toast('自动寻路：' + (D.NPCS[npcId] ? D.NPCS[npcId].name : '人物'));
     guideStep();
@@ -1076,13 +1097,128 @@
     p.pet.atk = Math.floor(((st.patk + st.matk) * 0.28 + p.level * 2) * p.pet.atkMul);
   }
 
-  /* ========== 押镖 / 试炼 ========== */
+  /* ========== 押镖 / 副本 ========== */
+  function inInstance() {
+    return !!(D.MAP_META[G.mapId] && D.MAP_META[G.mapId].instance);
+  }
+
+  function dungeonDay() {
+    var d = new Date();
+    return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+  }
+
+  function ensureDungeon(p) {
+    p.dungeon = p.dungeon || { day: '', poyang: 0, tower: 0 };
+    var day = dungeonDay();
+    if (p.dungeon.day !== day) p.dungeon = { day: day, poyang: 0, tower: 0 };
+    if (!p.towerUnlock) p.towerUnlock = 1;
+  }
+
+  function canEnterDungeon(id) {
+    var p = G.player;
+    var spec = D.INSTANCES[id];
+    if (!spec) return false;
+    ensureDungeon(p);
+    if (p.level < (spec.minLevel || 1)) {
+      toast('等级不足 ' + spec.minLevel + ' 级');
+      return false;
+    }
+    if (spec.daily && (p.dungeon[id] || 0) >= spec.daily) {
+      toast('你今天的挑战次数已满');
+      return false;
+    }
+    return true;
+  }
+
+  function useDungeon(id) {
+    ensureDungeon(G.player);
+    G.player.dungeon[id] = (G.player.dungeon[id] || 0) + 1;
+  }
+
+  function hideFloorClear() {
+    var el = document.getElementById('floor-clear');
+    if (el) el.hidden = true;
+    G.hold = false;
+  }
+
+  function leaveInstance() {
+    hideFloorClear();
+    G.escort = null;
+    G.towerAuto = false;
+    G.instance = null;
+    var tx = 20, ty = 20;
+    if (G.mapId === 'poyang') { tx = 36; ty = 22; }
+    else if (G.mapId === 'tower') { tx = 40; ty = 14; }
+    else if (G.mapId === 'road') { tx = 32; ty = 20; }
+    travel('capital', tx, ty);
+    toast('离开副本');
+  }
+
+  function spawnAt(kind, tx, ty, lv) {
+    var pos = snapWalkable((tx + 0.5) * TILE, (ty + 0.5) * TILE);
+    return spawnOne(kind, pos.x, pos.y, lv);
+  }
+
+  function poyangLevel() {
+    var id = G.instance && G.instance.diff;
+    var diffs = (D.INSTANCES.poyang && D.INSTANCES.poyang.diffs) || [];
+    for (var i = 0; i < diffs.length; i++) if (diffs[i].id === id) return diffs[i].lv;
+    return 10;
+  }
+
+  function spawnPoyangWave() {
+    var lv = poyangLevel();
+    [[6, 16], [8, 17], [10, 15], [12, 18], [7, 19], [11, 16]].forEach(function (xy) {
+      spawnAt('sailor', xy[0], xy[1], lv);
+    });
+    [[16, 18], [18, 16], [17, 20]].forEach(function (xy) {
+      spawnAt('xianfeng', xy[0], xy[1], lv + 1);
+    });
+    [[22, 8], [24, 9], [26, 8], [28, 10], [23, 11]].forEach(function (xy) {
+      spawnAt('gongshou', xy[0], xy[1], lv);
+    });
+    spawnAt('fujiang', 34, 18, lv + 2);
+    spawnAt('fujiang', 36, 20, lv + 2);
+    spawnAt('lake_boss', 40, 20, lv + 4);
+  }
+
+  function enterPoyang(diffId) {
+    if (!canEnterDungeon('poyang')) return;
+    var diffs = D.INSTANCES.poyang.diffs;
+    var spec = diffs[0];
+    diffs.forEach(function (d) { if (d.id === diffId) spec = d; });
+    useDungeon('poyang');
+    G.instance = { id: 'poyang', diff: spec.id, left: D.INSTANCES.poyang.duration };
+    closeDialog();
+    closePanels();
+    travel('poyang', 4, 18);
+    log('开始挑战鄱阳湖大战 · ' + spec.name + '难度');
+    toast('鄱阳湖大战 · ' + spec.name + '　半个时辰内了结');
+  }
+
+  function enterTower(floor, auto) {
+    if (!canEnterDungeon('tower')) return;
+    ensureDungeon(G.player);
+    floor = floor || G.player.towerUnlock || 1;
+    if (floor > (G.player.towerUnlock || 1)) { toast('本关卡尚未开通'); return; }
+    useDungeon('tower');
+    G.instance = { id: 'tower' };
+    G.towerAuto = !!auto;
+    G.towerFloor = floor;
+    closeDialog();
+    closePanels();
+    hideFloorClear();
+    travel('tower', 12, 20);
+    log('开始挑战大明英雄副本 第 ' + floor + ' 关');
+  }
+
   function startEscort() {
     var p = G.player;
     if (p.level < 8) { toast('等级不足 8 级'); return; }
     if (p.silver < 20) { toast('押金 20 两不足'); return; }
     p.silver -= 20;
     G.escort = { hp: 220, maxHp: 220, x: 4 * TILE, y: 11 * TILE, t: 0, spawn: 0 };
+    G.instance = { id: 'road' };
     travel('road', 3, 11);
     log('护送军资出发，沿官道向东。');
     closeDialog();
@@ -1091,27 +1227,71 @@
   function startTowerFloor(n) {
     G.towerFloor = n;
     G.entities = [];
+    G.towerDmg = 0;
+    G.towerT0 = G.time;
     var count = 3 + Math.floor(n / 2);
     for (var i = 0; i < count; i++) {
       spawnOne('tower', rand(6, 20) * TILE, rand(6, 20) * TILE, 8 + n * 2);
     }
-    if (n % 5 === 0) spawnOne('tower', 13 * TILE, 12 * TILE, 10 + n * 2).boss = true;
+    if (n % 5 === 0) {
+      var boss = spawnOne('tower', 13 * TILE, 12 * TILE, 10 + n * 2);
+      boss.boss = true;
+      boss.name = '本关守将';
+    }
     G.waveLeft = G.entities.length;
-    toast('试炼第 ' + n + ' 层');
+    G.hold = false;
+    toast('大明英雄副本 第 ' + n + ' 关');
   }
 
   function onTowerKill() {
-    if (G.entities.length === 0) {
-      if (G.towerFloor >= 5) G.player.flags.tower5 = true;
-      questCheck();
-      if (G.towerFloor >= 10) {
-        toast('十层已破');
-        addExp(G.player, 200);
-        G.player.silver += 150;
+    if (G.entities.length !== 0) return;
+    if (G.towerFloor >= 5) G.player.flags.tower5 = true;
+    questCheck();
+    G.player.towerUnlock = Math.max(G.player.towerUnlock || 1, G.towerFloor + 1);
+    if (G.towerFloor % 5 === 0) addItem(G.player, { id: 'hero_pack', n: 1 });
+    if (G.towerFloor >= 10) {
+      toast('您已通关所有关卡');
+      showFloorClear(true);
+      return;
+    }
+    if (G.towerAuto) {
+      var cost = D.INSTANCES.tower.autoCost || 5;
+      if (G.player.silver < cost) {
+        toast('银两不足，自动闯关停止');
+        showFloorClear(false);
         return;
       }
+      G.player.silver -= cost;
       startTowerFloor(G.towerFloor + 1);
+      return;
     }
+    showFloorClear(false);
+  }
+
+  function showFloorClear(done) {
+    G.hold = true;
+    G.player.auto = false;
+    G.player.target = null;
+    G.dest = null;
+    G.path = [];
+    var el = document.getElementById('floor-clear');
+    var text = document.getElementById('floor-clear-text');
+    if (!el) return;
+    var used = Math.max(0, G.time - (G.towerT0 || G.time));
+    var hp = Math.floor(G.towerDmg || 0);
+    if (text) {
+      text.textContent = (done ? '您已通关所有关卡。' : '第 ' + G.towerFloor + ' 关挑战成功。') +
+        '通关用时 ' + Math.floor(used) + ' 秒，总损血量 ' + hp + '。' +
+        (done ? '' : '可继续挑战，或休息一下下次从下一关进入。');
+    }
+    var cont = el.querySelector('[data-floor="continue"]');
+    if (cont) cont.hidden = !!done;
+    el.hidden = false;
+  }
+
+  function continueTower() {
+    hideFloorClear();
+    startTowerFloor(G.towerFloor + 1);
   }
 
   /* ========== 更新 ========== */
@@ -1130,6 +1310,7 @@
   }
 
   function updatePlayer(dt) {
+    if (G.hold) return;
     var p = G.player;
     var st = stats(p);
     var mx = 0, my = 0;
@@ -1189,7 +1370,14 @@
       if (Math.hypot(p.x - px, p.y - py) < 28) {
         if (!pt._cd) {
           pt._cd = 1.2;
-          travel(pt.to, pt.tx, pt.ty);
+          if (pt.to === 'poyang' && G.mapId !== 'poyang') {
+            travel('capital', 36, 22);
+            toast('找明军水兵，选择难度进入鄱阳湖大战');
+          } else if (inInstance() && pt.to === 'capital') {
+            leaveInstance();
+          } else {
+            travel(pt.to, pt.tx, pt.ty);
+          }
         }
       }
       if (pt._cd) pt._cd = Math.max(0, pt._cd - dt);
@@ -1224,7 +1412,15 @@
     }
   }
 
+  function hurtPlayer(dmg) {
+    var p = G.player;
+    p.hp -= dmg;
+    if (G.mapId === 'tower') G.towerDmg = (G.towerDmg || 0) + dmg;
+    floatText(p.x, p.y - 18, '-' + dmg, '#ff8a7a');
+  }
+
   function updateMonsters(dt) {
+    if (G.hold) return;
     var p = G.player;
     var st = stats(p);
     G.entities.forEach(function (e) {
@@ -1232,19 +1428,30 @@
       e.atkCd = Math.max(0, e.atkCd - dt);
       if (e.debuff) { e.debuff.t -= dt; if (e.debuff.t <= 0) e.debuff = null; }
       var d = dist(e, p);
-      var sight = e.boss ? 260 : 170;
+      var sight = e.boss ? 260 : (e.ranged ? 240 : 170);
       if (d < sight) e.aggro = 3;
       if (e.aggro > 0) {
         e.aggro -= dt;
         var spd = e.speed * (e.debuff && e.debuff.speed ? 1 - e.debuff.speed : 1);
-        if (d > e.r + 16) {
+        var melee = e.r + 16;
+        var want = e.ranged ? (e.range || 180) : melee;
+        if (e.ranged && d < want && d > melee) {
+          if (e.atkCd <= 0) {
+            var a0 = ang(e, p);
+            G.projectiles.push({
+              x: e.x, y: e.y, vx: Math.cos(a0) * 260, vy: Math.sin(a0) * 260,
+              life: 0.9, mul: 1, magic: !!e.magic, skill: null, hit: {},
+              foe: true, atk: e.atk, color: '#c8e68a'
+            });
+            e.atkCd = 1.45;
+          }
+        } else if (d > want) {
           var a = ang(e, p);
           tryMove(e, Math.cos(a) * spd * dt, Math.sin(a) * spd * dt);
         } else if (e.atkCd <= 0) {
           var def = e.magic ? st.mdef : st.pdef;
           var dmg = F.calcDamage(e.atk, def, 1, false, rand(-0.05, 0.05));
-          p.hp -= dmg;
-          floatText(p.x, p.y - 18, '-' + dmg, '#ff8a7a');
+          hurtPlayer(dmg);
           e.atkCd = e.boss ? 1.15 : 1.35;
           beep(140, 0.04);
         }
@@ -1253,6 +1460,7 @@
   }
 
   function updatePet(dt) {
+    if (G.hold) return;
     var p = G.player;
     if (!p.pet || p.pet.hp <= 0) return;
     syncPet(p);
@@ -1279,11 +1487,24 @@
   }
 
   function updateProjectiles(dt) {
+    if (G.hold) return;
     G.projectiles = G.projectiles.filter(function (pr) {
       pr.x += pr.vx * dt;
       pr.y += pr.vy * dt;
       pr.life -= dt;
       if (pr.life <= 0) return false;
+      if (pr.foe) {
+        var p = G.player;
+        if (p && Math.hypot(pr.x - p.x, pr.y - p.y) < 16) {
+          var st = stats(p);
+          var def = pr.magic ? st.mdef : st.pdef;
+          var dmg = F.calcDamage(pr.atk || 8, def, 1, false, 0);
+          hurtPlayer(dmg);
+          beep(140, 0.04);
+          return false;
+        }
+        return true;
+      }
       for (var i = 0; i < G.entities.length; i++) {
         var e = G.entities[i];
         if (pr.hit[e.uid]) continue;
@@ -1349,18 +1570,47 @@
 
   function die() {
     var p = G.player;
-    p.silver = Math.max(0, Math.floor(p.silver * 0.9));
     p.auto = false;
+    var spec = D.INSTANCES[G.mapId];
+    var title = document.getElementById('death-title');
+    var text = document.getElementById('death-text');
+    var btn = document.getElementById('btn-revive');
+    if (spec && spec.revive === 'here') {
+      G.deathKind = 'here';
+      if (title) title.textContent = '身受重创';
+      if (text) text.textContent = '副本地图内可以原地复活，角色死亡不掉落物品。';
+      if (btn) btn.textContent = '立即在原地复活';
+    } else if (spec && spec.revive === 'entrance') {
+      G.deathKind = 'entrance';
+      if (title) title.textContent = '挑战失败';
+      if (text) text.textContent = '副本地图内无法原地复活。返回入口后，已开通关卡仍保留。';
+      if (btn) btn.textContent = '返回入口';
+    } else {
+      G.deathKind = 'village';
+      p.silver = Math.max(0, Math.floor(p.silver * 0.9));
+      if (title) title.textContent = '身死道消';
+      if (text) text.textContent = '银两略有折损，将在太平村回魂。';
+      if (btn) btn.textContent = '回 村 再 战';
+    }
     document.getElementById('death').classList.add('open');
   }
 
   function revive() {
     document.getElementById('death').classList.remove('open');
     var p = G.player;
-    travel('taiping', 24, 17);
     var st = stats(p);
     p.hp = st.maxHp;
     p.mp = st.maxMp;
+    p.target = null;
+    if (G.deathKind === 'here') {
+      toast('成功原地复活');
+      return;
+    }
+    if (G.deathKind === 'entrance') {
+      leaveInstance();
+      return;
+    }
+    travel('taiping', 24, 17);
   }
 
   /* ========== 绘制 ========== */
@@ -1676,7 +1926,9 @@
       coord.textContent = Math.floor(G.player.x / TILE) + ',' + Math.floor(G.player.y / TILE);
     }
     var qb = document.querySelector('.quest-box');
-    if (qb) qb.hidden = (G.mapId === 'tower' || G.mapId === 'road');
+    var inst = D.INSTANCES[G.mapId];
+    if (qb) qb.hidden = !!(inst && inst.hideQuest);
+    refreshInstanceHud();
     if (mapOverlayOpen() && regionTabOn()) paintRegionMap();
   }
 
@@ -1796,6 +2048,7 @@
   }
 
   function worldJump(id) {
+    if (inInstance()) { toast('在副本地图中不能进行地图跳转'); return; }
     var node = null;
     (D.WORLD_NODES || []).forEach(function (n) { if (n.id === id) node = n; });
     if (!node) return;
@@ -1805,7 +2058,51 @@
     }
     closeMapOverlay();
     G.guide = null;
+    if (id === 'poyang') {
+      travel('capital', 36, 22);
+      toast('找明军水兵进入鄱阳湖大战');
+      return;
+    }
     travel(id, node.tx, node.ty);
+  }
+
+  function refreshInstanceHud() {
+    var el = document.getElementById('instance-hud');
+    if (!el) return;
+    var on = inInstance();
+    el.hidden = !on;
+    if (!on) return;
+    var spec = D.INSTANCES[G.mapId] || {};
+    var title = document.getElementById('instance-title');
+    var info = document.getElementById('instance-info');
+    if (title) title.textContent = spec.name || (D.MAP_META[G.mapId] && D.MAP_META[G.mapId].name) || '副本';
+    if (!info) return;
+    if (G.mapId === 'poyang' && G.instance) {
+      var left = Math.max(0, Math.floor(G.instance.left || 0));
+      var m = Math.floor(left / 60), s = left % 60;
+      var diff = G.instance.diff || '';
+      var dname = '';
+      (spec.diffs || []).forEach(function (d) { if (d.id === diff) dname = d.name; });
+      info.textContent = (dname ? dname + '难度　' : '') + '剩余 ' + m + ':' + (s < 10 ? '0' : '') + s +
+        '　敌军 ' + G.entities.length;
+    } else if (G.mapId === 'tower') {
+      info.textContent = '第 ' + (G.towerFloor || 1) + ' 关　剩余怪物 ' + G.entities.length;
+    } else if (G.mapId === 'road' && G.escort) {
+      info.textContent = '护送中　镖车 ' + Math.floor(G.escort.hp) + '/' + G.escort.maxHp;
+    } else {
+      info.textContent = '副本中';
+    }
+  }
+
+  function tickInstance(dt) {
+    if (!G.instance || G.hold) return;
+    if (G.instance.left == null) return;
+    G.instance.left -= dt;
+    if (G.instance.left <= 0) {
+      G.instance.left = 0;
+      toast('副本时间已到，地图关闭');
+      leaveInstance();
+    }
   }
 
   function cyclePkMode() {
@@ -2049,12 +2346,23 @@
   /* ========== 对话 ========== */
   function talkNpc(n) {
     var def = D.NPCS[n.id];
+    if (!def) return;
     var el = document.getElementById('dialog');
     var opts = '<button class="btn ghost" data-bye="1">告辞</button>';
     if (def.shop) opts += '<button class="btn" data-openshop="' + def.shop + '">买卖</button>';
     if (def.forge) opts += '<button class="btn" data-openforge="1">开炉</button>';
     if (def.escort) opts += '<button class="btn" data-escort="1">接下押镖（押金20两）</button>';
-    if (def.tower) opts += '<button class="btn" data-tower="1">进入试炼</button>';
+    if (def.tower) {
+      ensureDungeon(G.player);
+      opts += '<button class="btn" data-open-tower="1">选择关卡</button>';
+      opts += '<button class="btn ghost" data-tower-auto="1">自动闯关（每关' + (D.INSTANCES.tower.autoCost || 5) + '两）</button>';
+    }
+    if (def.poyang) {
+      (D.INSTANCES.poyang.diffs || []).forEach(function (d) {
+        opts += '<button class="btn" data-poyang-diff="' + d.id + '">' + d.name + '难度</button>';
+      });
+    }
+    if (inInstance()) opts += '<button class="btn ghost" data-leave-instance="1">离开副本</button>';
     if (n.id === 'xunshou' && !G.player.pet) opts += '<button class="btn" data-buypet="1">以 80 两请一只幼兽</button>';
     var face = (window.Art && Art.npcPortrait) ? Art.npcPortrait(n.id) : '';
     var who = (def.title ? def.title + ' · ' : '') + n.name;
@@ -2066,6 +2374,28 @@
     G.dialogNpc = n;
     maybeCompleteTalk(n.id);
     if (n.id === 'bagong') maybeCompleteTalk('chefu');
+  }
+
+  function openTowerSelect() {
+    var p = G.player;
+    ensureDungeon(p);
+    var unlock = p.towerUnlock || 1;
+    var used = p.dungeon.tower || 0;
+    var daily = D.INSTANCES.tower.daily;
+    var floors = '';
+    for (var i = 1; i <= (D.INSTANCES.tower.floors || 10); i++) {
+      var locked = i > unlock;
+      floors += '<button type="button" class="btn' + (locked ? ' ghost' : '') +
+        '" data-tower-floor="' + i + '"' + (locked ? ' disabled' : '') + '>第' + i + '关' +
+        (locked ? '（未开通）' : '') + '</button>';
+    }
+    var el = document.getElementById('dialog');
+    el.innerHTML = '<div class="dialog-body"><div class="dialog-text">' +
+      '<div class="who">大明英雄副本</div>' +
+      '<div>今日次数 ' + used + '/' + daily + '　已开通至第 ' + unlock + ' 关。击败本关全部怪物即算成功。</div>' +
+      '<div class="opts">' + floors +
+      '<button class="btn ghost" data-bye="1">告辞</button></div></div></div>';
+    el.classList.add('open');
   }
 
   function closeDialog() {
@@ -2107,9 +2437,18 @@
     G.player.target = null;
     G.player.auto = false;
     G.player.pkMode = G.player.pkMode || 'peace';
+    G.player.towerUnlock = G.player.towerUnlock || 1;
+    ensureDungeon(G.player);
     G.log = data.log || [];
     G.towerFloor = data.towerFloor || 0;
-    buildMap(data.mapId || 'taiping');
+    var mapId = data.mapId || 'taiping';
+    if (D.MAP_META[mapId] && D.MAP_META[mapId].instance) {
+      mapId = 'capital';
+      G.player.x = 20 * TILE;
+      G.player.y = 20 * TILE;
+      G.instance = null;
+    }
+    buildMap(mapId);
     var pos = snapWalkable(G.player.x, G.player.y);
     G.player.x = pos.x;
     G.player.y = pos.y;
@@ -2192,6 +2531,23 @@
       var st2 = stats(p);
       var m = F.potionHeal(it.tier || 1, st2.maxMp);
       p.mp = Math.min(st2.maxMp, p.mp + m);
+    } else if (it.id === 'badge') {
+      takeItem(p, 'badge', 1);
+      addExp(p, 80);
+      toast('缴上腰牌，经验 +80');
+    } else if (it.id === 'hero_pack' || it.kind === 'pack') {
+      takeItem(p, it.id, 1);
+      if (Math.random() < 0.45) {
+        var gdef = D.GEMS[irand(0, D.GEMS.length - 1)];
+        addItem(p, { uid: uid(), type: 'gem', id: gdef.id, name: gdef.name, kind: gdef.kind, grade: 1 });
+        toast('打开英雄礼包：' + gdef.name);
+      } else if (Math.random() < 0.5) {
+        addItem(p, { id: 'stone', n: 2 });
+        toast('打开英雄礼包：强化石×2');
+      } else {
+        addItem(p, { id: 'hp2', n: 2 });
+        toast('打开英雄礼包：大型金创药×2');
+      }
     } else if (it.kind === 'feed' || it.id === 'feed') {
       if (!p.pet) { toast('没有灵宠'); return; }
       takeItem(p, 'feed', 1);
@@ -2412,11 +2768,11 @@
       if (ev.target.dataset.openshop) { closeDialog(); openShop(ev.target.dataset.openshop); }
       if (ev.target.dataset.openforge) { closeDialog(); openPanel('forge'); }
       if (ev.target.dataset.escort) startEscort();
-      if (ev.target.dataset.tower) {
-        closeDialog();
-        G.towerFloor = 1;
-        travel('tower', 12, 20);
-      }
+      if (ev.target.dataset.openTower) { closeDialog(); openTowerSelect(); }
+      if (ev.target.dataset.towerAuto) { closeDialog(); enterTower(G.player.towerUnlock || 1, true); }
+      if (ev.target.dataset.towerFloor) enterTower(+ev.target.dataset.towerFloor, false);
+      if (ev.target.dataset.poyangDiff) enterPoyang(ev.target.dataset.poyangDiff);
+      if (ev.target.dataset.leaveInstance) { closeDialog(); leaveInstance(); }
       if (ev.target.dataset.buypet) {
         if (G.player.silver < 80) { toast('银两不足'); return; }
         G.player.silver -= 80;
@@ -2483,6 +2839,16 @@
       });
     }
     document.getElementById('btn-revive').addEventListener('click', revive);
+    var leaveBtn = document.getElementById('btn-leave-instance');
+    if (leaveBtn) leaveBtn.addEventListener('click', leaveInstance);
+    var floorEl = document.getElementById('floor-clear');
+    if (floorEl) {
+      floorEl.addEventListener('click', function (ev) {
+        var act = ev.target.dataset.floor;
+        if (act === 'continue') continueTower();
+        if (act === 'rest' || act === 'leave') leaveInstance();
+      });
+    }
   }
 
   /* ========== 主循环 ========== */
@@ -2497,6 +2863,7 @@
       updatePet(dt);
       updateProjectiles(dt);
       updateEscort(dt);
+      tickInstance(dt);
       updateFx(dt);
       G.saveAcc = (G.saveAcc || 0) + dt;
       if (G.saveAcc > 15) { G.saveAcc = 0; saveSilent(); }
