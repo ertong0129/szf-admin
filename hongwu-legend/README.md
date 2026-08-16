@@ -19,6 +19,16 @@ node server.js
 
 ## Windows 直接下载
 
+国内（推荐 jsDelivr）：
+
+https://cdn.jsdelivr.net/gh/ertong0129/szf-admin@cursor/hongwu-offline-legend-f2d5/hongwu-windows.zip
+
+备用：
+
+https://gh-proxy.com/https://github.com/ertong0129/szf-admin/raw/cursor/hongwu-offline-legend-f2d5/hongwu-windows.zip
+
+GitHub 原地址：
+
 https://github.com/ertong0129/szf-admin/raw/cursor/hongwu-offline-legend-f2d5/洪武风云录-Windows.zip
 
 ## 画面说明

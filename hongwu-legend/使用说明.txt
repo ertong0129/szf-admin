@@ -1,6 +1,10 @@
 明朝传奇学习服 · Windows
 ========================
 
+国内下载：
+https://cdn.jsdelivr.net/gh/ertong0129/szf-admin@cursor/hongwu-offline-legend-f2d5/hongwu-windows.zip
+备用：https://gh-proxy.com/https://github.com/ertong0129/szf-admin/raw/cursor/hongwu-offline-legend-f2d5/hongwu-windows.zip
+
 一、推荐（有服务端）
 1. 安装 Node.js（https://nodejs.org 任意 LTS）。
 2. 解压本文件夹。
