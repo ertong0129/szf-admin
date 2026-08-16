@@ -6,7 +6,7 @@ var root = path.join(__dirname, '..');
 var play = fs.readFileSync(path.join(root, 'play.html'), 'utf8');
 var mods = [
   'core.js', 'player.js', 'world.js', 'combat.js', 'quest.js', 'dungeon.js',
-  'sim.js', 'netplay.js', 'render.js', 'ui.js', 'input.js', 'boot.js'
+  'sim.js', 'netplay.js', 'life.js', 'render.js', 'ui.js', 'input.js', 'boot.js'
 ];
 
 mods.forEach(function (f) {

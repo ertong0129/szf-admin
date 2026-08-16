@@ -139,6 +139,11 @@
       H.toast('找明军水兵进入鄱阳湖大战');
       return;
     }
+    if (id === 'fish' || id === 'treasure' || id === 'arena') {
+      H.travel('capital', 18, 22);
+      H.toast('找沐英进入' + node.name);
+      return;
+    }
     if (H.countItem(G.player, 'scroll') > 0) {
       H.takeItem(G.player, 'scroll', 1);
       H.travel(id, node.tx, node.ty);
@@ -175,9 +180,11 @@
           (p.unspentAttr > 0 ? ' <button class="plus" data-add="' + k + '">+</button>' : '') + '</span></div>';
       }).join('');
       document.getElementById('panel-char').innerHTML =
-        H.header('角色') +
+        H.header('角色', 'char') +
         '<div class="char-tabs"><button type="button" class="on" data-char-tab="attr">属性</button>' +
-        '<button type="button" data-char-tab="mount">坐骑</button></div>' +
+        '<button type="button" data-char-tab="mount">坐骑</button>' +
+        '<button type="button" data-char-tab="fashion">时装</button>' +
+        '<button type="button" data-char-tab="office">官职</button></div>' +
         '<div id="char-attr">' +
         '<div class="grid-2"><div>' +
         '<div class="stat-line"><span>名号</span><span>' + p.name + '</span></div>' +
@@ -186,6 +193,7 @@
         '<div class="stat-line"><span>阵营 / PK</span><span>' + (p.nation === 'yuan' ? '北元' : '大明') +
         '　' + (p.pkValue || 0) + ((p.pkValue || 0) >= 18 ? ' 红名' : '') + '</span></div>' +
         '<div class="stat-line"><span>银两 / 金锭</span><span>' + p.silver + ' / ' + p.gold + '</span></div>' +
+        '<div class="stat-line"><span>官职</span><span>' + ((H.officeOf && H.officeOf(p).name) || '白身') + '</span></div>' +
         '<div class="stat-line"><span>精力</span><span>' + (p.energy || 0) + ' / ' + (D.ENERGY_MAX || 4000) + '</span></div>' +
         '<div class="stat-line"><span>可分配属性</span><span>' + p.unspentAttr + '</span></div>' +
         rows + '</div><div class="equip-list">' +
@@ -199,17 +207,21 @@
         '<div class="stat-line"><span>暴击</span><span>' + (st.crit * 100).toFixed(1) + '%</span></div>' +
         '<div class="stat-line"><span>移速</span><span>' + Math.floor(st.speed) + '</span></div>' +
         '</div></div></div>' +
-        '<div id="char-mount" hidden>' + H.mountPanelHtml(p) + '</div>';
+        '<div id="char-mount" hidden>' + H.mountPanelHtml(p) + '</div>' +
+        '<div id="char-fashion" hidden>' + H.fashionHtml(p) + '</div>' +
+        '<div id="char-office" hidden>' + H.officeHtml(p) + '</div>';
     } else if (id === 'bag') {
-      document.getElementById('panel-bag').innerHTML = H.header('背包') +
-        '<p style="color:#b8a57a;margin-bottom:8px">左键使用/装备，右键丢弃。银两 ' + p.silver + '</p>' +
+      document.getElementById('panel-bag').innerHTML = H.header('背包', 'bag') +
+        '<p style="color:#b8a57a;margin-bottom:8px">左键使用/装备，右键丢弃。银两 ' + p.silver +
+        '　容量 ' + p.bag.length + '/' + H.bagCap(p) +
+        '　<button class="btn ghost" data-bag-expand="1">扩展背包</button></p>' +
         '<div class="bag-grid">' + p.bag.map(function (it, i) {
           var col = it.rarity ? D.RARITY_COLOR[it.rarity] : '#f3e6c4';
           return '<div class="item-cell" data-bag="' + i + '" style="color:' + col + '">' + H.itemName(it) +
             (it.n > 1 ? '<span class="n">' + it.n + '</span>' : '') + '</div>';
         }).join('') + '</div>';
     } else if (id === 'skills') {
-      document.getElementById('panel-skills').innerHTML = H.header('武学') +
+      document.getElementById('panel-skills').innerHTML = H.header('武学', 'skills') +
         '<p style="margin-bottom:8px">剩余技能点 ' + p.unspentSkill + '</p>' +
         D.SKILLS[p.cls].map(function (sk) {
           var lv = p.skills[sk.id] || 0;
@@ -220,13 +232,21 @@
               '<button class="plus" data-sk="' + sk.id + '">+</button>' : '') + '</div>';
         }).join('');
     } else if (id === 'pet') {
-      document.getElementById('panel-pet').innerHTML = H.header('灵宠') + (p.pet
-        ? '<p>' + p.pet.name + '　生命 ' + Math.floor(p.pet.hp) + '/' + p.pet.maxHp + '</p>' +
-          '<p style="color:#b8a57a;margin:8px 0">出战随行，自动攻击你的目标。口粮可回复生命。</p>' +
-          '<button class="btn" id="btn-feed">喂食口粮</button>'
+      document.getElementById('panel-pet').innerHTML = H.header('灵宠', 'pet') + (p.pet
+        ? '<div class="pet-board">' +
+          '<p>' + p.pet.name + '　生命 ' + Math.floor(p.pet.hp) + '/' + p.pet.maxHp +
+          '　资质 ' + (p.pet.apt || 1200) + '　悟性 ' + (p.pet.insight || 0) +
+          '　训练星 ' + (p.pet.star || 0) + '　技能 ' + (p.pet.skills || 0) + '</p>' +
+          '<p style="color:#b8a57a;margin:8px 0">出战随行。洗灵重掷资质，提悟提升生命倍率，训练牌升星。</p>' +
+          '<img class="pet-wuxing" src="assets/ingame/petui/wu_xing.png" alt="五行" />' +
+          '<button class="btn" id="btn-feed">喂食口粮</button> ' +
+          '<button class="btn ghost" data-pet-wash="1">洗灵</button> ' +
+          '<button class="btn ghost" data-pet-insight="1">提悟</button> ' +
+          '<button class="btn ghost" data-pet-train="1">训练</button> ' +
+          '<button class="btn ghost" data-pet-book="1">技能书</button></div>'
         : '<p>尚未结缘。前往神农谷击败山魈，有机会收服灵宠。</p>');
     } else if (id === 'forge') {
-      document.getElementById('panel-forge').innerHTML = H.header('百工炉') +
+      document.getElementById('panel-forge').innerHTML = H.header('百工炉', 'forge') +
         '<p style="color:#b8a57a;margin-bottom:8px">强化石 ' + H.countItem(p, 'stone') +
         '　开孔符 ' + H.countItem(p, 'socket') + '　银两 ' + p.silver + '</p>' +
         '<div class="equip-list">' + D.SLOTS.map(function (s) {
@@ -235,7 +255,8 @@
           return '<div class="slot-row"><span style="color:' + D.RARITY_COLOR[it.rarity] + '">' + H.itemName(it) +
             ' 孔' + it.sockets + '</span><span>' +
             '<button class="btn" data-en="' + s.id + '">升星</button> ' +
-            '<button class="btn ghost" data-so="' + s.id + '">开孔</button></span></div>';
+            '<button class="btn ghost" data-so="' + s.id + '">开孔</button> ' +
+            '<button class="btn ghost" data-recolor="' + s.id + '">提色</button></span></div>';
         }).join('') + '</div>' +
         '<h4 style="color:#d4af37;margin:12px 0 6px">炼药</h4>' +
         D.RECIPES.map(function (r, i) {
@@ -250,7 +271,7 @@
           return '<div class="stat-line"><span>' + H.itemName(it) + '</span><button class="btn ghost" data-gem="' + it.uid + '">镶武器</button></div>';
         }).join('') || '<p>背包暂无灵石</p>';
     } else if (id === 'quest') {
-      document.getElementById('panel-quest').innerHTML = H.header('功业') +
+      document.getElementById('panel-quest').innerHTML = H.header('功业', 'quest') +
         D.QUESTS.map(function (q) {
           var stt = p.quests.done.indexOf(q.id) >= 0 ? '已完成' : (p.quests.active.indexOf(q.id) >= 0 ? '进行中' : '未开启');
           var go = p.quests.active.indexOf(q.id) >= 0
@@ -258,7 +279,7 @@
           return '<div class="stat-line"><span>' + q.name + '<br/><small style="color:#b8a57a">' + q.text + '</small></span><span>' + stt + ' ' + go + '</span></div>';
         }).join('');
     } else if (id === 'help') {
-      document.getElementById('panel-help').innerHTML = H.header('帮助') +
+      document.getElementById('panel-help').innerHTML = H.header('帮助', 'help') +
         D.HELP.map(function (h) { return '<p style="margin:6px 0;color:#d8c8a0">' + h + '</p>'; }).join('');
     } else if (id === 'warehouse') {
       H.paintWarehouse();
@@ -270,7 +291,7 @@
       var fl = (G.netFriends || []).map(function (u) { return '<div>' + u + '</div>'; }).join() || '无';
       var pt = G.netParty ? ('队长 ' + G.netParty.leader + '　' + (G.netParty.members || []).join('、')) : '未组队';
       var cl = G.netClan ? (G.netClan.name + '　' + (G.netClan.members || []).join('、')) : '无宗族';
-      document.getElementById('panel-social').innerHTML = H.header('社交') +
+      document.getElementById('panel-social').innerHTML = H.header('社交', 'social') +
         '<p>在线 ' + (G.onlineN || 0) + '　PK 值 ' + (G.player.pkValue || 0) +
         ((G.player.pkValue || 0) >= 18 ? '　红名' : '') + '</p>' +
         '<h4 style="color:#d4af37;margin:8px 0 4px">邀请</h4>' + invs +
@@ -281,7 +302,19 @@
         (G.netClan
           ? '<button class="btn ghost" data-clan-leave="1">退出宗族</button>'
           : '<button class="btn" data-clan-create="1">创建宗族</button>') +
+        '<h4 style="color:#d4af37;margin:8px 0 4px">师徒</h4><p>' +
+        (p.mentor && p.mentor.master ? ('师父 ' + p.mentor.master) : '') +
+        (p.mentor && p.mentor.pupil ? ('　徒弟 ' + p.mentor.pupil) : (p.mentor && p.mentor.master ? '' : '未结师徒')) +
+        '</p><p style="color:#b8a57a">京城李梦阳处拜师/收徒。点其他玩家赠花增亲密度。</p>' +
         '<p style="color:#b8a57a;margin-top:8px">点其他玩家：组队 / 交易 / 加好友 / 密聊 / 跟随。K 摆摊。G 跟随。H 隐藏玩家。</p>';
+    } else if (id === 'mail' && H.paintMail) {
+      H.paintMail();
+    } else if (id === 'achieve' && H.paintAchieve) {
+      H.paintAchieve();
+    } else if (id === 'rank' && H.paintRank) {
+      H.paintRank();
+    } else if (id === 'daily' && H.paintDaily) {
+      H.paintDaily();
     }
   }
 
@@ -316,7 +349,7 @@
         '</button>';
     }
     var stash = p.warehouse.items[G.whTab] || [];
-    document.getElementById('panel-warehouse').innerHTML = H.header('仓库') +
+    document.getElementById('panel-warehouse').innerHTML = H.header('仓库', 'warehouse') +
       '<p style="color:#b8a57a;margin-bottom:6px">第一仓免费，最多四仓。左键：背包→仓 / 仓→背包。</p>' +
       '<div class="char-tabs">' + tabs + '</div>' +
       '<div class="grid-2"><div><h4 style="color:#d4af37">背包</h4><div class="bag-grid">' +
@@ -332,8 +365,12 @@
       }).join('') + '</div></div></div>';
   }
 
-  H.header = function (title) {
-    return '<h3>' + title + '<button class="close" data-close="1">×</button></h3>';
+  H.header = function (title, panelId) {
+    var img = panelId && D.PANEL_TITLE && D.PANEL_TITLE[panelId];
+    var label = img
+      ? '<img class="panel-title-img" src="assets/ingame/' + img + '" alt="' + title + '" />'
+      : title;
+    return '<h3>' + label + '<button class="close" data-close="1">×</button></h3>';
   }
 
   H.openShop = function (kind) {
@@ -356,7 +393,7 @@
     H.closePanels();
     var el = document.getElementById('panel-shop');
     el.classList.add('open');
-    el.innerHTML = H.header(kind === 'mall' ? '商城' : '货殖') + list.map(function (s) {
+    el.innerHTML = H.header(kind === 'mall' ? '商城' : '货殖', 'shop') + list.map(function (s) {
       return '<div class="stat-line"><span>' + D.CONSUMABLES[s.id].name + '　' + s.price + ' 两</span>' +
         '<button class="btn" data-buy="' + s.id + '" data-price="' + s.price + '">购</button></div>';
     }).join('');
@@ -389,8 +426,25 @@
     }
     if (def.poyang) {
       (D.INSTANCES.poyang.diffs || []).forEach(function (d) {
-        opts += '<button class="btn" data-poyang-diff="' + d.id + '">' + d.name + '难度</button>';
+        opts += '<button class="btn poyang-diff" data-poyang-diff="' + d.id + '">' +
+          (d.img ? '<img src="assets/ingame/dup/' + d.img + '" alt="" />' : '') + d.name + '难度</button>';
       });
+    }
+    if (def.portal) {
+      opts += '<button class="btn" data-enter-fish="1">捕鱼儿海</button>';
+      opts += '<button class="btn" data-enter-treasure="1">大明宝藏</button>';
+      opts += '<button class="btn ghost" data-enter-arena="1">竞技场</button>';
+    }
+    if (def.mentor) {
+      opts += '<button class="btn" data-mentor="pupil">拜师</button>';
+      opts += '<button class="btn ghost" data-mentor="master">收徒</button>';
+      opts += '<button class="btn" data-enter-mentor="1">师徒同心副本</button>';
+    }
+    if (def.market) opts += '<button class="btn" data-open-market="1">浏览市场</button>';
+    if (def.office) opts += '<button class="btn" data-open-office="1">查看官职</button>';
+    if (def.rank) opts += '<button class="btn ghost" data-open-flower-rank="1">鲜花榜</button>';
+    if (def.merit) {
+      opts += '<button class="btn ghost" data-chue-take="1">除恶令</button>';
     }
     if (H.inInstance()) opts += '<button class="btn ghost" data-leave-instance="1">离开副本</button>';
     if (n.id === 'xunshou' && !G.player.pet) opts += '<button class="btn" data-buypet="1">以 80 两请一只幼兽</button>';
@@ -402,7 +456,27 @@
       '</div><div class="opts">' + opts + '</div></div></div>';
     el.classList.add('open');
     G.dialogNpc = n;
-    H.maybeCompleteTalk(n.id);
+    H.paintPanel('char');
+  }
+
+  H.fashionHtml = function (p) {
+    return '<div class="fashion-bg">' + (D.FASHIONS || []).map(function (f) {
+      var locked = p.level < f.min;
+      return '<div class="stat-line"><span>' + f.name + '　' + f.desc +
+        (locked ? '（' + f.min + '级）' : '') + '</span>' +
+        (p.fashionId === f.id ? '<span>使用中</span>' :
+          (locked ? '' : '<button class="btn ghost" data-fashion="' + f.id + '">换装</button>')) +
+        '</div>';
+    }).join('') + '</div>';
+  };
+
+  H.officeHtml = function (p) {
+    var cur = H.officeOf(p);
+    return '<p>当前官职 <b>' + cur.name + '</b>　生命 +' + cur.hp + '　外攻 +' + cur.patk + '　外防 +' + cur.pdef + '</p>' +
+      '<p style="color:#b8a57a;margin:8px 0">按等级自动授官，找京城吏部主事查看。</p>' +
+      (D.OFFICES || []).map(function (o) {
+        return '<div class="stat-line"><span>' + o.name + '</span><span>' + o.min + ' 级</span></div>';
+      }).join('');
   }
 
   H.openTowerSelect = function () {

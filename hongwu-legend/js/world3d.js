@@ -436,6 +436,11 @@
         new THREE.ConeGeometry(0.12, 0.28, 5),
         new THREE.MeshStandardMaterial({ color: 0x4dff7a, emissive: 0x145520 })
       );
+    } else if (kind === 'fire') {
+      mesh = new THREE.Mesh(
+        new THREE.SphereGeometry(0.32, 8, 8),
+        new THREE.MeshBasicMaterial({ color: 0xff7a28, transparent: true, opacity: 0.82 })
+      );
     } else if (kind === 'path') {
       mesh = new THREE.Mesh(
         new THREE.CircleGeometry(0.1, 8),
@@ -578,6 +583,13 @@
       var id = 'herb-' + i;
       var ex = ensureExtra(id, 'herb');
       ex.mesh.position.set(px(hb.x), 0.16, px(hb.y));
+      extraAlive[id] = 1;
+    });
+    (state.fires || []).forEach(function (f, i) {
+      var id = 'fire-' + i;
+      var ex = ensureExtra(id, 'fire');
+      var bounce = 0.42 + Math.sin((state.time || 0) * 7 + i) * 0.08;
+      ex.mesh.position.set(px(f.x), bounce, px(f.y));
       extraAlive[id] = 1;
     });
     (state.portals || []).forEach(function (pt, i) {

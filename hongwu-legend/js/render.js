@@ -29,6 +29,7 @@
         drops: G.drops,
         herbs: G.herbs,
         portals: G.portals,
+        fires: G.fires || [],
         floats: G.floats,
         path: G.path,
         questNpcId: H.currentQuestNpcId(),
@@ -98,6 +99,18 @@
       ctx.font = '11px serif';
       ctx.textAlign = 'center';
       ctx.fillText(pt.label, s.x, s.y - 18);
+    });
+    (G.fires || []).forEach(function (f) {
+      var fs = H.worldToScreen(f.x, f.y);
+      var pulse = 0.5 + Math.sin(G.time * 6) * 0.18;
+      ctx.fillStyle = 'rgba(255, 96, 24,' + pulse + ')';
+      ctx.beginPath(); ctx.arc(fs.x, fs.y, 18, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = 'rgba(255, 210, 80, 0.95)';
+      ctx.beginPath(); ctx.arc(fs.x, fs.y, 7, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffe7a0';
+      ctx.font = '11px serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('篝火', fs.x, fs.y - 22);
     });
     if (G.path && G.path.length > 1) {
       ctx.strokeStyle = 'rgba(255, 210, 80, 0.55)';
@@ -224,6 +237,13 @@
       ctx.fillStyle = c.accent;
       ctx.fillRect(10, -2, 14, 4);
       ctx.restore();
+    }
+    var fdef = (D.FASHIONS || []).filter(function (x) { return x.id === p.fashionId; })[0];
+    if (fdef && fdef.glow) {
+      ctx.strokeStyle = fdef.glow;
+      ctx.globalAlpha = 0.7;
+      ctx.beginPath(); ctx.ellipse(s.x, s.y + 10, 16, 6, 0, 0, Math.PI * 2); ctx.stroke();
+      ctx.globalAlpha = 1;
     }
     if (window.Art && Art.ready) {
       Art.drawNameplate(ctx, s.x, s.y + 22, D.CLASSES[p.cls].name, p.name, '#d8f5a0');
@@ -384,7 +404,13 @@
     if (en) {
       H.ensureDaily(p);
       en.textContent = '精力 ' + (p.energy || 0) + '/' + (D.ENERGY_MAX || 4000) + (p.sit ? '　打坐中' : '') +
+        (p.sit && H.nearCampfire && H.nearCampfire() ? '　篝火' : '') +
         (p.mount && p.mount.riding ? '　骑乘' : '');
+    }
+    var mailBtn = document.querySelector('[data-panel="mail"]');
+    if (mailBtn && p.mail) {
+      var unread = p.mail.filter(function (m) { return m.unread; }).length;
+      mailBtn.textContent = unread ? '信件(' + unread + ')' : '信件';
     }
     var tf = document.getElementById('target-frame');
     if (tf) {

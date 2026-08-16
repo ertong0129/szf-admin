@@ -20,7 +20,11 @@
   H.ensureDungeon = function (p) {
     p.dungeon = p.dungeon || { day: '', poyang: 0, tower: 0 };
     var day = H.dungeonDay();
-    if (p.dungeon.day !== day) p.dungeon = { day: day, poyang: 0, tower: 0 };
+    if (p.dungeon.day !== day) p.dungeon = { day: day, poyang: 0, tower: 0, fish: 0, treasure: 0, arena: 0, mentor: 0 };
+    p.dungeon.fish = p.dungeon.fish || 0;
+    p.dungeon.treasure = p.dungeon.treasure || 0;
+    p.dungeon.arena = p.dungeon.arena || 0;
+    p.dungeon.mentor = p.dungeon.mentor || 0;
     if (!p.towerUnlock) p.towerUnlock = 1;
   }
 
@@ -60,6 +64,9 @@
     if (G.mapId === 'poyang') { tx = 36; ty = 22; }
     else if (G.mapId === 'tower') { tx = 40; ty = 14; }
     else if (G.mapId === 'road') { tx = 32; ty = 20; }
+    else if (G.mapId === 'fish' || G.mapId === 'treasure' || G.mapId === 'arena') { tx = 18; ty = 14; }
+    else if (G.mapId === 'mentor') { tx = 30; ty = 16; }
+    if (G.mapId === 'treasure') H.settleTreasure();
     H.travel('capital', tx, ty);
     H.toast('离开副本');
   }
@@ -104,6 +111,7 @@
     H.travel('poyang', 4, 18);
     H.log('开始挑战鄱阳湖大战 · ' + spec.name + '难度');
     H.toast('鄱阳湖大战 · ' + spec.name + '　半个时辰内了结');
+    if (H.addActivity) H.addActivity(10);
   }
 
   H.enterTower = function (floor, auto) {
@@ -120,6 +128,7 @@
     H.hideFloorClear();
     H.travel('tower', 12, 20);
     H.log('开始挑战大明英雄副本 第 ' + floor + ' 关');
+    if (H.addActivity) H.addActivity(10);
   }
 
   H.startEscort = function () {
@@ -237,7 +246,21 @@
     } else if (G.mapId === 'tower') {
       info.textContent = '第 ' + (G.towerFloor || 1) + ' 关　剩余怪物 ' + G.entities.length;
     } else if (G.mapId === 'road' && G.escort) {
-      info.textContent = '护送中　镖车 ' + Math.floor(G.escort.hp) + '/' + G.escort.maxHp;
+      info.textContent = '护送中　镖车生命 ' + Math.floor(G.escort.hp) + '/' + G.escort.maxHp;
+    } else if (G.mapId === 'fish' && G.instance) {
+      var lf = Math.max(0, Math.floor(G.instance.left || 0));
+      info.textContent = '剩余 ' + Math.floor(lf / 60) + ':' + ((lf % 60) < 10 ? '0' : '') + (lf % 60) +
+        '　敌军 ' + G.entities.length;
+    } else if (G.mapId === 'treasure' && G.instance) {
+      var lt = Math.max(0, Math.floor(G.instance.left || 0));
+      info.textContent = '剩余 ' + Math.floor(lt / 60) + ':' + ((lt % 60) < 10 ? '0' : '') + (lt % 60) +
+        '　积分符 ' + H.countItem(G.player, 'treasure_pt');
+    } else if (G.mapId === 'arena') {
+      info.textContent = '校场　积分 ' + (G.player.arenaScore || 0) + '　教头 ' + G.entities.length;
+    } else if (G.mapId === 'mentor' && G.instance) {
+      var lm = Math.max(0, Math.floor(G.instance.left || 0));
+      info.textContent = '同心　剩余 ' + Math.floor(lm / 60) + ':' + ((lm % 60) < 10 ? '0' : '') + (lm % 60) +
+        '　敌人 ' + G.entities.length;
     } else {
       info.textContent = '副本中';
     }

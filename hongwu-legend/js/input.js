@@ -97,6 +97,10 @@
       if (ev.code === 'KeyN' || ev.code === 'Slash') H.openPanel('help');
       if (ev.code === 'KeyF') H.showNearby();
       if (ev.code === 'KeyR') H.openPanel('social');
+      if (ev.code === 'KeyL') { ev.preventDefault(); H.openPanel('mail'); }
+      if (ev.code === 'KeyY') { ev.preventDefault(); H.openPanel('achieve'); }
+      if (ev.code === 'KeyO') { ev.preventDefault(); H.openPanel('rank'); }
+      if (ev.code === 'KeyU') { ev.preventDefault(); H.openPanel('daily'); }
       if (ev.code === 'KeyK') {
         ev.preventDefault();
         if (G.stalling) {
@@ -250,8 +254,12 @@
         });
         var attr = document.getElementById('char-attr');
         var mt = document.getElementById('char-mount');
+        var fs = document.getElementById('char-fashion');
+        var of = document.getElementById('char-office');
         if (attr) attr.hidden = ev.target.dataset.charTab !== 'attr';
         if (mt) mt.hidden = ev.target.dataset.charTab !== 'mount';
+        if (fs) fs.hidden = ev.target.dataset.charTab !== 'fashion';
+        if (of) of.hidden = ev.target.dataset.charTab !== 'office';
       }
       if (ev.target.dataset.mountRide) {
         if (G.player.mount && G.player.mount.owned) {
@@ -260,6 +268,30 @@
           H.paintPanel('char');
         }
       }
+      if (ev.target.dataset.mountUp) H.upgradeMount();
+      if (ev.target.dataset.bagExpand) H.expandBag();
+      if (ev.target.dataset.petWash) H.washPet();
+      if (ev.target.dataset.petInsight) H.insightPet();
+      if (ev.target.dataset.petTrain) H.trainPet();
+      if (ev.target.dataset.petBook) H.teachPetSkill();
+      if (ev.target.dataset.recolor) H.recolorSlot(ev.target.dataset.recolor);
+      if (ev.target.dataset.fashion) H.setFashion(ev.target.dataset.fashion);
+      if (ev.target.dataset.mail != null) H.readMail(+ev.target.dataset.mail);
+      if (ev.target.dataset.mailDel != null) {
+        G.player.mail.splice(+ev.target.dataset.mailDel, 1);
+        H.paintMail();
+      }
+      if (ev.target.dataset.panelPaint) H.paintPanel(ev.target.dataset.panelPaint);
+      if (ev.target.dataset.rankTab) H.paintRank(ev.target.dataset.rankTab);
+      if (ev.target.dataset.chueTake) H.takeDailyChue();
+      if (ev.target.dataset.face) {
+        var inp = document.getElementById('chat-input');
+        if (inp) {
+          inp.value += '[' + ':' + ev.target.dataset.face + ':]';
+          inp.focus();
+        }
+      }
+      if (ev.target.dataset.lookStall) H.lookStall(ev.target.dataset.lookStall);
       if (ev.target.dataset.tradeLock) H.doSocial('trade_lock', '');
       if (ev.target.dataset.tradeOk) H.doSocial('trade_ok', '');
       if (ev.target.dataset.tradeCancel) H.doSocial('trade_cancel', '');
@@ -356,6 +388,16 @@
         H.grantPet();
         H.closeDialog();
       }
+      if (ev.target.dataset.enterFish) H.enterFish();
+      if (ev.target.dataset.enterTreasure) H.enterTreasure();
+      if (ev.target.dataset.enterArena) H.enterArena();
+      if (ev.target.dataset.enterMentor) H.enterMentor();
+      if (ev.target.dataset.mentor) H.claimMentor(ev.target.dataset.mentor);
+      if (ev.target.dataset.openMarket) { H.closeDialog(); H.paintMarket(); }
+      if (ev.target.dataset.openOffice) { H.closeDialog(); H.openPanel('char'); }
+      if (ev.target.dataset.openFlowerRank) { H.closeDialog(); H.openPanel('rank'); if (H.paintRank) H.paintRank('flower'); }
+      if (ev.target.dataset.chueTake) H.takeDailyChue();
+      if (ev.target.dataset.flower) { H.sendFlower(ev.target.dataset.flower); H.closeDialog(); }
     });
     var shopBtn = document.getElementById('btn-shop');
     if (shopBtn) {
@@ -416,6 +458,8 @@
       });
     }
     document.getElementById('btn-revive').addEventListener('click', H.revive);
+    var hereBtn = document.getElementById('btn-revive-here');
+    if (hereBtn) hereBtn.addEventListener('click', H.reviveHere);
     var leaveBtn = document.getElementById('btn-leave-instance');
     if (leaveBtn) leaveBtn.addEventListener('click', H.leaveInstance);
     var floorEl = document.getElementById('floor-clear');

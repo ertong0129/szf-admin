@@ -64,6 +64,7 @@
     (q.reward.items || []).forEach(function (it) { H.addItem(p, { id: it.id, n: it.n }); });
     H.toast('完成：' + q.name);
     H.log('任务完成：' + q.name);
+    if (H.noteAchieve) H.noteAchieve('quest');
     if (G.guide && G.guide.qid === q.id) G.guide = null;
     var idx = D.QUESTS.findIndex(function (x) { return x.id === q.id; });
     if (idx >= 0 && D.QUESTS[idx + 1]) p.quests.active.push(D.QUESTS[idx + 1].id);

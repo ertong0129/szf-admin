@@ -8,6 +8,10 @@
   var canvas = H.canvas, ctx = H.ctx, mini = H.mini, mctx = H.mctx, canvas3d = H.canvas3d;
   var BAG_CAP = H.BAG_CAP, SPAWN = H.SPAWN, SAVE_KEY = H.SAVE_KEY;
 
+  H.bagCap = function (p) {
+    return (H.BAG_CAP || 36) + ((p && p.bagExpand) || 0) * 12;
+  };
+
   H.emptyEquip = function () {
     var e = {};
     D.SLOTS.forEach(function (s) { e[s.id] = null; });
@@ -115,15 +119,16 @@
       if (b.mdef) bmdef += b.mdef;
       if (b.speed) bspd += b.speed;
     });
-    var maxHp = Math.floor(c.baseHp + d.hp + extra.hp + p.level * 18);
+    var off = H.officeBonus ? H.officeBonus(p) : { hp: 0, patk: 0, pdef: 0 };
+    var maxHp = Math.floor(c.baseHp + d.hp + extra.hp + p.level * 18 + (off.hp || 0));
     var maxMp = Math.floor(c.baseMp + d.mp + extra.mp + p.level * 6);
     return {
       attrs: attrs,
       maxHp: maxHp,
       maxMp: maxMp,
-      patk: Math.floor((d.patk + extra.patk) * (1 + bpatk)),
+      patk: Math.floor((d.patk + extra.patk) * (1 + bpatk) + (off.patk || 0)),
       matk: Math.floor((d.matk + extra.matk) * (1 + bmatk)),
-      pdef: Math.floor((d.pdef + extra.pdef) * (1 + bpdef)),
+      pdef: Math.floor((d.pdef + extra.pdef) * (1 + bpdef) + (off.pdef || 0)),
       mdef: Math.floor((d.mdef + extra.mdef) * (1 + bmdef)),
       aspd: 0.85 + d.aspd + extra.aspd,
       crit: 0.05 + d.crit + extra.crit,
@@ -147,6 +152,7 @@
     if (!silent) {
       H.toast('系统赠送坐骑，可在角色面板骑乘');
       H.log('获得坐骑（白）');
+      if (H.noteAchieve) H.noteAchieve('mount');
     }
   }
 
@@ -171,6 +177,8 @@
       H.log('境界提升：' + p.level + ' 级');
       H.beep(520, 0.08);
       H.grantMount(p, false);
+      if (H.refreshOffice) H.refreshOffice(p, false);
+      if (H.noteAchieve) H.noteAchieve('level');
     }
   }
 
@@ -211,13 +219,13 @@
 
   H.addItem = function (p, item) {
     if (item.type === 'equip' || item.type === 'gem') {
-      if (p.bag.length >= BAG_CAP) { H.toast('背包已满'); return false; }
+      if (p.bag.length >= H.bagCap(p)) { H.toast('背包已满'); return false; }
       p.bag.push(item);
       return true;
     }
     var found = p.bag.find(function (x) { return x.id === item.id && x.type !== 'equip' && x.type !== 'gem'; });
     if (found) { found.n = (found.n || 1) + (item.n || 1); return true; }
-    if (p.bag.length >= BAG_CAP) { H.toast('背包已满'); return false; }
+    if (p.bag.length >= H.bagCap(p)) { H.toast('背包已满'); return false; }
     var proto = D.CONSUMABLES[item.id];
     p.bag.push(Object.assign({ n: item.n || 1, type: proto ? proto.kind : 'item' }, proto || item, { id: item.id }));
     return true;
@@ -274,13 +282,15 @@
     p.pet = {
       id: def.id, name: def.name, color: def.color, magic: !!def.magic,
       level: 1, exp: 0, atkMul: def.atk, hpMul: def.hp,
-      hp: 80, maxHp: 80, x: p.x - 20, y: p.y, atkCd: 0
+      hp: 80, maxHp: 80, x: p.x - 20, y: p.y, atkCd: 0,
+      apt: 1200, insight: 0, star: 0, skills: 0
     };
     H.syncPet(p);
     p.flags.got_pet = true;
     H.toast('灵宠结缘：' + def.name);
     H.log('收服灵宠 ' + def.name);
     H.questCheck();
+    if (H.noteAchieve) H.noteAchieve('pet');
   }
 
   H.syncPet = function (p) {
@@ -439,6 +449,33 @@
         H.addItem(p, { id: 'hp2', n: 2 });
         H.toast('打开英雄礼包：大型金创药×2');
       }
+    } else if (it.id === 'skill_book') {
+      H.takeItem(p, 'skill_book', 1);
+      p.unspentSkill += 1;
+      H.toast('领悟技能点 +1');
+    } else if (it.id === 'pet_book') {
+      H.teachPetSkill();
+    } else if (it.id === 'wash_dan') {
+      H.washPet();
+    } else if (it.id === 'insight_dan') {
+      H.insightPet();
+    } else if (it.id === 'train_pai') {
+      H.trainPet();
+    } else if (it.id === 'bag_token') {
+      H.expandBag();
+    } else if (it.id === 'yibao') {
+      H.takeItem(p, 'yibao', 1);
+      H.addExp(p, 50);
+      p.silver += 15;
+      H.toast('献上异宝');
+    } else if (it.id === 'pet_stone') {
+      H.takeItem(p, 'pet_stone', 1);
+      if (p.pet) { p.pet.hp = Math.min(p.pet.maxHp, p.pet.hp + 40); H.toast('灵石饲喂'); }
+      else H.toast('收好宠物灵石，可当洗灵材料');
+    } else if (it.id === 'wine') {
+      H.toast('篝火旁打坐时会自动饮用');
+    } else if (it.id === 'flower') {
+      H.toast('点其他玩家可赠花');
     } else if (it.kind === 'feed' || it.id === 'feed') {
       if (!p.pet) { H.toast('没有灵宠'); return; }
       H.takeItem(p, 'feed', 1);
@@ -468,6 +505,7 @@
       H.toast(H.itemName(it) + ' 升星成功');
       p.flags.enhanced = true;
       H.questCheck();
+      if (H.noteAchieve) H.noteAchieve('star');
     } else {
       H.toast('炉火不稳，升星失败');
     }
@@ -485,6 +523,7 @@
     p.silver -= cost;
     it.sockets += 1;
     H.toast('开孔成功');
+    if (H.noteAchieve) H.noteAchieve('socket');
     H.paintPanel('forge');
   }
 
@@ -498,7 +537,30 @@
     var gem = p.bag.splice(idx, 1)[0];
     it.gems = it.gems || [];
     it.gems.push(gem);
+    p.flags.gemmed = true;
+    if (H.noteAchieve) H.noteAchieve('gem');
     H.toast('镶入 ' + H.itemName(gem));
+    H.paintPanel('forge');
+  }
+
+  H.recolorSlot = function (slot) {
+    var p = G.player;
+    var it = p.equip[slot];
+    if (!it) return;
+    var ch = F.recolorChance(it.rarity);
+    if (!ch) { H.toast('已是橙色，无法再提色'); return; }
+    var fodder = -1;
+    for (var i = 0; i < p.bag.length; i++) {
+      if (p.bag[i].type === 'equip') { fodder = i; break; }
+    }
+    if (fodder < 0) { H.toast('背包需一件淘汰装备作提色材料'); return; }
+    p.bag.splice(fodder, 1);
+    if (Math.random() < ch) {
+      var order = F.RARITY;
+      var idx = order.indexOf(it.rarity);
+      it.rarity = order[Math.min(order.length - 1, idx + 1)];
+      H.toast('提色成功：' + (D.RARITY_NAME[it.rarity] || it.rarity));
+    } else H.toast('提色失败');
     H.paintPanel('forge');
   }
 

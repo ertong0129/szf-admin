@@ -42,6 +42,12 @@
       portraitShop: 'assets/ingame/portrait/xs_za_huo_dian_lao_ban.png',
       portraitLady: 'assets/ingame/portrait/xs_chen_yuan_yuan.png',
       portraitMaster: 'assets/ingame/portrait/xs_ji_neng_da_shi.png',
+      portraitXuda: 'assets/ingame/portrait/xu_da.png',
+      portraitLi: 'assets/ingame/portrait/li_shi_zhen.png',
+      portraitZhang: 'assets/ingame/portrait/xs_zhang_san_feng.png',
+      portraitMu: 'assets/ingame/portrait/mu_ying.png',
+      portraitYue: 'assets/ingame/portrait/xs_yue_lao.png',
+      portraitShen: 'assets/ingame/portrait/xs_shen_wan_san.png',
       headWarrior: 'assets/ingame/head/m4.png',
       headArcher: 'assets/ingame/head/m2.png',
       headWanderer: 'assets/ingame/head/m1.png',
@@ -53,7 +59,15 @@
       iconCart: 'assets/ingame/icon/che_fu.png',
       iconElder: 'assets/ingame/icon/zong_zu_zhang_lao.png',
       iconMaster: 'assets/ingame/icon/xs_ji_neng_da_shi.png',
-      iconBoat: 'assets/ingame/icon/xs_chuan_song_1.png'
+      iconBoat: 'assets/ingame/icon/xs_chuan_song_1.png',
+      iconXuda: 'assets/ingame/icon/xu_da.png',
+      iconLi: 'assets/ingame/icon/li_shi_zhen.png',
+      iconShen: 'assets/ingame/icon/shen_wan_san.png',
+      iconZhang: 'assets/ingame/icon/zhang_san_feng.png',
+      iconMu: 'assets/ingame/icon/mu_ying.png',
+      iconChe: 'assets/ingame/icon/che_fu.png',
+      iconTie: 'assets/ingame/icon/tie_jiang.png',
+      iconClan: 'assets/ingame/icon/zong_zu_zhang_lao.png'
     }
   };
 
@@ -78,25 +92,35 @@
     sailor: 'officer', cannon: 'officer',
     xianfeng: 'redguard', gongshou: 'spear', fujiang: 'guard',
     tower: 'guard', spirit: 'water',
-    lake_boss: 'boss', world_boss: 'boss'
+    lake_boss: 'boss', world_boss: 'boss',
+    fishman: 'officer', shark: 'water', fish_boss: 'boss',
+    boxguard: 'guard', box_boss: 'boss', coach: 'dao'
   };
 
   var NPC_SRC = {
     cunzheng: 'officer', tiesmith: 'smith', yaopu: 'fairy', xunshou: 'fox',
     chefu: 'officer', bagong: 'smith', yabiao: 'guard', shilian: 'dao',
-    shuibing: 'guard', chuansong: 'wanderer'
+    shuibing: 'guard', chuansong: 'wanderer',
+    xuda: 'officer', lishizhen: 'healer', shenwansan: 'elder', zhangsanfeng: 'elder',
+    muying: 'guard', limengyang: 'officer', yuelao: 'elder', yushi: 'officer',
+    shichang: 'smith', yufu: 'wanderer', baoku: 'guard', jiaochang: 'dao', tongxin: 'elder'
   };
 
   var NPC_PORTRAIT = {
     cunzheng: 'portraitCun', yaopu: 'portraitShop', xunshou: 'portraitLady',
     chefu: 'portraitCun', bagong: 'portraitMaster', yabiao: 'portraitCun',
-    shilian: 'portraitMaster', shuibing: 'portraitCun', chuansong: 'portraitLady', tiesmith: 'portraitCun'
+    shilian: 'portraitMaster', shuibing: 'portraitCun', chuansong: 'portraitLady', tiesmith: 'portraitCun',
+    xuda: 'portraitXuda', lishizhen: 'portraitLi', zhangsanfeng: 'portraitZhang',
+    muying: 'portraitMu', yuelao: 'portraitYue', limengyang: 'portraitMaster', yushi: 'portraitXuda',
+    shenwansan: 'portraitShen'
   };
 
   var NPC_ICON = {
-    cunzheng: 'iconCun', tiesmith: 'iconSmith', yaopu: 'iconShop', xunshou: 'iconFarmer',
-    chefu: 'iconCart', bagong: 'iconElder', yabiao: 'iconMaster', shilian: 'iconMaster',
-    chuansong: 'iconBoat', shuibing: 'iconBoat'
+    cunzheng: 'iconCun', tiesmith: 'iconTie', yaopu: 'iconShop', xunshou: 'iconFarmer',
+    chefu: 'iconChe', bagong: 'iconElder', yabiao: 'iconMaster', shilian: 'iconMaster',
+    chuansong: 'iconBoat', shuibing: 'iconBoat',
+    xuda: 'iconXuda', lishizhen: 'iconLi', shenwansan: 'iconShen', zhangsanfeng: 'iconZhang',
+    muying: 'iconMu', limengyang: 'iconClan', yushi: 'iconXuda'
   };
 
   var PET_SRC = { wolf: 'tiger', crane: 'water', fox: 'fox', ape: 'tiger' };

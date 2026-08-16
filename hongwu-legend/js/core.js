@@ -52,6 +52,8 @@
     towerDmg: 0,
     towerT0: 0,
     deathKind: 'village',
+    fires: [],
+    rankTab: 'level',
     peers: [],
     chatChan: 'near',
     chatTo: '',
@@ -92,15 +94,23 @@
     H.renderLog();
   }
 
+  H.emoteHtml = function (s) {
+    s = String(s || '');
+    (D.CHAT_FACES || []).forEach(function (f) {
+      s = s.split('[:' + f.id + ':]').join('<img class="chat-emo" src="' + f.src + '" alt="' + f.tag + '" />');
+    });
+    return s;
+  }
+
   H.renderLog = function () {
     var chat = document.getElementById('chat-log');
     if (chat) {
       chat.innerHTML = G.log.slice(0, 16).map(function (l) {
-        return '<p><i>系统</i> ' + l + '</p>';
+        return '<p><i>系统</i> ' + H.emoteHtml(l) + '</p>';
       }).join('');
     }
     var legacy = document.getElementById('log-list');
-    if (legacy) legacy.innerHTML = G.log.slice(0, 8).map(function (l) { return '<p>' + l + '</p>'; }).join('');
+    if (legacy) legacy.innerHTML = G.log.slice(0, 8).map(function (l) { return '<p>' + H.emoteHtml(l) + '</p>'; }).join('');
   }
 
   H.showScreen = function (id) {
@@ -158,6 +168,7 @@
     G.player.pkValue = G.player.pkValue || 0;
     G.player.towerUnlock = G.player.towerUnlock || 1;
     H.ensureDaily(G.player);
+    if (H.ensureLife) H.ensureLife(G.player);
     G.log = data.log || [];
     G.towerFloor = data.towerFloor || 0;
     var mapId = data.mapId || 'taiping';

@@ -74,6 +74,7 @@
               <span data-chan="clan">宗族</span>
             </div>
             <div class="chat-log" id="chat-log"></div>
+            <div class="chat-faces" id="chat-faces"></div>
             <form id="chat-form">
               <input id="chat-input" maxlength="80" placeholder="回车发言　/账号 密聊" autocomplete="off" />
               <button type="submit">发送</button>
@@ -87,6 +88,10 @@
             <button data-panel="forge">天工炉</button>
             <button data-panel="quest">任务</button>
             <button data-panel="social">社交</button>
+            <button data-panel="mail">信件</button>
+            <button data-panel="achieve">目标</button>
+            <button data-panel="rank">排行</button>
+            <button data-panel="daily">日常</button>
             <button id="btn-auto">挂机</button>
             <button data-panel="help">系统</button>
             <button id="btn-save">存档</button>
@@ -128,6 +133,10 @@
       <div class="panel" id="panel-shop"></div>
       <div class="panel" id="panel-warehouse"></div>
       <div class="panel" id="panel-social"></div>
+      <div class="panel" id="panel-mail"></div>
+      <div class="panel" id="panel-achieve"></div>
+      <div class="panel" id="panel-rank"></div>
+      <div class="panel" id="panel-daily"></div>
       <div class="panel" id="panel-trade"></div>
       <div id="map-overlay" hidden>
         <div class="map-win">
@@ -167,6 +176,7 @@
           <p id="death-text">银两略有折损，将在太平村回魂。</p>
           <div class="btn-row" style="margin-top:16px">
             <button class="btn" id="btn-revive">回 村 再 战</button>
+            <button class="btn ghost" id="btn-revive-here" hidden>原地健康复活</button>
           </div>
         </div>
       </div>
@@ -187,6 +197,7 @@
   <script src="js/dungeon.js"></script>
   <script src="js/sim.js"></script>
   <script src="js/netplay.js"></script>
+  <script src="js/life.js"></script>
   <script src="js/render.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/input.js"></script>

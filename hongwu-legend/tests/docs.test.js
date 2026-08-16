@@ -11,6 +11,12 @@ assert.ok(D.NPCS.yiyi.warehouse);
 assert.ok(D.NPCS.shenwansan.bank);
 assert.ok(D.NPCS.zhangsanfeng.skills);
 assert.ok(D.NPCS.lishizhen.shop);
+assert.ok(D.NPCS.muying.portal);
+assert.ok(D.NPCS.limengyang.mentor);
+assert.ok(D.NPCS.shichang.market);
+assert.ok(D.INSTANCES.fish && D.INSTANCES.treasure && D.INSTANCES.mentor);
+assert.ok(D.CHAT_FACES.length >= 12);
+assert.ok(D.MARKET_CATS.length >= 6);
 assert.strictEqual(D.NPCS.chefu.map, 'taiping');
 assert.ok(D.NPCS.chefu.travel.indexOf('capital') === 0);
 
@@ -19,7 +25,8 @@ assert.strictEqual(D.WAREHOUSE.maxTabs, 4);
 assert.strictEqual(D.WAREHOUSE.unlock[0], 0);
 
 var help = D.HELP.join('\n');
-['Q 任务', '空格拾取', 'D 打坐', '精力', '坐骑', '建功立业', '91wan', '局域网', '组队'].forEach(function (k) {
+['Q 任务', '空格拾取', 'D 打坐', '精力', '坐骑', '建功立业', '91wan', '局域网', '组队',
+  '信件', '传奇目标', '除恶令', '捕鱼儿海', '大明宝藏', '洗灵', '篝火'].forEach(function (k) {
   assert.ok(help.indexOf(k) >= 0, 'HELP missing ' + k);
 });
 

@@ -193,7 +193,8 @@
       '<button class="btn" data-soc="friend_add" data-who="' + o.user + '">加好友</button>' +
       '<button class="btn ghost" data-whisper="' + o.user + '">密聊</button>' +
       '<button class="btn ghost" data-follow="' + o.user + '">跟随</button>' +
-      '<button class="btn" data-soc="clan_invite" data-who="' + o.user + '">邀入宗族</button>';
+      '<button class="btn" data-soc="clan_invite" data-who="' + o.user + '">邀入宗族</button>' +
+      '<button class="btn ghost" data-flower="' + o.user + '">赠花</button>';
     if (o.stall) opts += '<button class="btn" data-look-stall="' + o.user + '">看摊</button>';
     el.innerHTML = '<div class="dialog-body"><div class="dialog-text"><div class="who">' + who +
       '</div><div>阵营 ' + (o.nation === 'yuan' ? '北元' : '大明') +

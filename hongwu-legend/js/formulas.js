@@ -159,6 +159,32 @@
     return Math.floor(maxHp * 0.7 + 120);
   };
 
+  F.bagExpandCost = function (n) {
+    return [80, 200, 450, 900][F.clamp(n, 0, 3)] || 900;
+  };
+
+  F.reviveHereCost = function (level) {
+    return 20 + (level || 1) * 8;
+  };
+
+  F.recolorChance = function (rarity) {
+    var t = { white: 0.72, green: 0.55, blue: 0.38, purple: 0.22 };
+    return t[rarity] == null ? 0 : t[rarity];
+  };
+
+  F.petWashRange = function () {
+    return { min: 800, max: 2500 };
+  };
+
+  F.petInsightChance = function (insight) {
+    var n = insight || 0;
+    return Math.max(0.08, 0.55 - n * 0.04);
+  };
+
+  F.sitFireXp = function (level, party) {
+    return Math.floor((6 + level * 0.8) * (party ? 1.4 : 1));
+  };
+
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = F;
   }

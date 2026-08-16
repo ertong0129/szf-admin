@@ -70,6 +70,7 @@
       else if (p.target) H.setDest(p.target.x, p.target.y);
     }
     H.pickupNear();
+    if (H.tickSitLife) H.tickSitLife(dt);
     G.portals.forEach(function (pt) {
       var px = (pt.x + 0.5) * TILE, py = (pt.y + 0.5) * TILE;
       if (Math.hypot(p.x - px, p.y - py) < 28) {
@@ -260,6 +261,7 @@
       H.toast('军资送达');
       G.escort = null;
       H.questCheck();
+      if (H.addActivity) H.addActivity(20);
       H.travel('capital', 32, 20);
     }
   }

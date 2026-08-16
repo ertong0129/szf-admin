@@ -56,4 +56,10 @@ assert.ok(F.monsterHp(10, true) > F.monsterHp(10, false) * 5);
 assert.ok(F.killXp(10, 20, false) > F.killXp(10, 2, false));
 assert.ok(F.potionHeal(2, 200) > F.potionHeal(1, 200));
 
+assert.strictEqual(F.bagExpandCost(0), 80);
+assert.ok(F.reviveHereCost(10) > F.reviveHereCost(1));
+assert.ok(F.petWashRange().max > F.petWashRange().min);
+assert.ok(F.sitFireXp(10, true) > F.sitFireXp(10, false));
+assert.ok(F.recolorChance('white') > F.recolorChance('purple'));
+
 console.log('formulas.test.js ok');

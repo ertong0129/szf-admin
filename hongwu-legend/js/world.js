@@ -40,7 +40,7 @@
 
   H.blockedTile = function (t, mapId) {
     if (t === 'wall' || t === 'tree' || t === 'house' || t === 'roof' || t === 'rock') return true;
-    if (t === 'water' && mapId !== 'poyang') return true;
+    if (t === 'water' && mapId !== 'poyang' && mapId !== 'fish') return true;
     return false;
   }
 
@@ -100,6 +100,30 @@
       g = H.makeGrid(56, 22, 'grass');
       H.rect(g, 0, 8, 56, 6, 'dirt');
       H.scatter(g, 'tree', 50, function (t) { return t === 'grass'; });
+    } else if (id === 'fish') {
+      H.fill(g, 'water');
+      H.rect(g, 2, 14, 46, 8, 'dock');
+      H.rect(g, 14, 8, 22, 20, 'dock');
+      H.scatter(g, 'rock', 10, function (t) { return t === 'dock'; });
+    } else if (id === 'treasure') {
+      H.fill(g, 'stone');
+      H.rect(g, 4, 4, 28, 20, 'arena');
+      for (x = 0; x < 36; x++) {
+        H.setTile(g, x, 0, 'wall'); H.setTile(g, x, 25, 'wall');
+      }
+      for (y = 0; y < 26; y++) {
+        H.setTile(g, 0, y, 'wall'); H.setTile(g, 35, y, 'wall');
+      }
+      w = 36; h = 26;
+      g = g.slice(0, 26).map(function (row) { return row.slice(0, 36); });
+    } else if (id === 'arena' || id === 'mentor') {
+      H.fill(g, 'arena');
+      for (x = 0; x < 24; x++) for (y = 0; y < 24; y++) {
+        if (x === 0 || y === 0 || x === 23 || y === 23) H.setTile(g, x, y, 'wall');
+        else H.setTile(g, x, y, 'arena');
+      }
+      w = 24; h = 24;
+      g = g.slice(0, 24).map(function (row) { return row.slice(0, 24); });
     }
     G.grid = g;
     G.mapId = id;
@@ -153,7 +177,7 @@
     if (window.PathFind && G.grid) {
       var p = G.player;
       G.path = PathFind.astar(
-        tileWalkable, G.grid[0].length, G.grid.length,
+        H.tileWalkable, G.grid[0].length, G.grid.length,
         Math.floor(p.x / TILE), Math.floor(p.y / TILE),
         Math.floor(goal.x / TILE), Math.floor(goal.y / TILE)
       );
@@ -190,6 +214,35 @@
       H.startTowerFloor(G.towerFloor || 1);
     } else if (id === 'road') {
       /* escort fills this */
+    } else if (id === 'fish') {
+      H.spawnPack('fishman', 8, 14);
+      H.spawnPack('shark', 4, 16);
+      H.spawnAt('fish_boss', 36, 18, 20);
+      for (var fi = 0; fi < 10; fi++) {
+        var hx = H.rand(4, 40) * TILE, hy = H.rand(8, 24) * TILE;
+        if (H.canWalk(hx, hy)) G.herbs.push({ id: 'pet_stone', x: hx, y: hy });
+      }
+    } else if (id === 'treasure') {
+      H.spawnPack('boxguard', 6, 15);
+      H.spawnAt('box_boss', 24, 14, 19);
+      for (var ti = 0; ti < 8; ti++) {
+        var bx = H.rand(6, 28) * TILE, by = H.rand(6, 20) * TILE;
+        if (H.canWalk(bx, by)) G.herbs.push({ id: 'treasure_pt', x: bx, y: by });
+      }
+    } else if (id === 'arena') {
+      H.spawnAt('coach', 12, 12, Math.max(10, (G.player && G.player.level) || 10));
+    } else if (id === 'mentor') {
+      H.spawnPack('bandit', 6, 10);
+      H.spawnAt('fujiang', 12, 12, 14);
+    }
+    G.fires = [];
+    if (id === 'taiping') G.fires = [{ x: 24.5 * TILE, y: 18.5 * TILE }];
+    if (id === 'capital') G.fires = [{ x: 24 * TILE, y: 20 * TILE }, { x: 12 * TILE, y: 20 * TILE }];
+    if (id === 'capital') {
+      for (var yi = 0; yi < 4; yi++) {
+        var yx = H.rand(10, 40) * TILE, yy = H.rand(10, 28) * TILE;
+        if (H.canWalk(yx, yy)) G.herbs.push({ id: 'yibao', x: yx, y: yy, yibao: true });
+      }
     }
   }
 
@@ -215,7 +268,16 @@
       lishizhen: [28 * TILE, 26 * TILE],
       yiyi: [14 * TILE, 26 * TILE],
       shenwansan: [12 * TILE, 16 * TILE],
-      jineng: [22 * TILE, 18 * TILE]
+      jineng: [22 * TILE, 18 * TILE],
+      muying: [18 * TILE, 22 * TILE],
+      limengyang: [30 * TILE, 16 * TILE],
+      yuelao: [34 * TILE, 12 * TILE],
+      shichang: [16 * TILE, 20 * TILE],
+      yushi: [26 * TILE, 16 * TILE],
+      yufu: [8 * TILE, 16 * TILE],
+      baoku: [8 * TILE, 12 * TILE],
+      jiaochang: [6 * TILE, 12 * TILE],
+      tongxin: [6 * TILE, 12 * TILE]
     };
     var p = table[id] || [10 * TILE, 10 * TILE];
     return { x: p[0], y: p[1] };
@@ -285,6 +347,7 @@
   }
 
   H.npcTravel = function (spec) {
+    var p = G.player;
     if ((p.pkValue || 0) >= 18) { H.toast('红名不能使用车夫'); return; }
     var parts = (spec || '').split(':');
     if (parts.length < 3) return;

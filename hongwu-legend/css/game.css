@@ -197,8 +197,8 @@ html, body {
   position: absolute;
   left: 8px;
   bottom: 8px;
-  width: min(300px, 34vw);
-  height: 128px;
+  width: min(320px, 36vw);
+  height: 168px;
   z-index: 4;
   background:
     url('../assets/official/ui/chat-bar.png') center / 100% 100% no-repeat,
@@ -219,11 +219,28 @@ html, body {
   padding: 4px 6px; font-family: inherit;
 }
 #chat-form button { border: 0; background: #6a1a14; color: var(--paper); padding: 0 8px; cursor: pointer; }
+.chat-faces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 2px 4px;
+  max-height: 36px;
+  overflow: hidden;
+}
+.chat-faces img {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  image-rendering: pixelated;
+}
+.chat-faces img:hover { border-color: var(--gold); }
+.chat-emo { width: 16px; height: 16px; vertical-align: middle; }
 .sys-btns {
   position: absolute;
   right: 8px;
   bottom: 8px;
-  width: 168px;
+  width: 176px;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 4px;
@@ -601,6 +618,59 @@ html, body {
   justify-content: space-between;
   align-items: center;
 }
+.panel-title-img {
+  height: 28px;
+  max-width: 160px;
+  object-fit: contain;
+  image-rendering: auto;
+}
+.fashion-bg {
+  min-height: 120px;
+  padding: 8px;
+  background: url('../assets/ingame/ui/fashionBg.png') right bottom / 180px auto no-repeat;
+}
+.medal-bg {
+  height: 72px;
+  margin-bottom: 8px;
+  background: url('../assets/ingame/ui/medal.jpg') center / contain no-repeat;
+}
+.pet-board {
+  min-height: 160px;
+  padding: 10px 8px;
+  background:
+    linear-gradient(180deg, rgba(8, 16, 18, 0.72), rgba(8, 16, 18, 0.88)),
+    url('../assets/ingame/petui/cw_di.jpg') center / cover;
+}
+.pet-wuxing {
+  display: block;
+  width: 88px;
+  height: auto;
+  margin: 8px 0;
+}
+.poyang-diff {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 88px;
+}
+.poyang-diff img {
+  width: 72px;
+  height: 48px;
+  object-fit: cover;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+}
+.char-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+.char-tabs button, .rank-tabs button {
+  background: #1c120c;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  padding: 3px 10px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.char-tabs button.on, .rank-tabs button.on { color: var(--gold); border-color: var(--gold); }
+.rank-tabs { display: flex; gap: 6px; margin-bottom: 8px; }
 .panel .close {
   cursor: pointer;
   border: 0;

@@ -9,6 +9,7 @@
  *   dungeon.js  副本 / 押镖 / 英雄试炼
  *   sim.js      每帧更新
  *   netplay.js  局域网玩家 / 社交 / 交易 / 摆摊
+ *   life.js     信件 / 传奇目标 / 日常 / 官职时装 / 宠物洗灵 / 副本入口
  *   render.js   2D 绘制 / HUD
  *   ui.js       面板 / 对话 / 商店 / 地图
  *   input.js    键鼠

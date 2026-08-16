@@ -54,6 +54,8 @@
       G.player.y = fix.y;
     }
     H.refreshQuestUI();
+    if (H.ensureLife) H.ensureLife(G.player);
+    if (H.paintChatFaces) H.paintChatFaces();
     H.renderLog();
     H.saveSilent();
     H.netTick();

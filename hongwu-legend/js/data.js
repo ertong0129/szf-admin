@@ -178,7 +178,20 @@
     hero_pack: { id: 'hero_pack', name: '英雄礼包', kind: 'pack', desc: '通关礼包。打开可得灵石或药水。' },
     scroll: { id: 'scroll', name: '传送卷', kind: 'mat', desc: '世界地图点地名可消耗一张瞬移。没有则自动寻路。' },
     mount_token: { id: 'mount_token', name: '坐骑提速牌', kind: 'mat', desc: '角色面板坐骑页提升坐骑速度，不一定成功。' },
-    yinpiao: { id: 'yinpiao', name: '五锭银票', kind: 'mat', desc: '钱庄兑换。500 两银子 = 1 张，可再兑回银两。' }
+    yinpiao: { id: 'yinpiao', name: '五锭银票', kind: 'mat', desc: '钱庄兑换。500 两银子 = 1 张，可再兑回银两。' },
+    bag_token: { id: 'bag_token', name: '背包扩展符', kind: 'mat', desc: '扩展背包一栏（+12 格），最多四次。' },
+    wash_dan: { id: 'wash_dan', name: '洗灵丹', kind: 'mat', desc: '宠物洗灵，重掷资质（800–2500）。' },
+    insight_dan: { id: 'insight_dan', name: '提悟丹', kind: 'mat', desc: '宠物提悟，提升悟性，不一定成功。' },
+    train_pai: { id: 'train_pai', name: '训练牌', kind: 'mat', desc: '宠物训练升星。' },
+    chue_ling: { id: 'chue_ling', name: '除恶令', kind: 'mat', desc: '日常除恶令。交给徐达或自行猎杀指定目标。' },
+    yibao: { id: 'yibao', name: '天降异宝', kind: 'mat', desc: '京城夺宝采集。可换经验与银两。' },
+    flower: { id: 'flower', name: '玫瑰花', kind: 'mat', desc: '赠予好友可增加亲密度与魅力。' },
+    wine: { id: 'wine', name: '烧酒', kind: 'mat', desc: '篝火旁打坐时饮用，额外获得经验。' },
+    pet_stone: { id: 'pet_stone', name: '宠物灵石', kind: 'mat', desc: '捕鱼儿海产出，可换洗灵丹或直接强化宠物。' },
+    treasure_pt: { id: 'treasure_pt', name: '宝藏积分符', kind: 'mat', desc: '大明宝藏采集所得，离开副本时结算奖励。' },
+    skill_book: { id: 'skill_book', name: '职业技能书', kind: 'mat', desc: '使用获得 1 点技能点。' },
+    pet_book: { id: 'pet_book', name: '宠物技能书', kind: 'mat', desc: '灵宠学习技能，提升随行伤害。' },
+    medal_pack: { id: 'medal_pack', name: '勋章礼盒', kind: 'pack', desc: '传奇目标奖励。打开可得勋章碎片或银两。' }
   };
 
   D.RECIPES = [
@@ -210,7 +223,13 @@
     tower: { id: 'tower', name: '本关守将', color: '#4a4a8a', level: 10, radius: 12, speed: 88, loot: ['stone', 'gem'] },
     boar_boss: { id: 'boar_boss', name: '獠牙王', color: '#4a2010', level: 6, radius: 18, speed: 64, boss: true, loot: ['stone', 'socket'] },
     lake_boss: { id: 'lake_boss', name: '张定边', color: '#102040', level: 18, radius: 20, speed: 70, boss: true, loot: ['badge', 'stone', 'socket', 'gem'] },
-    world_boss: { id: 'world_boss', name: '残元先锋', color: '#3a1020', level: 22, radius: 22, speed: 76, boss: true, loot: ['gem', 'socket'] }
+    world_boss: { id: 'world_boss', name: '残元先锋', color: '#3a1020', level: 22, radius: 22, speed: 76, boss: true, loot: ['gem', 'socket'] },
+    fishman: { id: 'fishman', name: '渔寇', color: '#2a5a6a', level: 14, radius: 12, speed: 80, loot: ['pet_stone', 'hp1'] },
+    shark: { id: 'shark', name: '海鲨', color: '#1a3a5a', level: 16, radius: 14, speed: 92, loot: ['pet_stone', 'wash_dan'] },
+    fish_boss: { id: 'fish_boss', name: '陈友谅残部', color: '#102840', level: 20, radius: 20, speed: 72, boss: true, loot: ['pet_stone', 'pet_book', 'socket'] },
+    boxguard: { id: 'boxguard', name: '宝库守卫', color: '#6a4a20', level: 15, radius: 12, speed: 84, loot: ['treasure_pt', 'stone'] },
+    box_boss: { id: 'box_boss', name: '宝库都监', color: '#5a3010', level: 19, radius: 18, speed: 70, boss: true, loot: ['treasure_pt', 'hero_pack', 'gem'] },
+    coach: { id: 'coach', name: '校场教头', color: '#4a3a2a', level: 12, radius: 14, speed: 90, elite: true, loot: ['stone', 'hp2'] }
   };
 
   D.QUESTS = [
@@ -247,7 +266,16 @@
     yiyi: { id: 'yiyi', name: '依依', title: '仓库管理员', map: 'capital', warehouse: true, lines: ['京城仓库。第一仓免费，后面开仓要银两。'] },
     shenwansan: { id: 'shenwansan', name: '沈万三', title: '钱庄老板', map: 'capital', bank: true, lines: ['银子兑银票，银票再兑回银子。钱庄的老规矩。'] },
     jineng: { id: 'jineng', name: '技能大师', title: '武学', map: 'capital', skills: true, lines: ['V 打开技能。有技能点就点亮、升级。'] },
-    chuansong: { id: 'chuansong', name: '水军都头', title: '离开副本', map: 'poyang', lines: ['湖上杀声未歇。要走，从我这儿离开副本。'] }
+    chuansong: { id: 'chuansong', name: '水军都头', title: '离开副本', map: 'poyang', lines: ['湖上杀声未歇。要走，从我这儿离开副本。'] },
+    muying: { id: 'muying', name: '沐英', title: '西平侯', map: 'capital', portal: true, lines: ['沐英在此。捕鱼儿海、大明宝藏、校场竞技，我可送你一程。'] },
+    limengyang: { id: 'limengyang', name: '李梦阳', title: '师徒', map: 'capital', mentor: true, lines: ['到我这里可结为师徒。师父带徒弟进同心副本，出师两清。'] },
+    yuelao: { id: 'yuelao', name: '月老', title: '月下老人', map: 'capital', rank: true, lines: ['点好友送花可增亲密度。鲜花榜奖励通过邮件发放。'] },
+    shichang: { id: 'shichang', name: '市场司事', title: '交易市场', map: 'capital', market: true, lines: ['装备、技能书、药品、灵石、坐骑宠物、杂货，摊位货物按类浏览。'] },
+    yushi: { id: 'yushi', name: '吏部主事', title: '官职', map: 'capital', office: true, lines: ['按等级授予官职，有属性加成。可在角色面板查看。'] },
+    yufu: { id: 'yufu', name: '渔夫', title: '捕鱼儿海', map: 'fish', lines: ['这片海出宠物灵石。打渔寇、采珠，离开时回京。'] },
+    baoku: { id: 'baoku', name: '宝库看守', title: '大明宝藏', map: 'treasure', lines: ['采集宝箱积宝藏积分。时间到或离开时结算。'] },
+    jiaochang: { id: 'jiaochang', name: '校尉', title: '竞技场', map: 'arena', lines: ['挑战校场教头，或与同场玩家切磋。'] },
+    tongxin: { id: 'tongxin', name: '同心使者', title: '师徒同心', map: 'mentor', lines: ['师徒并肩。击败场中敌人，离开时回京城李梦阳处。'] }
   };
 
   D.SHOPS = {
@@ -269,7 +297,14 @@
       { id: 'scroll', price: 30 },
       { id: 'mount_token', price: 40 },
       { id: 'hp1', price: 12 },
-      { id: 'mp1', price: 12 }
+      { id: 'mp1', price: 12 },
+      { id: 'bag_token', price: 80 },
+      { id: 'wash_dan', price: 36 },
+      { id: 'insight_dan', price: 42 },
+      { id: 'train_pai', price: 28 },
+      { id: 'flower', price: 8 },
+      { id: 'wine', price: 12 },
+      { id: 'skill_book', price: 60 }
     ]
   };
 
@@ -283,7 +318,9 @@
     { id: 'taiping', name: '太平村', left: '56%', top: '58%', tx: 24, ty: 17, desc: '新手村' },
     { id: 'wild', name: '野猪林', left: '68%', top: '48%', tx: 24, ty: 18, desc: '练级' },
     { id: 'shennong', name: '神农谷', left: '36%', top: '36%', tx: 24, ty: 18, desc: '灵宠' },
-    { id: 'poyang', name: '鄱阳湖', left: '76%', top: '70%', tx: 8, ty: 18, desc: '副本入口在京城水兵' }
+    { id: 'poyang', name: '鄱阳湖', left: '76%', top: '70%', tx: 8, ty: 18, desc: '副本入口在京城水兵' },
+    { id: 'fish', name: '捕鱼儿海', left: '82%', top: '58%', tx: 8, ty: 18, desc: '京城沐英传送' },
+    { id: 'treasure', name: '大明宝藏', left: '42%', top: '62%', tx: 8, ty: 12, desc: '京城沐英传送' }
   ];
 
   D.INSTANCES = {
@@ -296,9 +333,9 @@
       teleport: false,
       hideQuest: true,
       diffs: [
-        { id: 'recruit', name: '新兵', lv: 8 },
-        { id: 'normal', name: '普通', lv: 12 },
-        { id: 'hero', name: '英雄', lv: 16 }
+        { id: 'recruit', name: '新兵', lv: 8, img: '1.png' },
+        { id: 'normal', name: '普通', lv: 12, img: '2.png' },
+        { id: 'hero', name: '英雄', lv: 16, img: '3.png' }
       ]
     },
     tower: {
@@ -314,6 +351,41 @@
     road: {
       name: '官道押镖',
       revive: 'entrance',
+      teleport: false,
+      hideQuest: true
+    },
+    fish: {
+      name: '捕鱼儿海',
+      daily: 5,
+      minLevel: 10,
+      duration: 900,
+      revive: 'here',
+      teleport: false,
+      hideQuest: true
+    },
+    treasure: {
+      name: '大明宝藏',
+      daily: 3,
+      minLevel: 12,
+      duration: 720,
+      revive: 'entrance',
+      teleport: false,
+      hideQuest: true
+    },
+    arena: {
+      name: '竞技场',
+      daily: 10,
+      minLevel: 8,
+      revive: 'here',
+      teleport: false,
+      hideQuest: true
+    },
+    mentor: {
+      name: '师徒同心',
+      daily: 3,
+      minLevel: 8,
+      duration: 480,
+      revive: 'here',
       teleport: false,
       hideQuest: true
     }
@@ -335,7 +407,11 @@
     poyang: { name: '鄱阳湖大战', safe: false, instance: true, tint: [0.04, 0.08, 0.14] },
     capital: { name: '应天京城', safe: true, tint: [0.14, 0.1, 0.06] },
     tower: { name: '大明英雄副本', safe: false, instance: true, tint: [0.08, 0.06, 0.12] },
-    road: { name: '官道押镖', safe: false, instance: true, tint: [0.12, 0.12, 0.06] }
+    road: { name: '官道押镖', safe: false, instance: true, tint: [0.12, 0.12, 0.06] },
+    fish: { name: '捕鱼儿海', safe: false, instance: true, tint: [0.04, 0.1, 0.16] },
+    treasure: { name: '大明宝藏', safe: false, instance: true, tint: [0.12, 0.1, 0.04] },
+    arena: { name: '竞技场', safe: false, instance: true, tint: [0.1, 0.08, 0.06] },
+    mentor: { name: '师徒同心', safe: false, instance: true, tint: [0.1, 0.1, 0.06] }
   };
 
   D.PORTALS = {
@@ -362,6 +438,18 @@
     ],
     road: [
       { x: 2, y: 10, to: 'capital', tx: 20, ty: 20, label: '放弃押镖' }
+    ],
+    fish: [
+      { x: 2, y: 18, to: 'capital', tx: 18, ty: 14, label: '离开副本' }
+    ],
+    treasure: [
+      { x: 2, y: 12, to: 'capital', tx: 18, ty: 14, label: '离开副本' }
+    ],
+    arena: [
+      { x: 2, y: 12, to: 'capital', tx: 18, ty: 14, label: '退出竞技场' }
+    ],
+    mentor: [
+      { x: 2, y: 12, to: 'capital', tx: 30, ty: 16, label: '离开同心副本' }
     ]
   };
 
@@ -380,7 +468,80 @@
     'R 社交（好友/队伍/宗族/邀请），K 摆摊，G 跟随选中玩家，H 隐藏玩家。聊天：附近/世界/队伍/宗族，/账号 密聊。',
     'PK 六模式对其他玩家生效。安全区不能打人。红名不能坐车夫；PK≥18 红名，≥30 死亡入狱回村。',
     '点右侧任务追踪绿名可自动寻路。挂机（Z）自动寻敌、放技能、吃药、拾取。',
-    '副本：京城明军水兵进鄱阳湖大战；英雄副本传送人按关挑战。资料来源：91wan 明朝传奇游戏资料站。'
+    '副本：京城明军水兵进鄱阳湖大战；英雄副本传送人按关挑战。沐英传送捕鱼儿海、大明宝藏、竞技场。',
+    'L 信件，Y 传奇目标，O 排行，U 日常。除恶令、天降异宝、活跃度在日常面板。宠物可洗灵/提悟/训练。',
+    '太平村与京城篝火旁打坐饮酒加经验。野外死亡可回村或原地健康复活（耗银）。资料对照 MingGame.swf 与 91wan。'
+  ];
+
+  D.PANEL_TITLE = {
+    char: 'title/role.png', bag: 'title/package.png', skills: 'title/skill.png',
+    pet: 'title/pet.png', forge: 'title/tglp.png', quest: 'title/goal.png',
+    social: 'title/family.png', help: 'title/setting.png', shop: 'title/market.png',
+    mail: 'title/setting.png', achieve: 'title/goal.png', rank: 'title/rank.png',
+    daily: 'title/Activity.png', warehouse: 'title/package.png'
+  };
+
+  D.CHAT_FACES = [
+    { id: 'f00', src: 'assets/ingame/face/f00.jpg', tag: '笑' },
+    { id: 'f01', src: 'assets/ingame/face/f01.jpg', tag: '眨眼' },
+    { id: 'f02', src: 'assets/ingame/face/f02.jpg', tag: '怒' },
+    { id: 'f03', src: 'assets/ingame/face/f03.jpg', tag: '哭' },
+    { id: 'f04', src: 'assets/ingame/face/f04.jpg', tag: '酷' },
+    { id: 'f05', src: 'assets/ingame/face/f05.jpg', tag: '花' },
+    { id: 'f06', src: 'assets/ingame/face/f06.jpg', tag: '呆' },
+    { id: 'f07', src: 'assets/ingame/face/f07.jpg', tag: '汗' },
+    { id: 'f08', src: 'assets/ingame/face/f08.jpg', tag: '赞' },
+    { id: 'f09', src: 'assets/ingame/face/f09.jpg', tag: '困' },
+    { id: 'f10', src: 'assets/ingame/face/f10.jpg', tag: '惊' },
+    { id: 'f11', src: 'assets/ingame/face/f11.jpg', tag: '羞' }
+  ];
+
+  D.MARKET_CATS = [
+    { name: '装备', sub: '武器 / 防具 / 饰品 / 宠物装备', hint: '点其他玩家摊位购买装备。' },
+    { name: '技能书', sub: '职业技能书 / 宠物技能书', ids: ['skill_book', 'pet_book'] },
+    { name: '药品', ids: ['hp1', 'hp2', 'mp1', 'mp2'] },
+    { name: '灵石', hint: '灵石多从怪物掉落，摊位亦可交易。' },
+    { name: '坐骑宠物', sub: '坐骑 / 宠物', ids: ['mount_token', 'feed', 'wash_dan', 'insight_dan', 'train_pai', 'pet_stone'] },
+    { name: '杂货', sub: '材料 / 其他', ids: ['scroll', 'bag_token', 'flower', 'wine', 'stone', 'socket'] }
+  ];
+
+  D.OFFICES = [
+    { id: 'none', name: '白身', min: 1, hp: 0, patk: 0, pdef: 0 },
+    { id: 'jiazhang', name: '甲长', min: 8, hp: 20, patk: 4, pdef: 3 },
+    { id: 'lizheng', name: '里正', min: 14, hp: 40, patk: 8, pdef: 6 },
+    { id: 'xiancheng', name: '县丞', min: 20, hp: 70, patk: 14, pdef: 10 },
+    { id: 'zhifu', name: '知府', min: 28, hp: 110, patk: 22, pdef: 16 },
+    { id: 'xunfu', name: '巡抚', min: 36, hp: 160, patk: 32, pdef: 24 },
+    { id: 'shangshu', name: '尚书', min: 45, hp: 220, patk: 44, pdef: 32 }
+  ];
+
+  D.FASHIONS = [
+    { id: 'plain', name: '布衣', min: 1, desc: '出门的常服。', glow: '' },
+    { id: 'ink', name: '墨羽', min: 10, desc: '略有侠气的劲装。', glow: 'rgba(80,100,180,0.85)' },
+    { id: 'gold', name: '金缕', min: 20, desc: '京城裁缝的时新样式。', glow: 'rgba(212,175,55,0.9)' },
+    { id: 'crimson', name: '绯云', min: 30, desc: '军功赏赐的赤袍。', glow: 'rgba(200,50,50,0.9)' }
+  ];
+
+  D.ACHIEVE = [
+    { id: 'lv10', name: '初入江湖', desc: '角色等级到达 10 级', kind: 'level', n: 10, exp: 80, silver: 40 },
+    { id: 'lv20', name: '略有小成', desc: '角色等级到达 20 级', kind: 'level', n: 20, exp: 160, silver: 80 },
+    { id: 'lv30', name: '登堂入室', desc: '角色等级到达 30 级', kind: 'level', n: 30, exp: 280, silver: 140 },
+    { id: 'star3', name: '百炼成钢', desc: '任意装备强化达到 +3', kind: 'star', n: 3, exp: 100, silver: 50 },
+    { id: 'hole1', name: '开孔匠心', desc: '任意装备开孔达到 1', kind: 'socket', n: 1, exp: 80, silver: 40 },
+    { id: 'gem1', name: '灵石入器', desc: '镶嵌宝石一次', kind: 'gem', n: 1, exp: 90, silver: 45 },
+    { id: 'pet1', name: '灵兽结缘', desc: '收服一只灵宠', kind: 'pet', n: 1, exp: 120, silver: 60 },
+    { id: 'wash1', name: '洗灵有成', desc: '成功进行一次宠物洗灵', kind: 'wash', n: 1, exp: 100, silver: 50 },
+    { id: 'mount1', name: '马踏平川', desc: '获得坐骑', kind: 'mount', n: 1, exp: 80, silver: 40 },
+    { id: 'q10', name: '功业初定', desc: '完成 5 条主线', kind: 'quest', n: 5, exp: 150, silver: 80 },
+    { id: 'kill50', name: '除恶扬善', desc: '累计击杀 50 只怪物', kind: 'kill', n: 50, exp: 120, silver: 60 },
+    { id: 'mail1', name: '鸿雁传书', desc: '阅读一封信件', kind: 'mail', n: 1, exp: 40, silver: 20 }
+  ];
+
+  D.DAILY_KILL = [
+    { min: 1, max: 9, kill: 'boar', n: 8, exp: 120, silver: 30 },
+    { min: 10, max: 19, kill: 'wolf', n: 8, exp: 200, silver: 45 },
+    { min: 20, max: 39, kill: 'bandit', n: 8, exp: 320, silver: 70 },
+    { min: 40, max: 80, kill: 'spirit', n: 6, exp: 480, silver: 100 }
   ];
 
   root.GameData = D;

@@ -58,6 +58,8 @@
     if (!tired) H.dropLoot(e);
     else H.toast('精力耗尽：经验为 1，无掉落');
     H.noteKill(e.kind);
+    if (H.noteDailyKill) H.noteDailyKill(e.kind);
+    if (H.noteAchieve) H.noteAchieve('kill');
     if (e.kind === 'lake_boss') { p.flags.poyang_clear = true; H.questCheck(); }
     if (e.kind === 'spirit' && !p.pet && Math.random() < 0.45) H.grantPet();
     if (e.kind === 'spirit' && !p.pet) {
@@ -69,6 +71,10 @@
     G.entities = G.entities.filter(function (x) { return x !== e; });
     if (p.target === e) p.target = null;
     if (G.mapId === 'tower') H.onTowerKill();
+    if (G.mapId === 'arena' && e.kind === 'coach') {
+      p.arenaScore = (p.arenaScore || 0) + 8;
+      H.toast('竞技积分 +8');
+    }
     if (G.mapId === 'wild' && e.kind !== 'world_boss' && G.entities.filter(function (x) { return !x.boss; }).length < 8) {
       H.spawnPack(e.kind, 1, e.level);
     }
@@ -109,9 +115,15 @@
     });
     G.herbs = G.herbs.filter(function (h) {
       if (H.dist(p, h) < 32) {
-        H.addItem(p, { id: h.id, n: 1 });
-        H.log('采集 ' + D.CONSUMABLES[h.id].name);
-        H.noteGather(h.id);
+        if (h.yibao || h.id === 'yibao') {
+          if (H.collectYibao) {
+            if (!H.collectYibao()) return true;
+          } else H.addItem(p, { id: h.id, n: 1 });
+        } else {
+          H.addItem(p, { id: h.id, n: 1 });
+          H.log('采集 ' + ((D.CONSUMABLES[h.id] && D.CONSUMABLES[h.id].name) || h.id));
+          H.noteGather(h.id);
+        }
         if (G.guide && G.guide.wantHerb) H.guideStep();
         return false;
       }
@@ -251,6 +263,8 @@
     var title = document.getElementById('death-title');
     var text = document.getElementById('death-text');
     var btn = document.getElementById('btn-revive');
+    var hereBtn = document.getElementById('btn-revive-here');
+    if (hereBtn) hereBtn.hidden = true;
     if (spec && spec.revive === 'here') {
       G.deathKind = 'here';
       if (title) title.textContent = '身受重创';
@@ -275,6 +289,11 @@
         if (text) text.textContent = '银两略有折损，将在太平村回魂。';
       }
       if (btn) btn.textContent = '回 村 再 战';
+      if (hereBtn) {
+        hereBtn.hidden = false;
+        var cost = F.reviveHereCost(p.level);
+        hereBtn.textContent = '原地健康复活（' + cost + ' 两）';
+      }
     }
     document.getElementById('death').classList.add('open');
   }
@@ -295,6 +314,16 @@
       return;
     }
     H.travel('taiping', 24, 17);
+  }
+
+  H.reviveHere = function () {
+    var p = G.player;
+    var cost = F.reviveHereCost(p.level);
+    if (p.silver < cost) { H.toast('银两不足，无法原地复活'); return; }
+    p.silver -= cost;
+    G.deathKind = 'here';
+    H.revive();
+    H.toast('原地健康复活');
   }
 
   H.cyclePkMode = function () {
