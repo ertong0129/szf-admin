@@ -1397,8 +1397,9 @@
     if (window.Art && Art.imgs[pk]) {
       port.textContent = '';
       port.style.backgroundImage = 'url(' + Art.src[pk] + ')';
-      port.style.backgroundSize = 'cover';
-      port.style.backgroundPosition = 'top center';
+      port.style.backgroundSize = 'contain';
+      port.style.backgroundRepeat = 'no-repeat';
+      port.style.backgroundPosition = 'center bottom';
     } else {
       port.textContent = D.CLASSES[p.cls].name[0];
       port.style.color = D.CLASSES[p.cls].accent;

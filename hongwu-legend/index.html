@@ -3,27 +3,51 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>明朝传奇 · 学习服大厅</title>
-  <link rel="stylesheet" href="css/game.css" />
+  <title>欢迎您登录《明朝传奇》</title>
+  <link rel="stylesheet" href="css/login.css" />
 </head>
 <body class="portal-body">
-  <div class="portal-shell">
-    <header class="portal-top">
-      <div class="portal-logo">明朝传奇</div>
-      <nav>
-        <a href="index.html">官网首页</a>
-        <a href="play.html?server=s1">直接进1服</a>
-        <span>客服：学习用途本地服</span>
-      </nav>
-    </header>
-    <div class="portal-hero">
-      <img class="ref-shot" src="assets/portal/banner.jpg" alt="原作画面参考" />
+  <div class="box">
+    <div class="hd1"></div>
+    <div class="hd2">
+      <div class="hd21"><h1><a href="play.html?server=s1" title="明朝传奇" class="logo"></a></h1></div>
     </div>
-    <main id="portal-app"></main>
-    <footer class="portal-foot">
-      个人学习用本地服。创作者公开的简易 demo 是 Erlang 端 <a href="https://github.com/qingliangcn/mgee">qingliangcn/mgee</a>。资料见 docs/REFERENCES.md。
-    </footer>
+    <div class="cl"></div>
+    <div class="hd3" id="regLogTab0">
+      <div class="srk">
+        <form id="frmLogin" onsubmit="return false;">
+          <p><input class="int" id="login_user" maxlength="16" tabindex="1" value="demo" autocomplete="username" /></p>
+          <p class="srk1"><input class="int" id="login_pass" type="password" maxlength="20" tabindex="2" value="123456" autocomplete="current-password" /></p>
+        </form>
+      </div>
+      <div class="wjmm">
+        <p class="zczh"><a href="#" id="do-reg" title="注册账号"><img src="assets/official/login/zczh.jpg" width="81" height="26" alt="注册账号" /></a></p>
+        <p class="wjmm1" id="net-note">测试号 demo / 123456</p>
+      </div>
+    </div>
+    <div class="hd4">
+      <div class="hd41"><a href="#" class="msdl" id="do-login" tabindex="3" title="马上登录"></a></div>
+    </div>
+    <div class="hd5">
+      <div class="hd51">
+        <ul>
+          <li><a href="https://www.91wan.com/mccq/" target="_blank" title="官网"><img src="assets/official/login/fhgw.jpg" alt="返回官网" /></a></li>
+          <li><a href="docs/REFERENCES.md" title="资料"><img src="assets/official/login/yxgl.jpg" alt="游戏攻略" /></a></li>
+          <li><a href="https://github.com/qingliangcn/mgee" target="_blank" title="创作人 demo"><img src="assets/official/login/ltjl.jpg" alt="论坛交流" /></a></li>
+          <li><a href="play.html?server=s1" title="直接进1服"><img src="assets/official/login/kscz.jpg" alt="开始" /></a></li>
+        </ul>
+      </div>
+      <div class="cl"></div>
+    </div>
+    <div class="hd6"></div>
+    <div class="hd7">
+      <div class="hd71" id="portal-app"></div>
+    </div>
+    <div class="hd8"></div>
+    <div class="hd9"></div>
+    <div class="hd10"></div>
   </div>
+  <p class="portal-foot">学习服本地登录。主文件 Main.swf 资源见 docs/REFERENCES.md</p>
   <script src="js/api.js"></script>
   <script src="js/portal.js"></script>
 </body>

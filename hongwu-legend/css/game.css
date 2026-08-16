@@ -41,8 +41,8 @@ html, body {
 /* —— 标题 —— */
 #title-screen, #create-screen {
   background:
-    linear-gradient(180deg, rgba(12, 8, 5, 0.35), rgba(12, 8, 5, 0.72)),
-    url('../assets/title-bg.jpg') center/cover no-repeat,
+    linear-gradient(180deg, rgba(12, 8, 5, 0.28), rgba(12, 8, 5, 0.62)),
+    url('../assets/official/loading-bg.jpg') center/cover no-repeat,
     #0c0805;
 }
 .title-wrap {
@@ -111,6 +111,7 @@ html, body {
   gap: 20px;
   padding: 20px;
 }
+.create-logo { height: 72px; object-fit: contain; filter: drop-shadow(0 2px 8px #000); }
 .create-wrap h2 { letter-spacing: 8px; color: var(--gold); }
 .class-grid {
   display: grid;
@@ -130,9 +131,11 @@ html, body {
   overflow: hidden;
 }
 .class-art {
-  height: 150px;
-  background-size: cover;
-  background-position: top center;
+  height: 168px;
+  background-color: #070a0c;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center bottom;
   margin-bottom: 10px;
   border-bottom: 1px solid var(--line);
 }
@@ -181,17 +184,22 @@ html, body {
 }
 #world3d { display: none; }
 .dock {
-  height: 170px;
+  height: 176px;
   display: grid;
   grid-template-columns: 260px 1fr 210px;
   gap: 8px;
-  padding: 8px 10px;
-  background: linear-gradient(180deg, #4a2218, #1a0c08);
-  border-top: 2px solid #d4af37;
+  padding: 10px 12px 8px;
+  background:
+    linear-gradient(180deg, rgba(8, 20, 22, 0.35), rgba(8, 16, 18, 0.72)),
+    url('../assets/official/ui/skillbar.jpg') center top / 100% 72px no-repeat,
+    #0b1c1e;
+  border-top: 2px solid #2ec4c8;
 }
 .chat-box {
-  background: rgba(10, 6, 4, 0.85);
-  border: 1px solid var(--line);
+  background:
+    url('../assets/official/ui/chat-bar.png') center / 100% 100% no-repeat,
+    rgba(10, 24, 26, 0.88);
+  border: 1px solid #2ec4c8;
   display: flex;
   flex-direction: column;
   font-size: 12px;
@@ -238,8 +246,8 @@ html, body {
 .portrait {
   width: 74px;
   height: 74px;
-  border: 2px solid var(--gold);
-  background: #2a1810 center/cover no-repeat;
+  border: 2px solid #2ec4c8;
+  background: #071214 center/contain no-repeat;
   display: grid;
   place-items: center;
   font-size: 28px;
@@ -372,8 +380,10 @@ html, body {
   width: min(720px, 92vw);
   max-height: 78vh;
   overflow: auto;
-  background: var(--panel);
-  border: 1px solid var(--gold);
+  background:
+    linear-gradient(180deg, rgba(8, 22, 24, 0.88), rgba(8, 16, 18, 0.94)),
+    url('../assets/official/ui/panel-bg.jpg') center/cover;
+  border: 1px solid #2ec4c8;
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
   display: none;
   padding: 16px 18px 20px;

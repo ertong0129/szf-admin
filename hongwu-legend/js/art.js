@@ -1,6 +1,6 @@
 /**
  * 洪武风云录 — 原创贴图与 2.5D 精灵
- * 画风对照旧页游的预渲染立绘 / 地砖 / 金红界面，资源均为新绘，不包含 91wan 原文件。
+ * 角色与登录切图来自用户许可使用的 Main.swf 同目录公开资源。
  */
 (function (root) {
   var A = {
@@ -8,12 +8,14 @@
     imgs: {},
     variants: {},
     src: {
-      title: 'assets/title-bg.jpg',
-      warrior: 'assets/class-warrior.jpg',
-      archer: 'assets/class-archer.jpg',
-      wanderer: 'assets/class-wanderer.jpg',
-      healer: 'assets/class-healer.jpg',
-      elder: 'assets/npc-elder.jpg',
+      title: 'assets/official/loading-bg.jpg',
+      warrior: 'assets/official/sprites/warrior.png',
+      archer: 'assets/official/sprites/archer.png',
+      wanderer: 'assets/official/sprites/wanderer.png',
+      healer: 'assets/official/sprites/healer.png',
+      elder: 'assets/official/sprites/npc.png',
+      manIdle: 'assets/official/sprites/man_idle.png',
+      womanIdle: 'assets/official/sprites/woman_idle.png',
       boar: 'assets/mob-boar.jpg',
       wolf: 'assets/mob-wolf.jpg',
       bandit: 'assets/mob-bandit.jpg',
@@ -85,7 +87,7 @@
   };
 
   A.tileImg = function (type) {
-    if (type === 'dirt') return A.variants.dirt || A.imgs.grass;
+    if (type === 'dirt') return A.imgs.dirt || A.variants.dirt || A.imgs.grass;
     if (type === 'moss') return A.variants.moss || A.imgs.grass;
     if (type === 'dock') return A.variants.dock || A.imgs.stone;
     if (type === 'arena') return A.variants.arena || A.imgs.stone;

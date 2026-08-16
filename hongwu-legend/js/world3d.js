@@ -28,7 +28,7 @@
       scene.background = new THREE.Color(0x7ea4b8);
       scene.fog = new THREE.Fog(0x7ea4b8, 22, 58);
 
-      camera = new THREE.PerspectiveCamera(32, 1, 0.1, 160);
+      camera = new THREE.PerspectiveCamera(28, 1, 0.1, 160);
       camera.position.set(10, 16, 12);
 
       renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
@@ -416,8 +416,8 @@
     var px0 = px(p.x), pz0 = px(p.y);
     follow.x += (px0 - follow.x) * 0.14;
     follow.z += (pz0 - follow.z) * 0.14;
-    camera.position.set(follow.x + 8.6, 14.8, follow.z + 10.4);
-    camera.lookAt(follow.x, 0.55, follow.z);
+    camera.position.set(follow.x + 7.2, 16.8, follow.z + 9.4);
+    camera.lookAt(follow.x, 0.45, follow.z);
 
     var art = root.Art;
     var heroImg = art && art.imgs ? art.imgs[art.classKey(p.cls)] : null;
