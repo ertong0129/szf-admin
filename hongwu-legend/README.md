@@ -4,9 +4,9 @@
 
 ## 怎么开
 
-仓库根目录下载 `洪武风云录-Windows.zip`，解压后双击 `启动游戏.bat`。
+Windows 解压后双击 `start.bat`。Mac 解压后双击 `洪武风云录.app`，或右键打开 `启动游戏.command`。
 
-有 Node.js 时会启动 `http://127.0.0.1:8088/`（测试号 `demo` / `123456`）。没有 Node 也可打开 `index.html`，存档只在浏览器。
+启动器会先起本地服，**等服务就绪再打开浏览器**（测试号 `demo` / `123456`）。没有 Node 时自动改用 Python。两者都没有才直接打开 `index.html`。
 
 ```bash
 cd hongwu-legend
@@ -17,19 +17,21 @@ node server.js
 
 网上资料与创作者 demo 见 `docs/REFERENCES.md`。结论：原作是 Flash「3D 建模 + 2D 原画」斜视 ARPG；创作者公开的是 Erlang 学习服 [mgee](https://github.com/qingliangcn/mgee)，不是完整 3D 客户端。本目录用独立 WebGL 画布做 Three.js 斜视场景（房屋、树、立绘、血条、落点），对照该镜头。
 
-## Windows 直接下载
+## 直接下载
 
-国内（推荐 jsDelivr）：
+国内 Windows：
 
 https://cdn.jsdelivr.net/gh/ertong0129/szf-admin@cursor/hongwu-offline-legend-f2d5/hongwu-windows.zip
+
+国内 Mac：
+
+https://cdn.jsdelivr.net/gh/ertong0129/szf-admin@cursor/hongwu-offline-legend-f2d5/hongwu-mac.zip
 
 备用：
 
 https://gh-proxy.com/https://github.com/ertong0129/szf-admin/raw/cursor/hongwu-offline-legend-f2d5/hongwu-windows.zip
 
-GitHub 原地址：
-
-https://github.com/ertong0129/szf-admin/raw/cursor/hongwu-offline-legend-f2d5/洪武风云录-Windows.zip
+https://gh-proxy.com/https://github.com/ertong0129/szf-admin/raw/cursor/hongwu-offline-legend-f2d5/hongwu-mac.zip
 
 ## 画面说明
 

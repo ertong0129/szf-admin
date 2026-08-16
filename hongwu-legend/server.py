@@ -1,0 +1,291 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""洪武风云录本地服务端（无第三方依赖，给没有 Node 的机器用）。"""
+from __future__ import print_function
+
+import hashlib
+import json
+import os
+import random
+import sys
+import tempfile
+import threading
+import time
+import webbrowser
+
+try:
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+except ImportError:
+    from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer as ThreadingHTTPServer
+
+ROOT = os.path.abspath(os.path.dirname(__file__))
+DATA = os.path.join(ROOT, "data")
+STORE = os.path.join(DATA, "store.json")
+PORT = int(os.environ.get("PORT") or "8088")
+
+
+def hash_pass(s):
+    return hashlib.sha256(str(s).encode("utf-8")).hexdigest()
+
+
+def default_store():
+    return {
+        "users": {"demo": {"pass": hash_pass("123456"), "roles": {}, "created": int(time.time() * 1000)}},
+        "tokens": {},
+        "chat": [{"who": "系统", "text": "欢迎来到洪武风云录。测试号 demo / 123456", "t": int(time.time() * 1000)}],
+    }
+
+
+def ensure():
+    global DATA, STORE
+    try:
+        if not os.path.isdir(DATA):
+            os.makedirs(DATA)
+        if not os.path.isfile(STORE):
+            with open(STORE, "w", encoding="utf-8") as f:
+                json.dump(default_store(), f, ensure_ascii=False, indent=2)
+    except OSError:
+        DATA = os.path.join(tempfile.gettempdir(), "hongwu-legend-data")
+        STORE = os.path.join(DATA, "store.json")
+        if not os.path.isdir(DATA):
+            os.makedirs(DATA)
+        if not os.path.isfile(STORE):
+            with open(STORE, "w", encoding="utf-8") as f:
+                json.dump(default_store(), f, ensure_ascii=False, indent=2)
+        print("存档改写到临时目录 " + DATA)
+
+
+def load():
+    ensure()
+    try:
+        with open(STORE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        db = default_store()
+        save(db)
+        return db
+
+
+def save(db):
+    with open(STORE, "w", encoding="utf-8") as f:
+        json.dump(db, f, ensure_ascii=False, indent=2)
+
+
+MIME = {
+    ".html": "text/html; charset=utf-8",
+    ".js": "application/javascript; charset=utf-8",
+    ".css": "text/css; charset=utf-8",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+    ".gif": "image/gif",
+    ".txt": "text/plain; charset=utf-8",
+    ".json": "application/json; charset=utf-8",
+    ".md": "text/plain; charset=utf-8",
+}
+
+SERVERS = [
+    {"id": "s1", "name": "双线1服 · 洪武风云", "status": "火爆"},
+    {"id": "s2", "name": "双线2服 · 永乐新章", "status": "畅通"},
+    {"id": "s3", "name": "双线3服 · 万历征途", "status": "新服"},
+]
+
+
+def safe_file(pathname):
+    rel = (pathname or "/").split("?", 1)[0]
+    try:
+        if sys.version_info[0] >= 3:
+            from urllib.parse import unquote
+        else:
+            from urllib import unquote
+        rel = unquote(rel)
+    except Exception:
+        return None
+    rel = rel.replace("\\", "/").lstrip("/")
+    if not rel:
+        rel = "index.html"
+    parts = [p for p in rel.split("/") if p and p != "."]
+    if any(p == ".." for p in parts):
+        return None
+    file = os.path.abspath(os.path.join(ROOT, *parts))
+    root = os.path.abspath(ROOT)
+    if os.path.commonprefix([file, root]) != root:
+        return None
+    return file
+
+
+class Handler(BaseHTTPRequestHandler):
+    server_version = "Hongwu/1"
+
+    def log_message(self, fmt, *args):
+        sys.stderr.write("%s - %s\n" % (self.address_string(), fmt % args))
+
+    def _json(self, code, obj):
+        raw = json.dumps(obj, ensure_ascii=False).encode("utf-8")
+        self.send_response(code)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, X-Token")
+        self.send_header("Content-Length", str(len(raw)))
+        self.end_headers()
+        self.wfile.write(raw)
+
+    def _body(self):
+        n = int(self.headers.get("Content-Length") or 0)
+        raw = self.rfile.read(n) if n else b""
+        if not raw:
+            return {}
+        try:
+            return json.loads(raw.decode("utf-8"))
+        except Exception:
+            return {}
+
+    def _user(self, db):
+        token = self.headers.get("X-Token") or ""
+        name = db.get("tokens", {}).get(token)
+        if not name or name not in db.get("users", {}):
+            return None
+        return name
+
+    def do_OPTIONS(self):
+        self.send_response(204)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, X-Token")
+        self.send_header("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
+        self.end_headers()
+
+    def do_GET(self):
+        self._handle("GET")
+
+    def do_POST(self):
+        self._handle("POST")
+
+    def _handle(self, method):
+        if sys.version_info[0] >= 3:
+            from urllib.parse import urlparse, parse_qs
+        else:
+            from urlparse import urlparse, parse_qs
+        u = urlparse(self.path)
+        p = u.path or "/"
+        q = parse_qs(u.query)
+
+        if p == "/api/ping":
+            return self._json(200, {"ok": True})
+        if p == "/api/servers":
+            return self._json(200, {"servers": SERVERS})
+        if p == "/api/register" and method == "POST":
+            b = self._body()
+            user = str(b.get("user") or "").strip()
+            pw = str(b.get("pass") or "")
+            if len(user) < 2 or len(user) > 16:
+                return self._json(400, {"error": "账号需 2-16 位"})
+            if len(pw) < 4:
+                return self._json(400, {"error": "密码至少 4 位"})
+            db = load()
+            if user in db["users"]:
+                return self._json(400, {"error": "账号已存在"})
+            token = "%032x" % random.getrandbits(128)
+            db["users"][user] = {"pass": hash_pass(pw), "roles": {}, "created": int(time.time() * 1000)}
+            db["tokens"][token] = user
+            save(db)
+            return self._json(200, {"token": token, "user": user})
+        if p == "/api/login" and method == "POST":
+            b = self._body()
+            db = load()
+            user = str(b.get("user") or "").strip()
+            rec = db["users"].get(user)
+            if not rec or rec.get("pass") != hash_pass(b.get("pass") or ""):
+                return self._json(400, {"error": "账号或密码错误"})
+            token = "%032x" % random.getrandbits(128)
+            db["tokens"][token] = user
+            save(db)
+            return self._json(200, {"token": token, "user": user})
+        if p == "/api/role" and method == "GET":
+            db = load()
+            name = self._user(db)
+            if not name:
+                return self._json(401, {"error": "请先登录"})
+            sid = (q.get("server") or ["s1"])[0]
+            return self._json(200, {"role": db["users"][name].get("roles", {}).get(sid)})
+        if p == "/api/role" and method == "POST":
+            b = self._body()
+            db = load()
+            name = self._user(db)
+            if not name:
+                return self._json(401, {"error": "请先登录"})
+            sid = str(b.get("server") or "s1")
+            db["users"][name].setdefault("roles", {})[sid] = b.get("payload")
+            save(db)
+            return self._json(200, {"ok": True})
+        if p == "/api/chat" and method == "GET":
+            db = load()
+            return self._json(200, {"lines": (db.get("chat") or [])[-40:]})
+        if p == "/api/chat" and method == "POST":
+            b = self._body()
+            db = load()
+            name = self._user(db) or "过客"
+            text = str(b.get("text") or "")[:80]
+            if not text:
+                return self._json(400, {"error": "空消息"})
+            db.setdefault("chat", []).append({"who": name, "text": text, "t": int(time.time() * 1000)})
+            db["chat"] = db["chat"][-80:]
+            save(db)
+            return self._json(200, {"ok": True})
+
+        if p in ("/", ""):
+            p = "/index.html"
+        if p == "/favicon.ico":
+            self.send_response(204)
+            self.end_headers()
+            return
+        file = safe_file(p)
+        if not file or not os.path.isfile(file):
+            self.send_response(404)
+            self.send_header("Content-Type", "text/plain; charset=utf-8")
+            self.end_headers()
+            self.wfile.write(("Not found: " + p).encode("utf-8"))
+            return
+        ext = os.path.splitext(file)[1].lower()
+        self.send_response(200)
+        self.send_header("Content-Type", MIME.get(ext, "application/octet-stream"))
+        self.send_header("Cache-Control", "no-cache")
+        self.send_header("Content-Length", str(os.path.getsize(file)))
+        self.end_headers()
+        with open(file, "rb") as f:
+            while True:
+                chunk = f.read(64 * 1024)
+                if not chunk:
+                    break
+                self.wfile.write(chunk)
+
+
+def serve(port):
+    last = port + 12
+    while port <= last:
+        try:
+            httpd = ThreadingHTTPServer(("127.0.0.1", port), Handler)
+            return httpd, port
+        except OSError as e:
+            if port >= last:
+                raise
+            print("端口 %s 占用，改试 %s" % (port, port + 1))
+            port += 1
+
+
+def main():
+    ensure()
+    httpd, port = serve(PORT)
+    href = "http://127.0.0.1:%s/" % port
+    print("洪武风云录服务端 " + href)
+    print("测试账号 demo / 123456")
+    print("关闭本窗口即停止服务。")
+    if os.environ.get("OPEN_BROWSER") != "0":
+        threading.Timer(0.3, lambda: webbrowser.open(href)).start()
+    try:
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        pass
+
+
+if __name__ == "__main__":
+    main()

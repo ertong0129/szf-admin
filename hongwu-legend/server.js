@@ -6,33 +6,51 @@ var http = require('http');
 var fs = require('fs');
 var path = require('path');
 var url = require('url');
+var os = require('os');
 var crypto = require('crypto');
+var { exec } = require('child_process');
 
-var ROOT = __dirname;
+var ROOT = path.resolve(__dirname);
 var DATA = path.join(ROOT, 'data');
-var PORT = process.env.PORT || 8088;
+var PORT = parseInt(process.env.PORT || '8088', 10);
 var STORE = path.join(DATA, 'store.json');
-
-function ensure() {
-  if (!fs.existsSync(DATA)) fs.mkdirSync(DATA);
-  if (!fs.existsSync(STORE)) {
-    fs.writeFileSync(STORE, JSON.stringify({
-      users: {
-        demo: { pass: hash('123456'), roles: {}, created: Date.now() }
-      },
-      tokens: {},
-      chat: [{ who: '系统', text: '欢迎来到洪武风云录。测试号 demo / 123456', t: Date.now() }]
-    }, null, 2));
-  }
-}
 
 function hash(s) {
   return crypto.createHash('sha256').update(String(s)).digest('hex');
 }
 
+function defaultStore() {
+  return {
+    users: {
+      demo: { pass: hash('123456'), roles: {}, created: Date.now() }
+    },
+    tokens: {},
+    chat: [{ who: '系统', text: '欢迎来到洪武风云录。测试号 demo / 123456', t: Date.now() }]
+  };
+}
+
+function ensure() {
+  try {
+    if (!fs.existsSync(DATA)) fs.mkdirSync(DATA, { recursive: true });
+    if (!fs.existsSync(STORE)) fs.writeFileSync(STORE, JSON.stringify(defaultStore(), null, 2));
+  } catch (e) {
+    DATA = path.join(os.tmpdir(), 'hongwu-legend-data');
+    STORE = path.join(DATA, 'store.json');
+    if (!fs.existsSync(DATA)) fs.mkdirSync(DATA, { recursive: true });
+    if (!fs.existsSync(STORE)) fs.writeFileSync(STORE, JSON.stringify(defaultStore(), null, 2));
+    console.log('存档改写到临时目录 ' + DATA);
+  }
+}
+
 function load() {
   ensure();
-  return JSON.parse(fs.readFileSync(STORE, 'utf8'));
+  try {
+    return JSON.parse(fs.readFileSync(STORE, 'utf8'));
+  } catch (e) {
+    var db = defaultStore();
+    save(db);
+    return db;
+  }
 }
 
 function save(db) {
@@ -74,19 +92,54 @@ var MIME = {
   '.txt': 'text/plain; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
   '.bat': 'text/plain; charset=utf-8',
-  '.md': 'text/plain; charset=utf-8'
+  '.md': 'text/plain; charset=utf-8',
+  '.command': 'text/plain; charset=utf-8',
+  '.py': 'text/plain; charset=utf-8'
 };
 
-function serveStatic(req, res, pathname) {
-  if (pathname === '/') pathname = '/index.html';
-  var file = path.normalize(path.join(ROOT, pathname));
-  if (file.indexOf(ROOT) !== 0) return json(res, 403, { error: '禁止' });
-  if (!fs.existsSync(file) || fs.statSync(file).isDirectory()) {
-    res.writeHead(404); res.end('Not found'); return;
+function safeFile(pathname) {
+  var rel = String(pathname || '/').split('?')[0];
+  try { rel = decodeURIComponent(rel); } catch (e) { return null; }
+  rel = rel.replace(/\\/g, '/').replace(/^\/+/, '');
+  if (!rel) rel = 'index.html';
+  if (rel.indexOf('\0') >= 0) return null;
+  var parts = rel.split('/').filter(function (p) { return p && p !== '.'; });
+  if (parts.some(function (p) { return p === '..'; })) return null;
+  var file = path.resolve(ROOT, parts.join(path.sep));
+  var root = ROOT.endsWith(path.sep) ? ROOT : ROOT + path.sep;
+  var check = process.platform === 'win32' ? file.toLowerCase() : file;
+  var rootCheck = process.platform === 'win32' ? root.toLowerCase() : root;
+  if (check !== (process.platform === 'win32' ? ROOT.toLowerCase() : ROOT) && check.indexOf(rootCheck) !== 0) {
+    return null;
   }
-  var ext = path.extname(file).toLowerCase();
-  res.writeHead(200, { 'Content-Type': MIME[ext] || 'application/octet-stream' });
-  fs.createReadStream(file).pipe(res);
+  return file;
+}
+
+function serveStatic(req, res, pathname) {
+  if (pathname === '/' || pathname === '') pathname = '/index.html';
+  if (pathname === '/favicon.ico') {
+    res.writeHead(204); res.end(); return;
+  }
+  var file = safeFile(pathname);
+  if (!file) return json(res, 403, { error: '禁止' });
+  fs.stat(file, function (err, st) {
+    if (err || !st.isFile()) {
+      res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+      res.end('Not found: ' + pathname);
+      return;
+    }
+    var ext = path.extname(file).toLowerCase();
+    res.writeHead(200, {
+      'Content-Type': MIME[ext] || 'application/octet-stream',
+      'Cache-Control': 'no-cache'
+    });
+    var stream = fs.createReadStream(file);
+    stream.on('error', function () {
+      if (!res.headersSent) res.writeHead(500);
+      res.end();
+    });
+    stream.pipe(res);
+  });
 }
 
 var SERVERS = [
@@ -104,8 +157,13 @@ var server = http.createServer(function (req, res) {
     });
     return res.end();
   }
-  var u = url.parse(req.url, true);
-  var p = u.pathname;
+  var u;
+  try {
+    u = url.parse(req.url, true);
+  } catch (e) {
+    res.writeHead(400); res.end('bad url'); return;
+  }
+  var p = u.pathname || '/';
 
   if (p === '/api/ping') return json(res, 200, { ok: true });
 
@@ -179,11 +237,48 @@ var server = http.createServer(function (req, res) {
     });
   }
 
-  serveStatic(req, res, decodeURIComponent(p));
+  serveStatic(req, res, p);
 });
 
-ensure();
-server.listen(PORT, '127.0.0.1', function () {
-  console.log('洪武风云录服务端 http://127.0.0.1:' + PORT + '/');
-  console.log('测试账号 demo / 123456');
-});
+function openBrowser(href) {
+  if (process.env.OPEN_BROWSER === '0') return;
+  var cmd;
+  if (process.platform === 'win32') cmd = 'cmd /c start "" "' + href + '"';
+  else if (process.platform === 'darwin') cmd = 'open "' + href + '"';
+  else cmd = 'xdg-open "' + href + '"';
+  exec(cmd, function () {});
+}
+
+function tryListen(port, last) {
+  var max = last || port + 12;
+  function onError(e) {
+    server.removeListener('listening', onListen);
+    if (e.code === 'EADDRINUSE' && port < max) {
+      console.log('端口 ' + port + ' 占用，改试 ' + (port + 1));
+      tryListen(port + 1, max);
+    } else {
+      console.error('无法启动：' + e.message);
+      process.exit(1);
+    }
+  }
+  function onListen() {
+    server.removeListener('error', onError);
+    var href = 'http://127.0.0.1:' + port + '/';
+    console.log('洪武风云录服务端 ' + href);
+    console.log('测试账号 demo / 123456');
+    console.log('关闭本窗口即停止服务。');
+    setTimeout(function () { openBrowser(href); }, 200);
+  }
+  server.once('error', onError);
+  server.once('listening', onListen);
+  server.listen(port, '127.0.0.1');
+}
+
+if (typeof module !== 'undefined') {
+  module.exports = { safeFile: safeFile, ROOT: ROOT };
+}
+
+if (require.main === module) {
+  ensure();
+  tryListen(PORT);
+}

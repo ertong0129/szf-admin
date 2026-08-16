@@ -1,0 +1,23 @@
+#!/bin/bash
+# .app 和游戏文件在同一层：.../洪武风云录.app/Contents/MacOS/launcher
+ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
+cd "$ROOT" || exit 1
+export OPEN_BROWSER=1
+
+have_node() {
+  command -v node >/dev/null 2>&1 && node -p "process.versions.node" >/dev/null 2>&1
+}
+
+if have_node; then
+  exec node "$ROOT/server.js"
+fi
+if command -v python3 >/dev/null 2>&1; then
+  exec python3 "$ROOT/server.py"
+fi
+if command -v python >/dev/null 2>&1; then
+  exec python "$ROOT/server.py"
+fi
+
+osascript -e 'display dialog "请先安装 Node.js（nodejs.org）或 Python 3，再打开本程序。" buttons {"好"} default button 1' >/dev/null 2>&1 || true
+open "$ROOT/index.html"
+exit 1
