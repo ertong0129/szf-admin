@@ -8,6 +8,7 @@
   var SPAWN = { x: 24.5 * 40, y: 17.5 * 40 };
 
   var canvas = document.getElementById('world');
+  var canvas3d = document.getElementById('world3d');
   var ctx = canvas.getContext('2d');
   var mini = document.getElementById('minimap');
   var mctx = mini.getContext('2d');
@@ -79,8 +80,16 @@
   }
 
   function resize() {
-    canvas.width = canvas.clientWidth;
-    canvas.height = canvas.clientHeight;
+    var host = canvas.parentElement || canvas;
+    var w = host.clientWidth || canvas.clientWidth;
+    var h = host.clientHeight || canvas.clientHeight;
+    canvas.width = w;
+    canvas.height = h;
+    if (canvas3d) {
+      canvas3d.width = w;
+      canvas3d.height = h;
+    }
+    if (window.World3D) World3D.resize();
   }
   window.addEventListener('resize', resize);
 
@@ -386,6 +395,7 @@
     G.grid = g;
     G.mapId = id;
     spawnMapContent(id);
+    if (window.World3D && World3D.ready) World3D.rebuild(G.grid);
   }
 
   function worldSize() {
@@ -1146,6 +1156,25 @@
   };
 
   function draw() {
+    if (window.World3D && World3D.enabled && G.player && G.grid) {
+      World3D.sync({
+        player: G.player,
+        maxHp: stats(G.player).maxHp,
+        npcs: G.npcs,
+        entities: G.entities,
+        pet: G.player.pet && G.player.pet.hp > 0 ? G.player.pet : null,
+        click: G.clickFx,
+        target: G.player.target,
+        drops: G.drops,
+        herbs: G.herbs,
+        portals: G.portals,
+        floats: G.floats,
+        time: G.time
+      });
+      drawMinimap();
+      drawHud();
+      return;
+    }
     var w = canvas.width, h = canvas.height;
     ctx.fillStyle = '#0a0806';
     ctx.fillRect(0, 0, w, h);
@@ -1631,7 +1660,10 @@
 
   function onPointer(ev) {
     if (G.mode !== 'play') return;
-    var wpos = screenToWorld(ev.clientX, ev.clientY);
+    var wpos = (window.World3D && World3D.enabled)
+      ? World3D.pick(ev.clientX, ev.clientY)
+      : screenToWorld(ev.clientX, ev.clientY);
+    if (!wpos) return;
     G.mouse.wx = wpos.x;
     G.mouse.wy = wpos.y;
     var p = G.player;
@@ -1756,12 +1788,20 @@
   }
 
   function bindPlayEvents() {
-    canvas.addEventListener('mousedown', onPointer);
-    canvas.addEventListener('mousemove', function (ev) {
-      var wpos = screenToWorld(ev.clientX, ev.clientY);
-      G.mouse.wx = wpos.x;
-      G.mouse.wy = wpos.y;
-    });
+    function bindCanvas(el) {
+      if (!el) return;
+      el.addEventListener('mousedown', onPointer);
+      el.addEventListener('mousemove', function (ev) {
+        var wpos = (window.World3D && World3D.enabled)
+          ? World3D.pick(ev.clientX, ev.clientY)
+          : screenToWorld(ev.clientX, ev.clientY);
+        if (!wpos) return;
+        G.mouse.wx = wpos.x;
+        G.mouse.wy = wpos.y;
+      });
+    }
+    bindCanvas(canvas);
+    bindCanvas(canvas3d);
     window.addEventListener('keydown', function (ev) {
       if (ev.target && (ev.target.tagName === 'INPUT' || ev.target.tagName === 'TEXTAREA')) return;
       G.keys[ev.code] = true;
@@ -1973,7 +2013,26 @@
       });
     }
     bindPlayEvents();
-    if (window.Art) Art.load(function () { paintClasses(); });
+    function start3D() {
+      if (!window.World3D || !canvas3d) return;
+      canvas3d.style.display = 'block';
+      resize();
+      if (World3D.init(canvas3d)) {
+        canvas.style.display = 'none';
+        if (G.grid) World3D.rebuild(G.grid);
+      } else {
+        canvas3d.style.display = 'none';
+        canvas.style.display = 'block';
+      }
+    }
+    if (window.Art) {
+      Art.load(function () {
+        paintClasses();
+        start3D();
+      });
+    } else {
+      start3D();
+    }
     requestAnimationFrame(loop);
 
     function goSavedOrCreate() {

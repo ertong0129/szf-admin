@@ -13,7 +13,9 @@ cd hongwu-legend
 node server.js
 ```
 
-**走路：** 左键点地面（黄圈落点并自动寻路）。旧档若卡在房子里，进游戏会自动拉到空地。
+**走路：** 左键点斜视 3D 地面（黄圈落点并自动寻路）。旧档若卡在房子里，进游戏会自动拉到空地。
+
+网上资料与创作者 demo 见 `docs/REFERENCES.md`。结论：原作是 Flash「3D 建模 + 2D 原画」斜视 ARPG；创作者公开的是 Erlang 学习服 [mgee](https://github.com/qingliangcn/mgee)，不是完整 3D 客户端。本目录用独立 WebGL 画布做 Three.js 斜视场景（房屋、树、立绘、血条、落点），对照该镜头。
 
 ## Windows 直接下载
 
