@@ -16,7 +16,10 @@ FILES="
 
 WIN="$ROOT/洪武风云录-Windows.zip"
 MAC="$ROOT/洪武风云录-Mac.zip"
-rm -f "$WIN" "$MAC"
+rm -f "$MAC"
+if [ "${MAC_ONLY:-0}" != "1" ]; then
+  rm -f "$WIN"
+fi
 
 zip -r "$MAC" $FILES \
   -x "tests/*" -x "*.zip" -x "data/*" -x "__pycache__/*" -x "*/__pycache__/*"
@@ -29,5 +32,4 @@ if [ "${MAC_ONLY:-0}" != "1" ]; then
   echo "wrote $WIN"
 fi
 
-echo "wrote $WIN"
 echo "wrote $MAC"
