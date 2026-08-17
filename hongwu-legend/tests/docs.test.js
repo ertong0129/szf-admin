@@ -41,11 +41,20 @@ assert.strictEqual(D.WAREHOUSE.unlock[0], 0);
 var help = D.HELP.join('\n');
 ['Q 任务', '空格拾取', 'D 打坐', '精力', '坐骑', '建功立业', '91wan', '局域网', '组队',
   '信件', '传奇目标', '除恶令', '捕鱼儿海', '大明宝藏', '洗灵', '篝火', '元宝', '明朝贵族',
-  '野外 BOSS', '世界 BOSS', '平江', '神农架', '绑定银两', '步步惊心', '深宫谍影', '马铠'].forEach(function (k) {
+  '野外 BOSS', '世界 BOSS', '平江', '神农架', '绑定银两', '步步惊心', '深宫谍影', '马铠',
+  '免费瞬移'].forEach(function (k) {
   assert.ok(help.indexOf(k) >= 0, 'HELP missing ' + k);
 });
 
 assert.ok(D.CONSUMABLES.scroll && D.CONSUMABLES.mount_token && D.CONSUMABLES.yinpiao);
+assert.ok(D.CONSUMABLES.scroll.desc.indexOf('免费') >= 0, '传送卷说明应为免费传送');
+assert.ok(D.INSTANCE_WARPS && D.INSTANCE_WARPS.length >= 10, '应列出全部副本地图');
+['shennong', 'desert', 'tumu', 'annan', 'quanzhou', 'zhedong', 'jianzhou', 'kaifeng'].forEach(function (id) {
+  assert.ok(D.WORLD_NODES.some(function (n) { return n.id === id; }), 'WORLD_NODES missing ' + id);
+});
+D.INSTANCE_WARPS.forEach(function (n) {
+  assert.ok(D.MAP_META[n.id], 'INSTANCE_WARPS 应对应已有地图 ' + n.id);
+});
 assert.strictEqual(D.ERA, '洪武');
 assert.ok(D.NATION_NODES.some(function (n) { return n.id === 'capital' && n.name === '京城'; }));
 assert.ok(D.NATION_NODES.some(function (n) { return n.id === 'safe' && n.locked; }));

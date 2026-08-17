@@ -448,6 +448,22 @@
     }
   }
 
+  H.usePortal = function (pt) {
+    if (!pt) return;
+    if (pt.to === 'poyang' && G.mapId !== 'poyang') {
+      H.travel('capital', 122, 63);
+      H.toast('找明军水兵，选择难度进入鄱阳湖大战');
+      return;
+    }
+    if (H.inInstance() && (pt.to === 'capital' || pt.to === 'kaifeng')) {
+      H.leaveInstance();
+      return;
+    }
+    H.travel(pt.to, pt.tx, pt.ty);
+    var name = (D.MAP_META[pt.to] && D.MAP_META[pt.to].name) || pt.label || pt.to;
+    H.toast('传送至' + name);
+  }
+
   H.npcTravel = function (spec) {
     var p = G.player;
     if ((p.pkValue || 0) >= 18) { H.toast('红名不能使用车夫'); return; }

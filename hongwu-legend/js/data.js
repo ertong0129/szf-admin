@@ -176,7 +176,7 @@
     feed: { id: 'feed', name: '灵兽口粮', kind: 'feed', desc: '喂食出战灵宠，回复其生命。' },
     badge: { id: 'badge', name: '腰牌', kind: 'mat', desc: '鄱阳湖缴获。使用可换经验。' },
     hero_pack: { id: 'hero_pack', name: '英雄礼包', kind: 'pack', desc: '通关礼包。打开可得灵石或药水。' },
-    scroll: { id: 'scroll', name: '传送卷', kind: 'mat', desc: '国家/世界地图点地名可消耗一张瞬移。没有则自动寻路。' },
+    scroll: { id: 'scroll', name: '传送卷', kind: 'mat', desc: '学习服地图传送免费，点地名即可抵达。' },
     mount_token: { id: 'mount_token', name: '坐骑提速牌', kind: 'mat', desc: '角色面板坐骑页提升坐骑速度，不一定成功。' },
     yinpiao: { id: 'yinpiao', name: '五锭银票', kind: 'mat', desc: '钱庄兑换。500 两银子 = 1 张，可再兑回银两。' },
     bag_token: { id: 'bag_token', name: '背包扩展符', kind: 'mat', desc: '扩展背包一栏（+12 格），最多四次。' },
@@ -443,6 +443,18 @@
     { id: 'wanli', name: '万历', left: '26%', top: '72%', locked: true },
     { id: 'hongwu', name: '洪武', left: '70%', top: '70%', tab: 'nation' },
     { id: 'kaifeng', name: '开封', left: '50%', top: '46%', go: 'kaifeng' }
+  ];
+  D.INSTANCE_WARPS = [
+    { id: 'poyang', name: '鄱阳湖大战', tx: 4, ty: 18 },
+    { id: 'tower', name: '大明英雄副本', tx: 12, ty: 20 },
+    { id: 'road', name: '官道押镖', tx: 3, ty: 11 },
+    { id: 'fish', name: '捕鱼儿海', tx: 6, ty: 18 },
+    { id: 'treasure', name: '大明宝藏', tx: 6, ty: 12 },
+    { id: 'arena', name: '竞技场', tx: 8, ty: 12 },
+    { id: 'mentor', name: '师徒同心', tx: 8, ty: 12 },
+    { id: 'jingxin', name: '步步惊心', tx: 6, ty: 12 },
+    { id: 'palace', name: '深宫谍影', tx: 6, ty: 10 },
+    { id: 'pagoda', name: '开封铁塔', tx: 6, ty: 14 }
   ];
   D.MAP_MARK = {
     jingche: '车夫',
@@ -764,7 +776,7 @@
   D.HELP = [
     '快捷键对照 91wan 资料：C 角色　B 背包　V 技能　Q 任务　E 天工炉　M 地图　Z 挂机　S 商店　D 打坐　Esc 关窗/系统。',
     '空格拾取，A 攻击选中，~ 选最近怪物，1–6 技能，7 金创药，8 内力药。方向键点地行走（原作为点地）。',
-    '地图（M）：当前地图红点自己、黄点 NPC、蓝字出口；国家地图点场景名寻路；世界地图点开封或洪武。有传送卷则瞬移。副本内不能跳转。',
+    '地图（M）：点场景名或「传送」免费瞬移，用来检阅全部地图。当前地图填坐标后点「立即前往」也是瞬移。跳转点直接传到对图。',
     '精力上限 4000，杀 1 怪耗 1。精力为 0 时经验为 1 且不掉落，每日 0 点重置。角色面板可查看。',
     '18 级系统送坐骑。C 面板「坐骑」可骑乘、用提速牌升色（白→橙）。坐骑装备六件：马铠、马鞍、马饰、马缰、马镫、马蹄。穿上后绑定。开封铁塔掉落坐骑装备与坐骑宝石。',
     '仓库找姗姗（太平）或依依（京城）。第一仓免费，最多四仓。钱庄兑银票：500 两一张。',

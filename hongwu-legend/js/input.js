@@ -502,8 +502,8 @@
         if (ptBtn && G.portals[+ptBtn.dataset.mapPortal]) {
           var pt = G.portals[+ptBtn.dataset.mapPortal];
           G.guide = null;
-          H.setDest((pt.x + 0.5) * TILE, (pt.y + 0.5) * TILE);
-          H.toast('寻路至传送点：' + (pt.label || pt.to));
+          H.usePortal(pt);
+          return;
         }
         var nation = ev.target.closest && ev.target.closest('[data-nation-go]');
         if (nation) H.worldJump(nation.dataset.nationGo);

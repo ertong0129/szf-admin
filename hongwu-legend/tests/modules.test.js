@@ -67,6 +67,7 @@ assert.ok(play.indexOf('当前地图') >= 0, '地图窗应有当前地图页');
 assert.ok(play.indexOf('国家地图') >= 0, '地图窗应有国家地图页');
 assert.ok(play.indexOf('立即前往') >= 0, '当前地图应有立即前往');
 assert.ok(play.indexOf('assets/ingame/map/country.jpg') >= 0, '国家地图应使用原作 country 切图');
+assert.ok(play.indexOf('id="world-list"') >= 0, '世界地图应列出全部场景');
 assert.ok(play.indexOf('id="btn-gm"') >= 0, '小地图旁应有原作 GM 钮');
 assert.ok(css.indexOf('border-radius: 50%') >= 0, '小地图应为圆形');
 
@@ -114,7 +115,7 @@ assert.ok(art.indexOf('A.npcArt') >= 0, 'NPC 贴图应按 npc_data 对照，不�
 });
 
 var serverJs = fs.readFileSync(path.join(root, 'server.js'), 'utf8');
-assert.ok(serverJs.indexOf("VERSION = '20260816x'") >= 0, 'server.js 版本应为 20260816x');
+assert.ok(serverJs.indexOf("VERSION = '20260816y'") >= 0, 'server.js 版本应为 20260816y');
 assert.ok(serverJs.indexOf("require('./js/store.js')") >= 0, 'server.js 应使用本机数据库');
 assert.ok(core.indexOf('localStorage.setItem(SAVE_KEY') < 0, '角色存档不应再写入 localStorage');
 assert.ok(fs.readFileSync(path.join(root, 'js/api.js'), 'utf8').indexOf('localStorage.setItem(TOKEN_KEY') < 0, '登录令牌不应再写入 localStorage');
@@ -131,5 +132,14 @@ assertWinBat('start.bat');
 assertWinBat('启动游戏.bat');
 assert.ok(fs.readFileSync(path.join(root, 'start.bat'), 'utf8').indexOf('node server.js') >= 0);
 assert.ok(fs.readFileSync(path.join(root, 'pack-windows.sh'), 'utf8').indexOf('store_db.py') >= 0, 'Windows 包应带上 Python 数据库模块');
+
+var ui = fs.readFileSync(path.join(root, 'js/ui.js'), 'utf8');
+assert.ok(ui.indexOf('H.worldJump') >= 0, 'ui.js 应有世界地图传送');
+assert.ok(ui.indexOf("takeItem(G.player, 'scroll'") < 0, '地图传送不应再消耗传送卷');
+assert.ok(ui.indexOf('H.warpToCoord') >= 0, '当前地图坐标应为瞬移');
+assert.ok(ui.indexOf('INSTANCE_WARPS') >= 0, '地图列表应含副本');
+var input = fs.readFileSync(path.join(root, 'js/input.js'), 'utf8');
+assert.ok(input.indexOf('H.usePortal(pt)') >= 0, '当前地图跳转点应直接传送');
+assert.ok(input.indexOf('寻路至传送点') < 0, '跳转点不应再寻路');
 
 console.log('modules.test.js ok');

@@ -59,7 +59,7 @@
     }
     if (era) era.hidden = tab !== 'nation';
     if (hint) {
-      hint.textContent = tab === 'nation' || tab === 'world' ? '点击场景名称可自动寻路前往' : '';
+      hint.textContent = '点场景名或传送：免费瞬移，可检阅全部地图';
     }
     if (tab === 'current') {
       H.paintRegionMap();
@@ -156,41 +156,72 @@
     var nodes = D.NATION_NODES || [];
     if (box) {
       box.innerHTML = nodes.map(function (n) {
-        var cls = 'world-pin' + (G.mapId === n.id ? ' here' : '') + (n.locked ? ' locked' : '');
+        var cls = 'world-pin' + (G.mapId === n.id ? ' here' : '') + (n.locked ? ' locked' : '') +
+          (G.mapPick === n.id ? ' pick' : '');
         return '<button type="button" class="' + cls + '" data-nation-go="' + n.id +
           '" style="left:' + n.left + ';top:' + n.top + '">' + n.name + '</button>';
       }).join('');
     }
     if (list) {
-      list.innerHTML = nodes.map(function (n) {
+      var html = nodes.map(function (n) {
         var cls = 'nation-row' + (G.mapId === n.id ? ' here' : '') + (n.locked ? ' locked' : '');
         return '<button type="button" class="' + cls + '" data-nation-go="' + n.id + '">' +
           era + '-' + n.name + '</button>';
       }).join('');
+      var seen = {};
+      nodes.forEach(function (n) { seen[n.id] = 1; });
+      html += '<h5>其它场景</h5>';
+      (D.WORLD_NODES || []).forEach(function (n) {
+        if (seen[n.id]) return;
+        html += '<button type="button" class="nation-row' + (G.mapId === n.id ? ' here' : '') +
+          '" data-nation-go="' + n.id + '">' + n.name + '</button>';
+      });
+      html += '<h5>副本</h5>';
+      (D.INSTANCE_WARPS || []).forEach(function (n) {
+        html += '<button type="button" class="nation-row' + (G.mapId === n.id ? ' here' : '') +
+          '" data-nation-go="' + n.id + '">' + n.name + '</button>';
+      });
+      list.innerHTML = html;
     }
   }
 
   H.fillWorldPins = function () {
     var box = document.getElementById('world-pins');
-    if (!box) return;
-    box.innerHTML = (D.WORLD_REGIONS || []).map(function (n) {
-      var here = (n.go && G.mapId === n.go) || (n.tab === 'nation' && (D.NATION_NODES || []).some(function (m) { return m.id === G.mapId; }));
-      var cls = 'world-pin' + (here ? ' here' : '') + (n.locked ? ' locked' : '');
-      return '<button type="button" class="' + cls + '" data-world-go="' + n.id +
-        '" style="left:' + n.left + ';top:' + n.top + '">' + n.name + '</button>';
-    }).join('');
+    if (box) {
+      box.innerHTML = (D.WORLD_REGIONS || []).map(function (n) {
+        var here = (n.go && G.mapId === n.go) || (n.tab === 'nation' && (D.NATION_NODES || []).some(function (m) { return m.id === G.mapId; }));
+        var cls = 'world-pin' + (here ? ' here' : '') + (n.locked ? ' locked' : '');
+        return '<button type="button" class="' + cls + '" data-world-go="' + n.id +
+          '" style="left:' + n.left + ';top:' + n.top + '">' + n.name + '</button>';
+      }).join('');
+    }
+    var list = document.getElementById('world-list');
+    if (list) {
+      var html = '';
+      (D.WORLD_NODES || []).forEach(function (n) {
+        html += '<button type="button" class="nation-row' + (G.mapId === n.id ? ' here' : '') +
+          '" data-nation-go="' + n.id + '">' + n.name + '</button>';
+      });
+      html += '<h5>副本</h5>';
+      (D.INSTANCE_WARPS || []).forEach(function (n) {
+        html += '<button type="button" class="nation-row' + (G.mapId === n.id ? ' here' : '') +
+          '" data-nation-go="' + n.id + '">' + n.name + '</button>';
+      });
+      list.innerHTML = html;
+    }
   }
 
   H.clickRegionCanvas = function (ev) {
     var c = document.getElementById('region-canvas');
     if (!c || !G.grid || !G.player) return;
     var r = c.getBoundingClientRect();
-    var gx = ((ev.clientX - r.left) / r.width) * G.grid[0].length;
-    var gy = ((ev.clientY - r.top) / r.height) * G.grid.length;
-    G.guide = null;
-    G.player.target = null;
-    H.setDest((gx + 0.5) * TILE, (gy + 0.5) * TILE);
-    H.toast('寻路至 ' + Math.floor(gx) + ',' + Math.floor(gy));
+    var gx = Math.floor(((ev.clientX - r.left) / r.width) * G.grid[0].length);
+    var gy = Math.floor(((ev.clientY - r.top) / r.height) * G.grid.length);
+    var cx = document.getElementById('map-cx');
+    var cy = document.getElementById('map-cy');
+    if (cx) cx.value = String(gx);
+    if (cy) cy.value = String(gy);
+    H.warpToCoord(gx, gy);
   }
 
   H.hoverRegionCanvas = function (ev) {
@@ -204,51 +235,51 @@
   }
 
   H.pathToCoord = function (tx, ty) {
+    H.warpToCoord(tx, ty);
+  }
+
+  H.warpToCoord = function (tx, ty) {
     if (!G.grid || !G.player) return;
     var gw = G.grid[0].length, gh = G.grid.length;
     tx = H.clamp(tx | 0, 0, gw - 1);
     ty = H.clamp(ty | 0, 0, gh - 1);
     G.guide = null;
     G.player.target = null;
-    H.setDest((tx + 0.5) * TILE, (ty + 0.5) * TILE);
-    H.toast('寻路至 ' + tx + ',' + ty);
+    G.dest = null;
+    G.path = [];
+    var landed = H.snapWalkable((tx + 0.5) * TILE, (ty + 0.5) * TILE);
+    G.player.x = landed.x;
+    G.player.y = landed.y;
+    H.toast('传送至 ' + tx + ',' + ty);
+    if (H.paintRegionMap) H.paintRegionMap();
   }
 
   H.mapNode = function (id) {
     var found = null;
     (D.WORLD_NODES || []).forEach(function (n) { if (n.id === id) found = n; });
     (D.NATION_NODES || []).forEach(function (n) { if (n.id === id) found = n; });
+    (D.INSTANCE_WARPS || []).forEach(function (n) { if (n.id === id) found = n; });
     return found;
   }
 
   H.worldJump = function (id) {
-    if (H.inInstance()) { H.toast('在副本地图中不能进行地图跳转'); return; }
     var node = H.mapNode(id);
     if (!node) return;
     if (node.locked) {
       H.toast(node.name + '本学习服未单独开放（对照原作标注）');
       return;
     }
+    G.mapPick = id;
     if (G.mapId === id) {
       H.toast('已在' + node.name);
       return;
     }
-    H.closeMapOverlay();
     G.guide = null;
-    if (id === 'fish' || id === 'treasure' || id === 'arena') {
-      H.travel('capital', 124, 55);
-      H.toast('找沐英进入' + node.name);
-      return;
-    }
-    if (H.countItem(G.player, 'scroll') > 0) {
-      H.takeItem(G.player, 'scroll', 1);
-      H.travel(id, node.tx, node.ty);
-      H.toast('使用传送卷抵达' + node.name);
-      return;
-    }
-    G.guide = { tgt: { kind: 'map', map: id } };
-    H.toast('寻路前往' + node.name + '（有传送卷可瞬移）');
-    H.guideStep();
+    G.instance = null;
+    G.hold = false;
+    if (H.hideFloorClear) H.hideFloorClear();
+    H.travel(id, node.tx, node.ty);
+    H.toast('传送至' + node.name);
   }
 
   H.worldRegionGo = function (id) {
@@ -256,7 +287,7 @@
     (D.WORLD_REGIONS || []).forEach(function (n) { if (n.id === id) node = n; });
     if (!node) return;
     if (node.locked) {
-      H.toast('本学习服对照洪武城拷，' + node.name + '与洪武共用场景');
+      H.toast('本学习服对照洪武城拷，' + node.name + '与洪武共用场景。右侧列表可传送到具体地图');
       return;
     }
     if (node.tab) {
@@ -267,13 +298,24 @@
   }
 
   H.mapTeleport = function () {
-    if (H.inInstance()) { H.toast('在副本地图中不能进行地图跳转'); return; }
     var tab = H.mapTabOn();
     if (tab === 'current') {
-      H.toast('已在当前地图，点坐标或人名寻路');
+      var cx = document.getElementById('map-cx');
+      var cy = document.getElementById('map-cy');
+      var x = parseInt((cx && (cx.value || cx.placeholder)) || '', 10);
+      var y = parseInt((cy && (cy.value || cy.placeholder)) || '', 10);
+      if (isNaN(x) || isNaN(y)) {
+        H.toast('请输入坐标 X、Y，或点地图落点后再传送');
+        return;
+      }
+      H.warpToCoord(x, y);
       return;
     }
-    H.toast('点击场景名称寻路；背包有传送卷则瞬移');
+    if (G.mapPick) {
+      H.worldJump(G.mapPick);
+      return;
+    }
+    H.toast('先点一个场景名，再按传送');
   }
 
   H.closePanels = function () {

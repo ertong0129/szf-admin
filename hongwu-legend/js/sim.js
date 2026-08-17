@@ -76,14 +76,7 @@
       if (Math.hypot(p.x - px, p.y - py) < 28) {
         if (!pt._cd) {
           pt._cd = 1.2;
-          if (pt.to === 'poyang' && G.mapId !== 'poyang') {
-            H.travel('capital', 122, 63);
-            H.toast('找明军水兵，选择难度进入鄱阳湖大战');
-          } else if (H.inInstance() && (pt.to === 'capital' || pt.to === 'kaifeng')) {
-            H.leaveInstance();
-          } else {
-            H.travel(pt.to, pt.tx, pt.ty);
-          }
+          H.usePortal(pt);
         }
       }
       if (pt._cd) pt._cd = Math.max(0, pt._cd - dt);

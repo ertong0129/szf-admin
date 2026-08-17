@@ -1333,8 +1333,6 @@ html, body {
   cursor: pointer;
 }
 .map-pane { display: flex; gap: 10px; align-items: stretch; }
-#map-world.map-pane { flex-direction: column; }
-#map-nation.map-pane { align-items: stretch; }
 .map-view { position: relative; flex: 1; min-width: 0; }
 #region-canvas {
   display: block;
@@ -1367,7 +1365,7 @@ html, body {
   cursor: pointer;
 }
 .map-side-tabs button.on { color: #ffe7a0; }
-#map-npc-list, #map-jump-list, #nation-list { max-height: 280px; overflow: auto; }
+#map-npc-list, #map-jump-list, #nation-list, #world-list { max-height: 360px; overflow: auto; }
 .map-npc, .map-pt, .nation-row {
   display: flex;
   align-items: center;
