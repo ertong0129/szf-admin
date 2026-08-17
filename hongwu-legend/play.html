@@ -35,11 +35,16 @@
           <canvas id="world"></canvas>
           <canvas id="world3d"></canvas>
           <div class="hud-top">
-            <div class="portrait" id="portrait">武</div>
-            <div class="bars">
+            <div class="hud-frame">
+              <div class="portrait" id="portrait">武</div>
+              <div class="hud-lv" id="hud-lv">1</div>
+              <div class="hud-bars">
+                <div class="bar hp"><i id="hp-fill"></i><span id="hp-text"></span></div>
+                <div class="bar mp"><i id="mp-fill"></i><span id="mp-text"></span></div>
+              </div>
+            </div>
+            <div class="hud-meta">
               <div class="who" id="who-line">—</div>
-              <div class="bar hp"><i id="hp-fill"></i><span id="hp-text"></span></div>
-              <div class="bar mp"><i id="mp-fill"></i><span id="mp-text"></span></div>
               <button type="button" id="pk-mode" class="pk-mode" title="切换 PK 模式">和平</button>
               <div id="energy-line">精力 4000/4000</div>
               <div id="gold-line">元宝 0 / 绑定 0</div>

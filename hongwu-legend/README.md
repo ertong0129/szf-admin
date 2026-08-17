@@ -6,7 +6,7 @@
 
 Windows 解压后双击 `start.bat`。Mac 解压后双击 `大明传说.app`，或右键打开 `启动游戏.command`。
 
-启动器会先起本地服，**等服务就绪再打开浏览器**（测试号 `demo` / `123456`）。登录页应显示 **v20260816n**，没有这个版本号就是旧包。没有 Node 时自动改用 Python。两者都没有才直接打开 `index.html`。终端窗口不要关。
+启动器会先起本地服，**等服务就绪再打开浏览器**（测试号 `demo` / `123456`）。登录页应显示 **v20260816o**，没有这个版本号就是旧包。没有 Node 时自动改用 Python。两者都没有才直接打开 `index.html`。终端窗口不要关。
 
 ```bash
 cd hongwu-legend
@@ -33,7 +33,7 @@ https://gh-proxy.com/https://github.com/ertong0129/szf-admin/raw/cursor/hongwu-o
 
 ## 画面说明
 
-**局内**立绘、对话半身像、头像、世界/国家地图和地砖取样，来自用户提供的 `MingGame.swf` 同目录公开资源（`com/ui/npc/`、`com/npcs/`、`com/maps/`，见 `assets/ingame/`）。登录壳仍用 `Main.swf` 同目录切图。SWF 整包没有打进仓库。
+**局内**立绘、对话半身像、头像、世界/国家地图、人物框和青玉面板，来自用户提供的公开资源目录（`viewUI` / `mingUI` / `smallMap` / `com/ui/npc/` 等，见 `assets/ingame/`）。登录壳仍用 `Main.swf` 同目录切图。SWF 整包没有打进仓库。
 
 ## 原作简析
 

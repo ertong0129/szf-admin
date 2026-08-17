@@ -226,37 +226,55 @@
     }
   }
 
-  function addHouse(x, z, w, d) {
+  function addHouse(x, z, w, d, style) {
     var ww = w || 1.7;
     var dd = d || 1.45;
+    var wall = 0x8a4034;
+    var roofCol = 0xc9a227;
+    var ridgeCol = 0xe2c36a;
+    var trimCol = 0xd4af37;
+    var baseCol = 0x6a5850;
+    if (style === 'town') {
+      wall = 0xc4bba8;
+      roofCol = 0x2a5864;
+      ridgeCol = 0x1a3038;
+      trimCol = 0x8a7a58;
+      baseCol = 0x6a6860;
+    } else if (style === 'village') {
+      wall = 0x8a6a4e;
+      roofCol = 0x3a3834;
+      ridgeCol = 0x2a2824;
+      trimCol = 0x6a5850;
+      baseCol = 0x5a4a3c;
+    }
     var base = new THREE.Mesh(
       new THREE.BoxGeometry(ww * 1.08, 0.12, dd * 1.08),
-      new THREE.MeshStandardMaterial({ color: 0x6a5850, roughness: 0.92 })
+      new THREE.MeshStandardMaterial({ color: baseCol, roughness: 0.92 })
     );
     base.position.set(x, 0.06, z);
     base.receiveShadow = true;
     var body = new THREE.Mesh(
       new THREE.BoxGeometry(ww, 1.05, dd),
-      new THREE.MeshStandardMaterial({ color: 0x8a4034, roughness: 0.82 })
+      new THREE.MeshStandardMaterial({ color: wall, roughness: 0.82 })
     );
     body.position.set(x, 0.62, z);
     body.castShadow = true;
     body.receiveShadow = true;
     var trim = new THREE.Mesh(
       new THREE.BoxGeometry(ww * 1.02, 0.08, dd * 1.02),
-      new THREE.MeshStandardMaterial({ color: 0xd4af37, roughness: 0.45, metalness: 0.18 })
+      new THREE.MeshStandardMaterial({ color: trimCol, roughness: 0.45, metalness: 0.18 })
     );
     trim.position.set(x, 1.14, z);
     var roof = new THREE.Mesh(
       new THREE.ConeGeometry(Math.max(ww, dd) * 0.92, 0.78, 4),
-      new THREE.MeshStandardMaterial({ color: 0xb42822, roughness: 0.52, metalness: 0.06 })
+      new THREE.MeshStandardMaterial({ color: roofCol, roughness: 0.52, metalness: 0.06 })
     );
     roof.position.set(x, 1.55, z);
     roof.rotation.y = Math.PI / 4;
     roof.castShadow = true;
     var ridge = new THREE.Mesh(
       new THREE.BoxGeometry(0.07, 0.07, Math.max(ww, dd) * 1.08),
-      new THREE.MeshStandardMaterial({ color: 0xe2c36a, roughness: 0.35, metalness: 0.3 })
+      new THREE.MeshStandardMaterial({ color: ridgeCol, roughness: 0.35, metalness: 0.3 })
     );
     ridge.position.set(x, 1.94, z);
     var door = new THREE.Mesh(
@@ -272,15 +290,15 @@
     propGroup.add(door);
   }
 
-  function addTree(x, z) {
+  function addTree(x, z, blossom) {
     var trunk = new THREE.Mesh(
       new THREE.CylinderGeometry(0.07, 0.12, 0.78, 7),
       new THREE.MeshStandardMaterial({ color: 0x5a3820, roughness: 0.95 })
     );
     trunk.position.set(x, 0.39, z);
     trunk.castShadow = true;
-    var leafMat = new THREE.MeshStandardMaterial({ color: 0x2f6b38, roughness: 0.78 });
-    var leafMat2 = new THREE.MeshStandardMaterial({ color: 0x3d8544, roughness: 0.8 });
+    var leafMat = new THREE.MeshStandardMaterial({ color: blossom ? 0xd48aa0 : 0x2f6b38, roughness: 0.78 });
+    var leafMat2 = new THREE.MeshStandardMaterial({ color: blossom ? 0xe8b4c4 : 0x3d8544, roughness: 0.8 });
     var a = new THREE.Mesh(new THREE.SphereGeometry(0.48, 8, 6), leafMat);
     a.position.set(x, 1.05, z);
     var b = new THREE.Mesh(new THREE.SphereGeometry(0.36, 8, 6), leafMat2);
@@ -385,10 +403,12 @@
         var k = (x >> 1) + ',' + (y >> 1);
         if (t === 'house' && !placed['h' + k]) {
           placed['h' + k] = 1;
-          addHouse(x + 0.5, y + 0.5, 1.7, 1.45);
+          var st = (window.Art && Art.houseStyle) ? Art.houseStyle(mapId, x, y) : 'palace';
+          addHouse(x + 0.5, y + 0.5, 1.7, 1.45, st);
         } else if (t === 'tree' && !placed['t' + x + ',' + y]) {
           placed['t' + x + ',' + y] = 1;
-          addTree(x + 0.5, y + 0.5);
+          var blossom = window.Art && Art.blossomAt && Art.blossomAt(mapId, x, y);
+          addTree(x + 0.5, y + 0.5, blossom);
         } else if (t === 'wall') {
           addBlock(x + 0.5, y + 0.5, 1.35, 0x4a4038);
         } else if (t === 'rock') {

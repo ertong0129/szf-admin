@@ -92,18 +92,22 @@
       c[2] += hl * 0.82;
     }
     if (mapId === 'capital' || mapId === 'kaifeng') {
+      c[0] = Gnd.lerp(c[0], 186, 0.2);
+      c[1] = Gnd.lerp(c[1], 182, 0.2);
+      c[2] = Gnd.lerp(c[2], 172, 0.2);
       var cx = 25;
       var cy = 18;
       var d = Math.abs(wx - cx) + Math.abs(wy - cy);
       if (d < 7) {
-        c[0] = Gnd.lerp(c[0], 168, 0.22);
-        c[1] = Gnd.lerp(c[1], 132, 0.22);
-        c[2] = Gnd.lerp(c[2], 92, 0.22);
-        if (d < 3.2) {
-          c[0] = Gnd.lerp(c[0], 176, 0.18);
-          c[1] = Gnd.lerp(c[1], 118, 0.18);
-          c[2] = Gnd.lerp(c[2], 78, 0.18);
-        }
+        c[0] = Gnd.lerp(c[0], 148, 0.28);
+        c[1] = Gnd.lerp(c[1], 146, 0.28);
+        c[2] = Gnd.lerp(c[2], 140, 0.28);
+      }
+      var rr = Math.sqrt((wx - cx) * (wx - cx) + (wy - cy) * (wy - cy));
+      if (Math.abs(rr - 2.4) < 0.14) {
+        c[0] *= 0.82;
+        c[1] *= 0.82;
+        c[2] *= 0.8;
       }
     }
   }

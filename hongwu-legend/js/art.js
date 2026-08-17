@@ -36,7 +36,14 @@
       countryMap: 'assets/ingame/map/country.jpg',
       towerBg: 'assets/ingame/map/tower.jpg',
       radar: 'assets/ingame/map/radar.jpg',
+      jingCheng: 'assets/ingame/map/jing_cheng.jpg',
+      kaiFeng: 'assets/ingame/map/kai_feng.jpg',
+      pingJiang: 'assets/ingame/map/ping_jiang.jpg',
+      quanZhou: 'assets/ingame/map/quan_zhou.jpg',
+      zheDong: 'assets/ingame/map/zhe_dong.jpg',
+      xiLiang: 'assets/ingame/map/xi_liang.jpg',
       roleBg: 'assets/ingame/ui/rolebg.png',
+      jiaoseBg: 'assets/ingame/ui/jiaosebg.png',
       forgeBg: 'assets/ingame/ui/forge.jpg',
       portraitCun: 'assets/ingame/portrait/xs_tai_ping_cun_zhi_shi.png',
       portraitShop: 'assets/ingame/portrait/xs_za_huo_dian_lao_ban.png',
@@ -206,6 +213,21 @@
     return PET_SRC[id] || 'tiger';
   };
 
+  var RADAR_SRC = {
+    capital: 'jingCheng',
+    kaifeng: 'kaiFeng',
+    pingjiang: 'pingJiang',
+    quanzhou: 'quanZhou',
+    zhedong: 'zheDong',
+    xiliang: 'xiLiang'
+  };
+
+  A.radarFor = function (mapId) {
+    var key = RADAR_SRC[mapId];
+    if (key && A.imgs[key]) return A.imgs[key];
+    return A.imgs.radar || null;
+  };
+
   A.tileImg = function (type) {
     if (type === 'dirt') return A.imgs.dirtTile || A.variants.dirt || A.imgs.grass;
     if (type === 'moss') return A.variants.moss || A.imgs.grass;
@@ -229,15 +251,30 @@
     }
   };
 
-  A.drawProp = function (ctx, type, sx, sy, size) {
+  A.houseStyle = function (mapId, x, y) {
+    var n = Math.sin((x + 0.37) * 12.9898 + (y + 1.1) * 78.233) * 43758.5453;
+    n -= Math.floor(n);
+    if (mapId === 'capital') return n < 0.26 ? 'palace' : 'town';
+    if (mapId === 'kaifeng' || mapId === 'pagoda') return n < 0.14 ? 'palace' : 'town';
+    return 'village';
+  };
+
+  A.blossomAt = function (mapId, x, y) {
+    if (mapId !== 'capital' && mapId !== 'kaifeng') return false;
+    var n = Math.sin((x + 2.1) * 9.1 + y * 4.7) * 23421.3;
+    n -= Math.floor(n);
+    return n < 0.18;
+  };
+
+  A.drawProp = function (ctx, type, sx, sy, size, mapId, tx, ty) {
     if (type === 'tree') {
       ctx.fillStyle = '#4a2c14';
       ctx.fillRect(sx + size * 0.42, sy + size * 0.35, size * 0.16, size * 0.55);
-      ctx.fillStyle = '#2f6b38';
+      ctx.fillStyle = A.blossomAt(mapId, tx || 0, ty || 0) ? '#d48aa0' : '#2f6b38';
       ctx.beginPath();
       ctx.arc(sx + size * 0.5, sy + size * 0.28, size * 0.38, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = '#3d8548';
+      ctx.fillStyle = A.blossomAt(mapId, tx || 0, ty || 0) ? '#e8b4c4' : '#3d8548';
       ctx.beginPath();
       ctx.arc(sx + size * 0.38, sy + size * 0.18, size * 0.26, 0, Math.PI * 2);
       ctx.fill();
@@ -245,16 +282,20 @@
     }
     if (type === 'house' || type === 'roof') {
       if (type === 'roof') return;
-      ctx.fillStyle = '#8b3a32';
+      var st = A.houseStyle(mapId, tx || 0, ty || 0);
+      var wall = st === 'town' ? '#c4bba8' : (st === 'village' ? '#8a6a4e' : '#8b3a32');
+      var roof = st === 'town' ? '#2a5864' : (st === 'village' ? '#3a3834' : '#c9a227');
+      var ridge = st === 'palace' ? '#e2c36a' : '#1a3038';
+      ctx.fillStyle = wall;
       ctx.fillRect(sx + 4, sy + size * 0.28, size - 8, size * 0.7);
-      ctx.fillStyle = '#c45c48';
+      ctx.fillStyle = roof;
       ctx.beginPath();
       ctx.moveTo(sx + size * 0.08, sy + size * 0.32);
       ctx.lineTo(sx + size * 0.5, sy - size * 0.18);
       ctx.lineTo(sx + size * 0.92, sy + size * 0.32);
       ctx.closePath();
       ctx.fill();
-      ctx.fillStyle = '#d4af37';
+      ctx.fillStyle = ridge;
       ctx.fillRect(sx + size * 0.46, sy - size * 0.16, 3, size * 0.48);
     }
   };

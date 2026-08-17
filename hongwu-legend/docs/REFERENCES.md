@@ -68,10 +68,14 @@
 | `assets/createRoleCQ2.swf` | 创角 | 200 |
 | `MingGame.swf` | 真正的游戏主包（约 2.4MB） | 200 |
 | `com/assets/ui/mingUI.swf` | 界面控件 | 200 |
-| `com/assets/viewUI/viewUI.swf` | 底栏 / 面板 / 标题 | 200 |
+| `com/assets/viewUI/viewUI.swf` | 人物框 / 对话条 / 底栏切图 | 200 |
+| `com/maps/smallMap/jing_cheng.swf` | 京城等距小地图 | 200 |
+| `com/maps/smallMap/kai_feng.swf` | 开封小地图 | 200 |
+| `com/maps/smallMap/ping_jiang.swf` 等 | 其它城镇小地图（部分 200） | 部分 200 |
+| `com/assets/role/jiaosebg.png` | 角色面板背景 | 200 |
 | `com/ui/role/man.swf` `woman.swf` | 预渲染角色立绘帧 | 200 |
 
-局内用的是 `MingGame.swf` 再去拉的公开位图：`com/ui/npc/{id}.swf` 预渲染立绘帧、`com/npcs/` 头像与半身像、`com/maps/world.swf` `country.swf`、`com/assets/headImage/`、`com/assets/role/jiaosebg.png`。没有把 SWF 整包打进仓库，也没有去解协议或加密模块。
+局内用的是 `MingGame.swf` 再去拉的公开位图：`com/ui/npc/{id}.swf` 预渲染立绘帧、`com/npcs/` 头像与半身像、`com/maps/world.swf` `country.swf`、`com/assets/headImage/`、`com/assets/role/jiaosebg.png`，以及 `viewUI` / `mingUI` / `smallMap` 里的 JPEG/PNG 切图。没有把 SWF 整包打进仓库，也没有去解协议或加密模块。学习服用到的切图放在 `assets/ingame/viewui/` 与 `assets/ingame/map/`。
 
 从公开 `MingGame.swf` 抽出的界面文案（仅作玩法核对，不入库）包括：`鄱阳湖大战`、`大明英雄副本`、`在副本地图中不能进行地图跳转`、`在副本地图中不能自动寻路`、`立即在原地复活`、`返回入口`、`离开副本`、`暂停挑战`、`自动闯关`、`本关卡尚未开通`、`英雄礼包`。怪物专名如张定边、刀兵等在客户端包里没有完整列表，对照 4399 副本说明补齐。
 

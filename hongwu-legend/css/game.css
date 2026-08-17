@@ -266,44 +266,75 @@ html, body {
 
 .hud-top {
   position: absolute;
-  top: 12px;
-  left: 12px;
+  top: 6px;
+  left: 6px;
   display: flex;
-  gap: 12px;
+  gap: 8px;
   align-items: flex-start;
   pointer-events: none;
   z-index: 5;
 }
+.hud-frame {
+  position: relative;
+  width: 348px;
+  height: 172px;
+  flex: 0 0 348px;
+  background: url('../assets/ingame/viewui/hud-frame.png') center / 100% 100% no-repeat;
+  pointer-events: auto;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.45));
+}
 .portrait {
-  width: 74px;
-  height: 74px;
+  position: absolute;
+  left: 14px;
+  top: 22px;
+  width: 108px;
+  height: 108px;
   border: 0;
   border-radius: 50%;
   background: #071214 center/cover no-repeat;
   display: grid;
   place-items: center;
   font-size: 28px;
-  pointer-events: auto;
-  position: relative;
-  overflow: visible;
-  box-shadow: 0 0 0 2px #12383a, 0 0 10px rgba(46, 196, 200, 0.35);
+  overflow: hidden;
+  z-index: 0;
 }
-.portrait::after {
-  content: "";
+.hud-lv {
   position: absolute;
-  inset: -14px -16px -10px;
-  background: url('../assets/official/ui/window.png') center/contain no-repeat;
+  left: 104px;
+  top: 118px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-family: "PingFang SC", "Noto Sans SC", sans-serif;
+  color: #e8f6c8;
+  text-shadow: 0 1px 2px #041014;
+  z-index: 2;
   pointer-events: none;
 }
-.bars { width: 240px; padding-top: 6px; }
+.hud-bars {
+  position: absolute;
+  left: 138px;
+  top: 46px;
+  width: 188px;
+  z-index: 1;
+}
+.hud-meta {
+  width: 210px;
+  padding-top: 10px;
+  pointer-events: auto;
+}
 .who { font-size: 14px; letter-spacing: 2px; margin-bottom: 4px; }
 .bar {
-  height: 12px;
-  background: #2a1a12;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  margin-bottom: 4px;
+  height: 14px;
+  background: rgba(12, 8, 6, 0.72);
+  border: 1px solid rgba(46, 196, 200, 0.22);
+  margin-bottom: 8px;
   position: relative;
   overflow: hidden;
+  border-radius: 7px;
 }
 .bar > i { display: block; height: 100%; }
 .bar.hp > i { background: linear-gradient(180deg, #e24a3a, #8c1c16); }
@@ -322,7 +353,7 @@ html, body {
 .menu-left {
   position: absolute;
   left: 12px;
-  top: 110px;
+  top: 186px;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -347,8 +378,10 @@ html, body {
   left: 50%;
   transform: translateX(-50%);
   min-width: 228px;
-  padding: 6px 14px 8px;
-  background: rgba(8, 22, 24, 0.9);
+  padding: 10px 18px 12px;
+  background:
+    url('../assets/ingame/viewui/tip.png') center / 100% 100% no-repeat,
+    rgba(8, 22, 24, 0.9);
   border: 1px solid #2ec4c8;
   box-shadow: 0 0 0 1px #0a1214, 0 8px 18px rgba(0, 0, 0, 0.35);
   z-index: 5;
@@ -381,6 +414,7 @@ html, body {
   height: 132px;
   border: 1px solid #2ec4c8;
   background: #071214;
+  box-shadow: 0 0 0 1px #0a1214, 0 0 12px rgba(46, 196, 200, 0.22);
 }
 .map-name {
   position: absolute;
@@ -465,9 +499,11 @@ html, body {
 .char-tabs button.on { color: #ffe7a0; border-color: #ffe7a0; }
 .quest-box[hidden] { display: none !important; }
 .quest-box, .log-box {
-  background: rgba(8, 22, 24, 0.86);
+  background:
+    url('../assets/ingame/viewui/panel-round.png') center / 100% 100% no-repeat,
+    rgba(8, 22, 24, 0.86);
   border: 1px solid #2ec4c8;
-  padding: 8px 10px;
+  padding: 10px 12px;
   font-size: 12px;
   line-height: 1.55;
 }
@@ -543,17 +579,20 @@ html, body {
 }
 .shop-btn {
   position: absolute;
-  right: 8px;
-  top: 6px;
-  width: 80px;
-  height: 80px;
+  right: 10px;
+  top: 8px;
+  width: 72px;
+  height: 72px;
   border: 0;
   border-radius: 50%;
-  background: transparent;
+  background: url('../assets/ingame/viewui/shop.png') center / contain no-repeat;
   color: transparent;
   cursor: pointer;
 }
-.shop-btn:hover { box-shadow: 0 0 16px rgba(46, 196, 200, 0.55); }
+.shop-btn:hover {
+  background-image: url('../assets/ingame/viewui/shop-on.png');
+  box-shadow: 0 0 16px rgba(200, 48, 40, 0.55);
+}
 .skill-slot .name, .util-slot .name {
   position: absolute;
   bottom: 2px;
@@ -592,19 +631,19 @@ html, body {
   max-height: 78vh;
   overflow: auto;
   background:
-    linear-gradient(180deg, rgba(8, 22, 24, 0.88), rgba(8, 16, 18, 0.94)),
-    url('../assets/official/ui/panel-bg.jpg') center/cover;
+    linear-gradient(180deg, rgba(8, 28, 32, 0.78), rgba(6, 16, 18, 0.9)),
+    url('../assets/ingame/viewui/panel.png') center / 100% 100% no-repeat;
   border: 1px solid #2ec4c8;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(46, 196, 200, 0.25);
   display: none;
-  padding: 16px 18px 20px;
+  padding: 18px 22px 22px;
 }
 .panel.open { display: block; }
 #panel-char.open {
   background:
-    linear-gradient(90deg, rgba(8, 22, 24, 0.55), rgba(8, 16, 18, 0.92) 42%),
-    url('../assets/ingame/ui/rolebg.png') left 18px center / 200px auto no-repeat,
-    linear-gradient(180deg, rgba(8, 22, 24, 0.88), rgba(8, 16, 18, 0.94));
+    linear-gradient(90deg, rgba(8, 28, 32, 0.28), rgba(6, 16, 18, 0.9) 46%),
+    url('../assets/ingame/ui/jiaosebg.png') left 8px center / 220px auto no-repeat,
+    url('../assets/ingame/viewui/panel.png') center / 100% 100% no-repeat;
   padding-left: 230px;
 }
 #panel-forge.open {
@@ -726,9 +765,11 @@ html, body {
   right: 220px;
   bottom: 142px;
   max-width: 720px;
-  background: rgba(8, 16, 18, 0.92);
-  border: 1px solid #2ec4c8;
-  padding: 10px 12px;
+  background:
+    url('../assets/ingame/viewui/dialog-bar.png') center / 100% 100% no-repeat,
+    rgba(8, 16, 18, 0.92);
+  border: 0;
+  padding: 18px 28px 16px;
   display: none;
   z-index: 6;
 }
@@ -751,12 +792,14 @@ html, body {
 
 .toast {
   position: absolute;
-  top: 86px;
+  top: 188px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(20, 10, 6, 0.9);
-  border: 1px solid var(--gold);
-  padding: 6px 16px;
+  background:
+    url('../assets/ingame/viewui/tip.png') center / 100% 100% no-repeat,
+    rgba(8, 22, 24, 0.92);
+  border: 1px solid #2ec4c8;
+  padding: 8px 18px;
   letter-spacing: 2px;
   display: none;
   z-index: 5;
@@ -849,6 +892,10 @@ html, body {
   .skill-bar { left: 22px; gap: 3px; top: 14px; }
   .dock-xp { left: 52%; }
   .chat-box { width: min(260px, 30vw); height: 110px; }
+  .hud-frame { width: 278px; height: 138px; flex-basis: 278px; }
+  .portrait { left: 10px; top: 16px; width: 88px; height: 88px; }
+  .hud-lv { left: 82px; top: 94px; }
+  .hud-bars { left: 110px; top: 36px; width: 150px; }
 }
 
 #map-overlay {
@@ -862,10 +909,12 @@ html, body {
 #map-overlay[hidden] { display: none !important; }
 .map-win {
   width: min(880px, 94vw);
-  background: rgba(8, 22, 24, 0.96);
+  background:
+    linear-gradient(180deg, rgba(8, 28, 32, 0.88), rgba(6, 16, 18, 0.94)),
+    url('../assets/ingame/viewui/panel.png') center / 100% 100% no-repeat;
   border: 1px solid #2ec4c8;
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
-  padding: 10px 12px 12px;
+  padding: 14px 16px 16px;
 }
 .map-tabs {
   display: flex;

@@ -78,7 +78,7 @@
           if (!H.inGrid(G.grid, tx, ty)) continue;
           var pt = G.grid[ty][tx];
           if (pt === 'tree' || pt === 'house' || pt === 'roof') {
-            Art.drawProp(ctx, pt, tx * TILE - G.cam.x, ty * TILE - G.cam.y, TILE);
+            Art.drawProp(ctx, pt, tx * TILE - G.cam.x, ty * TILE - G.cam.y, TILE, G.mapId, tx, ty);
           }
         }
       }
@@ -305,9 +305,11 @@
   H.paintRadar = function (ctx, w, h, labeled) {
     ctx.fillStyle = '#071214';
     ctx.fillRect(0, 0, w, h);
-    if (window.Art && Art.imgs && Art.imgs.radar) {
-      ctx.globalAlpha = labeled ? 0.28 : 0.4;
-      ctx.drawImage(Art.imgs.radar, 0, 0, w, h);
+    var radar = window.Art && Art.radarFor ? Art.radarFor(G.mapId) : (window.Art && Art.imgs && Art.imgs.radar);
+    var city = !!(radar && Art.imgs && radar !== Art.imgs.radar);
+    if (radar) {
+      ctx.globalAlpha = labeled ? (city ? 0.82 : 0.28) : (city ? 0.92 : 0.4);
+      ctx.drawImage(radar, 0, 0, w, h);
       ctx.globalAlpha = 1;
     }
     if (!G.grid) return;
@@ -316,10 +318,10 @@
     for (var y = 0; y < gh; y++) {
       for (var x = 0; x < gw; x++) {
         var t = G.grid[y][x];
-        if (t === 'water') ctx.fillStyle = 'rgba(42,110,150,0.55)';
-        else if (t === 'wall' || t === 'rock' || t === 'house' || t === 'roof') ctx.fillStyle = 'rgba(20,16,12,0.55)';
-        else if (t === 'tree') ctx.fillStyle = 'rgba(30,70,40,0.35)';
-        else ctx.fillStyle = 'rgba(46,90,70,0.22)';
+        if (t === 'water') ctx.fillStyle = radar ? 'rgba(42,110,150,0.22)' : 'rgba(42,110,150,0.55)';
+        else if (t === 'wall' || t === 'rock' || t === 'house' || t === 'roof') ctx.fillStyle = radar ? 'rgba(20,16,12,0.18)' : 'rgba(20,16,12,0.55)';
+        else if (t === 'tree') ctx.fillStyle = radar ? 'rgba(30,70,40,0.12)' : 'rgba(30,70,40,0.35)';
+        else ctx.fillStyle = radar ? 'rgba(46,90,70,0.06)' : 'rgba(46,90,70,0.22)';
         ctx.fillRect(x * sx, y * sy, sx + 0.4, sy + 0.4);
       }
     }
@@ -389,6 +391,8 @@
   H.drawHud = function () {
     var p = G.player, st = H.stats(p);
     document.getElementById('who-line').textContent = p.name + ' · ' + D.CLASSES[p.cls].name + '  ' + p.level + '级';
+    var lvEl = document.getElementById('hud-lv');
+    if (lvEl) lvEl.textContent = String(p.level);
     var port = document.getElementById('portrait');
     var head = window.Art && Art.classHead ? Art.classHead(p.cls) : '';
     if (head) {
