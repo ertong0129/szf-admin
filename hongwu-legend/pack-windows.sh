@@ -1,5 +1,6 @@
 #!/bin/sh
-# 在仓库根目录生成 Windows / Mac 可分发 zip
+# 在仓库根目录生成 Windows / Mac 可分发 zip。
+# 游戏内容有改动时必须重打 Mac 包，并提交仓库根目录 hongwu-mac.zip，供 GitHub 直链下载。
 set -e
 ROOT="$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)"
 cd "$ROOT/hongwu-legend"

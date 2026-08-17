@@ -1,10 +1,11 @@
 大明传说 · 局域网学习服
 ============================
 
-国内 Mac（新包）：
-https://cdn.jsdelivr.net/gh/ertong0129/szf-admin@cursor/hongwu-offline-legend-f2d5/hongwu-mac.zip
+Mac 包 GitHub 直链：
+https://github.com/ertong0129/szf-admin/raw/cursor/hongwu-offline-legend-f2d5/hongwu-mac.zip
 
-备用（GitHub 代理）：
+国内备用（jsDelivr / GitHub 代理）：
+https://cdn.jsdelivr.net/gh/ertong0129/szf-admin@cursor/hongwu-offline-legend-f2d5/hongwu-mac.zip
 https://gh-proxy.com/https://github.com/ertong0129/szf-admin/raw/cursor/hongwu-offline-legend-f2d5/hongwu-mac.zip
 
 一、Mac

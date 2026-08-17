@@ -21,11 +21,13 @@ node server.js
 
 ## 直接下载
 
-国内 Mac（新包，含原作式 HUD 和点任务寻路）：
+Mac 包 GitHub 直链（当前分支最新 zip）：
+
+https://github.com/ertong0129/szf-admin/raw/cursor/hongwu-offline-legend-f2d5/hongwu-mac.zip
+
+国内备用：
 
 https://cdn.jsdelivr.net/gh/ertong0129/szf-admin@cursor/hongwu-offline-legend-f2d5/hongwu-mac.zip
-
-备用：
 
 https://gh-proxy.com/https://github.com/ertong0129/szf-admin/raw/cursor/hongwu-offline-legend-f2d5/hongwu-mac.zip
 
