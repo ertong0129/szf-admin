@@ -79,7 +79,9 @@
     var html = '';
     G.npcs.forEach(function (n) {
       var mark = n.questMark === '?' ? '？' : (n.questMark === '!' ? '！' : '');
+      var ico = (window.Art && Art.npcIcon) ? Art.npcIcon(n.id) : '';
       html += '<button type="button" class="map-npc" data-map-npc="' + n.id + '">' +
+        (ico ? '<img src="' + ico + '" alt="" />' : '') +
         mark + n.name + (n.title ? '　' + n.title : '') + '</button>';
     });
     G.portals.forEach(function (pt, i) {
@@ -195,9 +197,7 @@
         '<div class="stat-line"><span>可分配属性</span><span>' + p.unspentAttr + '</span></div>' +
         rows + '</div><div class="equip-list">' +
         D.SLOTS.map(function (s) {
-          var it = p.equip[s.id];
-          return '<div class="slot-row"><span>' + s.name + '</span><span style="color:' +
-            (it ? D.RARITY_COLOR[it.rarity] : '#888') + '">' + (it ? H.itemName(it) : '空') + '</span></div>';
+          return H.slotRowHtml(s.name, p.equip[s.id]);
         }).join('') +
         '<div class="stat-line"><span>外攻 / 内攻</span><span>' + st.patk + ' / ' + st.matk + '</span></div>' +
         '<div class="stat-line"><span>外防 / 内防</span><span>' + st.pdef + ' / ' + st.mdef + '</span></div>' +
@@ -214,9 +214,7 @@
         '　容量 ' + p.bag.length + '/' + H.bagCap(p) +
         '　<button class="btn ghost" data-bag-expand="1">扩展背包</button></p>' +
         '<div class="bag-grid">' + p.bag.map(function (it, i) {
-          var col = it.rarity ? D.RARITY_COLOR[it.rarity] : '#f3e6c4';
-          return '<div class="item-cell" data-bag="' + i + '" style="color:' + col + '">' + H.itemName(it) +
-            (it.n > 1 ? '<span class="n">' + it.n + '</span>' : '') + '</div>';
+          return H.itemCellHtml(it, 'data-bag="' + i + '"');
         }).join('') + '</div>';
     } else if (id === 'skills') {
       document.getElementById('panel-skills').innerHTML = H.header('武学', 'skills') +
@@ -251,7 +249,8 @@
         '<div class="equip-list">' + D.SLOTS.map(function (s) {
           var it = p.equip[s.id];
           if (!it) return '';
-          return '<div class="slot-row"><span style="color:' + D.RARITY_COLOR[it.rarity] + '">' + H.itemName(it) +
+          return '<div class="slot-row">' + H.itemArt(it) +
+            '<span style="color:' + D.RARITY_COLOR[it.rarity] + '">' + H.itemName(it) +
             ' 孔' + it.sockets + '</span><span>' +
             '<button class="btn" data-en="' + s.id + '">升星</button> ' +
             '<button class="btn ghost" data-so="' + s.id + '">开孔</button> ' +
@@ -330,11 +329,7 @@
     var mg = H.mountEquipStats(p);
     var slots = (D.MOUNT_SLOTS || []).map(function (s) {
       var it = (p.mount.equip || {})[s.id];
-      return '<div class="slot-row"><span>' + s.name + '</span><span style="color:' +
-        (it ? (D.RARITY_COLOR[it.rarity] || '#f3e6c4') : '#888') + '">' +
-        (it ? H.itemName(it) : '空') + '</span>' +
-        (it ? ' <button class="btn ghost" data-mount-en="' + s.id + '">升星</button>' : '') +
-        '</div>';
+      return H.slotRowHtml(s.name, it, it ? ' <button class="btn ghost" data-mount-en="' + s.id + '">升星</button>' : '');
     }).join('');
     return '<p>坐骑品质 <span style="color:' + col + '">' + (D.RARITY_NAME[p.mount.rarity] || p.mount.rarity) +
       '</span>　移速 ×' + mul.toFixed(2) + '　提星 ' + (p.mount.star || 0) + '</p>' +
@@ -368,14 +363,10 @@
       '<div class="char-tabs">' + tabs + '</div>' +
       '<div class="grid-2"><div><h4 style="color:#d4af37">背包</h4><div class="bag-grid">' +
       p.bag.map(function (it, i) {
-        var col = it.rarity ? D.RARITY_COLOR[it.rarity] : '#f3e6c4';
-        return '<div class="item-cell" data-wh-in="' + i + '" style="color:' + col + '">' + H.itemName(it) +
-          (it.n > 1 ? '<span class="n">' + it.n + '</span>' : '') + '</div>';
+        return H.itemCellHtml(it, 'data-wh-in="' + i + '"');
       }).join('') + '</div></div><div><h4 style="color:#d4af37">仓库</h4><div class="bag-grid">' +
       stash.map(function (it, i) {
-        var col = it.rarity ? D.RARITY_COLOR[it.rarity] : '#f3e6c4';
-        return '<div class="item-cell" data-wh-out="' + i + '" style="color:' + col + '">' + H.itemName(it) +
-          (it.n > 1 ? '<span class="n">' + it.n + '</span>' : '') + '</div>';
+        return H.itemCellHtml(it, 'data-wh-out="' + i + '"');
       }).join('') + '</div></div></div>';
   }
 
@@ -386,6 +377,31 @@
       : title;
     return '<h3>' + label + '<button class="close" data-close="1">×</button></h3>';
   }
+
+  H.escAttr = function (s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+  };
+
+  H.itemArt = function (it) {
+    var src = window.Art && Art.itemIcon ? Art.itemIcon(typeof it === 'string' ? { id: it } : it) : '';
+    return src ? '<img class="item-ico" src="' + src + '" alt="" />' : '';
+  };
+
+  H.itemCellHtml = function (it, attrs) {
+    var name = H.itemName(it);
+    return '<div class="item-cell" title="' + H.escAttr(name) + '" ' + (attrs || '') + '>' +
+      H.itemArt(it) +
+      (it && it.n > 1 ? '<span class="n">' + it.n + '</span>' : '') +
+      '</div>';
+  };
+
+  H.slotRowHtml = function (label, it, extra) {
+    var col = it ? (D.RARITY_COLOR[it.rarity] || '#f3e6c4') : '#888';
+    return '<div class="slot-row">' + H.itemArt(it) +
+      '<span>' + label + '</span><span style="color:' + col + '">' +
+      (it ? H.itemName(it) : '空') + '</span>' + (extra || '') + '</div>';
+  };
 
   H.openShop = function (kind) {
     var p = G.player;
@@ -418,7 +434,7 @@
     if (kind === 'mall' && pay === 'gold') {
       body = (D.SHOPS.gold || []).map(function (s) {
         var cost = H.goldPrice ? H.goldPrice(s.gold) : s.gold;
-        return '<div class="stat-line"><span>' + D.CONSUMABLES[s.id].name + '　' + cost + ' 元宝</span>' +
+        return '<div class="stat-line">' + H.itemArt(s.id) + '<span>' + D.CONSUMABLES[s.id].name + '　' + cost + ' 元宝</span>' +
           '<button class="btn" data-buy-gold="' + s.id + '">购</button></div>';
       }).join('');
       el.innerHTML = H.header('元宝商城', 'shop') + tabs +
@@ -429,7 +445,7 @@
     el.innerHTML = H.header(kind === 'mall' ? '商城' : '货殖', 'shop') + tabs +
       '<p style="color:#b8a57a;margin-bottom:8px">银两 ' + (p.silver || 0) + ' / 绑定 ' + (p.bindSilver || 0) +
       '。优先扣绑定银两。购得道具绑定。</p>' + list.map(function (s) {
-      return '<div class="stat-line"><span>' + D.CONSUMABLES[s.id].name + '　' + s.price + ' 两</span>' +
+      return '<div class="stat-line">' + H.itemArt(s.id) + '<span>' + D.CONSUMABLES[s.id].name + '　' + s.price + ' 两</span>' +
         '<button class="btn" data-buy="' + s.id + '" data-price="' + s.price + '">购</button></div>';
     }).join('');
   }

@@ -22,6 +22,12 @@ assert.ok(D.NPCS.muying.map === 'capital');
 assert.ok(D.NPCS.chefu.travel.indexOf('capital:108:84') === 0);
 assert.ok(D.NPCS.jingche.travel.indexOf('taiping:70:54') === 0);
 
+assert.ok(D.NPC_ART && D.NPC_ART.xuda && D.NPC_ART.xuda.icon === 'xu_da');
+assert.ok(D.NPC_ART.chefu.icon === 'che_fu' && D.NPC_ART.chefu.job === 71);
+assert.ok(D.NPC_ART.cunzheng.icon === 'xs_tai_ping_cun_zhi_shi');
+assert.ok(D.ITEM_ART && D.ITEM_ART.hp1 === 'hongyao2');
+assert.ok(D.ITEM_ART.scroll === 'huichengjuan');
+
 Object.keys(D.NPCS).forEach(function (id) {
   var n = D.NPCS[id];
   var t = D.NPC_TILES[id];

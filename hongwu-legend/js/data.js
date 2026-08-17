@@ -818,5 +818,6 @@
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = D;
     require('./npc-layout.js');
+    require('./npc-art.js');
   }
 })(typeof window !== 'undefined' ? window : global);

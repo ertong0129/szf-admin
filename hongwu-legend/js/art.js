@@ -80,6 +80,29 @@
     }
   };
 
+  (function registerOriginalArt() {
+    var D = root.GameData;
+    if (!D) return;
+    function add(key, src) {
+      if (key && src && !A.src[key]) A.src[key] = src;
+    }
+    var art = D.NPC_ART || {};
+    Object.keys(art).forEach(function (id) {
+      var n = art[id];
+      if (!n) return;
+      if (n.job != null) add('stand_' + n.job, 'assets/ingame/npc-stand/job_' + n.job + '.png');
+      if (n.icon) {
+        add('portrait_' + n.icon, 'assets/ingame/portrait/' + n.icon + '.png');
+        add('icon_' + n.icon, 'assets/ingame/icon/' + n.icon + '.png');
+      }
+    });
+    var items = D.ITEM_ART || {};
+    Object.keys(items).forEach(function (id) {
+      var stem = items[id];
+      if (stem) add('item_' + stem, 'assets/ingame/items/' + stem + '.png');
+    });
+  })();
+
   var TILE_SRC = {
     grass: 'grass', moss: 'grass', dirt: 'dirtTile',
     stone: 'stone', arena: 'stone', dock: 'stone', wall: 'stone', rock: 'stone',
@@ -194,18 +217,67 @@
     return k && A.src[k] ? A.src[k] : A.src.headWarrior;
   };
 
+  A.npcArt = function (id) {
+    var D = root.GameData;
+    return (D && D.NPC_ART && D.NPC_ART[id]) || null;
+  };
+
   A.npcKey = function (id) {
+    var n = A.npcArt(id);
+    if (n) {
+      if (A.imgs['stand_' + n.job]) return 'stand_' + n.job;
+      if (A.imgs['portrait_' + n.icon]) return 'portrait_' + n.icon;
+      if (!A.ready && A.src['stand_' + n.job]) return 'stand_' + n.job;
+      if (A.src['portrait_' + n.icon]) return 'portrait_' + n.icon;
+    }
     return NPC_SRC[id] || 'officer';
   };
 
   A.npcPortrait = function (id) {
+    var n = A.npcArt(id);
+    if (n && n.icon && A.src['portrait_' + n.icon]) return A.src['portrait_' + n.icon];
     var k = NPC_PORTRAIT[id];
     return k && A.src[k] ? A.src[k] : A.src.portraitCun;
   };
 
   A.npcIcon = function (id) {
+    var n = A.npcArt(id);
+    if (n && n.icon && A.src['icon_' + n.icon]) return A.src['icon_' + n.icon];
     var k = NPC_ICON[id];
     return k && A.src[k] ? A.src[k] : A.src.iconCun;
+  };
+
+  A.itemStem = function (it) {
+    if (!it) return '';
+    var D = root.GameData;
+    var art = (D && D.ITEM_ART) || {};
+    if (it.id && art[it.id]) return art[it.id];
+    if (it.type === 'equip' && it.slot && art['slot_' + it.slot]) return art['slot_' + it.slot];
+    if (it.type === 'gem') return art.gem || 'putidan';
+    if (it.type === 'mount') return art.mount_token || 'zuoqitisupai';
+    return '';
+  };
+
+  A.itemIcon = function (it) {
+    var stem = A.itemStem(it);
+    return stem ? 'assets/ingame/items/' + stem + '.png' : '';
+  };
+
+  A.itemImage = function (it) {
+    var stem = A.itemStem(it);
+    return stem ? (A.imgs['item_' + stem] || null) : null;
+  };
+
+  A.spriteBox = function (key, img) {
+    if (key && String(key).indexOf('stand_') === 0) {
+      var sh = 78;
+      var sw = img && img.height ? sh * img.width / img.height : 36;
+      return { w: sw, h: sh };
+    }
+    if (key && String(key).indexOf('portrait_') === 0) {
+      return { w: 46, h: 46 };
+    }
+    return { w: 48, h: 96 };
   };
 
   A.mobKey = function (kind) {
@@ -386,13 +458,15 @@
 
   A.drawNpc = function (ctx, n, screen, time) {
     A.drawAura(ctx, screen.x, screen.y, 'rgba(255,210,80,0.4)', time, 0.85);
-    var img = A.imgs[A.npcKey(n.id)] || A.imgs.officer;
-    billboard(ctx, img, screen.x, screen.y + 8, 48, 96, false, Math.sin(time * 2) * 0.6, 0);
+    var key = A.npcKey(n.id);
+    var img = A.imgs[key] || A.imgs.officer;
+    var box = A.spriteBox(key, img);
+    billboard(ctx, img, screen.x, screen.y + 8, box.w, box.h, false, Math.sin(time * 2) * 0.6, 0);
     if (n.questMark) {
       ctx.fillStyle = n.questMark === '?' ? '#6fdf7a' : '#ffd36a';
       ctx.font = 'bold 16px serif';
       ctx.textAlign = 'center';
-      ctx.fillText(n.questMark === '?' ? '？' : '！', screen.x, screen.y - 58);
+      ctx.fillText(n.questMark === '?' ? '？' : '！', screen.x, screen.y - box.h + 18);
     }
     A.drawNameplate(ctx, screen.x, screen.y + 18, n.title || '', n.name, '#7dff7a');
   };

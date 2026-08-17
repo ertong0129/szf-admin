@@ -984,27 +984,43 @@ html, body {
   gap: 6px;
 }
 .item-cell {
-  min-height: 52px;
+  width: 52px;
+  height: 52px;
   border: 1px solid rgba(212, 175, 55, 0.25);
   background: #16100b;
-  padding: 4px;
+  padding: 2px;
   font-size: 11px;
   cursor: pointer;
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .item-cell:hover { border-color: var(--gold); }
+.item-cell .item-ico,
+.item-ico {
+  width: 32px;
+  height: 32px;
+  image-rendering: pixelated;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
 .item-cell .n {
   position: absolute; right: 3px; bottom: 2px; color: var(--paper);
+  font-size: 11px; text-shadow: 0 0 2px #000;
 }
-
+.stat-line .item-ico { margin-right: 6px; }
 .equip-list .slot-row {
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  justify-content: flex-start;
   gap: 8px;
   padding: 6px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   font-size: 13px;
 }
+.equip-list .slot-row .item-ico { margin-right: 4px; }
+.equip-list .slot-row span:last-of-type { margin-left: auto; }
 
 .dialog {
   position: absolute;
@@ -1023,12 +1039,13 @@ html, body {
 .dialog.open { display: block; }
 .dialog-body { display: flex; gap: 12px; align-items: flex-end; }
 .npc-face {
-  width: 112px;
-  height: 132px;
+  width: 96px;
+  height: 96px;
   object-fit: contain;
-  object-position: bottom center;
+  object-position: center;
   flex: 0 0 auto;
   background: transparent;
+  image-rendering: pixelated;
 }
 .dialog-text { flex: 1; min-width: 0; }
 .dialog .who { color: var(--gold); margin-bottom: 6px; letter-spacing: 2px; }
@@ -1198,7 +1215,9 @@ html, body {
 .map-side h5 { color: #ffe7a0; letter-spacing: 2px; margin-bottom: 6px; font-size: 12px; }
 #map-npc-list { max-height: 300px; overflow: auto; }
 .map-npc, .map-pt {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   width: 100%;
   text-align: left;
   background: transparent;
@@ -1209,6 +1228,13 @@ html, body {
   font-family: inherit;
   padding: 5px 2px;
   cursor: pointer;
+}
+.map-npc img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  flex: 0 0 auto;
 }
 .map-pt { color: #ffd36a; }
 #map-coord-form { display: flex; gap: 4px; margin-top: 10px; }

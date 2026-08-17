@@ -86,13 +86,23 @@
 
     G.herbs.forEach(function (hb) {
       var s = H.worldToScreen(hb.x, hb.y);
-      ctx.fillStyle = '#7dff9a';
-      ctx.beginPath(); ctx.arc(s.x, s.y, 4, 0, Math.PI * 2); ctx.fill();
+      var himg = window.Art && Art.itemImage && Art.itemImage({ id: hb.id });
+      if (himg) {
+        ctx.drawImage(himg, s.x - 10, s.y - 18, 20, 20);
+      } else {
+        ctx.fillStyle = '#7dff9a';
+        ctx.beginPath(); ctx.arc(s.x, s.y, 4, 0, Math.PI * 2); ctx.fill();
+      }
     });
     G.drops.forEach(function (d) {
       var s = H.worldToScreen(d.x, d.y);
-      ctx.fillStyle = d.item.rarity ? D.RARITY_COLOR[d.item.rarity] : '#f0d56a';
-      ctx.fillRect(s.x - 5, s.y - 5, 10, 10);
+      var dimg = window.Art && Art.itemImage && Art.itemImage(d.item);
+      if (dimg) {
+        ctx.drawImage(dimg, s.x - 12, s.y - 20, 24, 24);
+      } else {
+        ctx.fillStyle = d.item.rarity ? D.RARITY_COLOR[d.item.rarity] : '#f0d56a';
+        ctx.fillRect(s.x - 5, s.y - 5, 10, 10);
+      }
     });
     G.portals.forEach(function (pt) {
       var s = H.worldToScreen((pt.x + 0.5) * TILE, (pt.y + 0.5) * TILE);

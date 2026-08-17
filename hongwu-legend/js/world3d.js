@@ -144,7 +144,18 @@
     return t;
   }
 
-  function spriteSize(key, boss) {
+  function spriteSize(key, boss, img) {
+    if (key && String(key).indexOf('stand_') === 0) {
+      var sy = 2.15;
+      var sx = 1.0;
+      if (img && img.width && img.height) {
+        sx = Math.max(0.72, Math.min(1.85, sy * img.width / img.height));
+      }
+      return boss ? [sx * 1.28, sy * 1.18] : [sx, sy];
+    }
+    if (key && String(key).indexOf('portrait_') === 0) {
+      return [0.95, 0.95];
+    }
     var map = {
       tiger: [1.35, 2.05], fox: [1.3, 2.4], water: [1.4, 2.25],
       wing: [1.75, 2.2], fairy: [1.7, 1.95], boss: [2.35, 2.85],
@@ -596,6 +607,19 @@
     });
   }
 
+  function makeDropSprite(img) {
+    var mat = new THREE.SpriteMaterial({
+      map: texFromImg(img),
+      transparent: true,
+      alphaTest: 0.08,
+      depthWrite: false
+    });
+    var spr = new THREE.Sprite(mat);
+    spr.scale.set(0.52, 0.52, 1);
+    scene.add(spr);
+    return spr;
+  }
+
   function ensureExtra(id, kind) {
     if (extras[id]) return extras[id];
     var mesh;
@@ -732,7 +756,7 @@
       var id = 'npc-' + n.id;
       var nkey = art && art.npcKey ? art.npcKey(n.id) : 'officer';
       var nimg = art && art.imgs ? (art.imgs[nkey] || art.imgs.officer) : null;
-      var ns = spriteSize(nkey, false);
+      var ns = spriteSize(nkey, false, nimg);
       var quest = n.questMark;
       var mark = quest === '?' ? '？' : (quest ? '！' : '');
       var a = ensureActor(id, nimg, {
@@ -799,15 +823,27 @@
     var extraAlive = {};
     (state.drops || []).forEach(function (d, i) {
       var id = 'drop-' + (d.uid || i);
-      var ex = ensureExtra(id, 'drop');
-      ex.mesh.position.set(px(d.x), 0.28 + Math.sin((state.time || 0) * 4 + i) * 0.06, px(d.y));
-      ex.mesh.rotation.y = (state.time || 0) * 2 + i;
+      var icon = art && art.itemImage ? art.itemImage(d.item) : null;
+      if (!extras[id]) {
+        extras[id] = icon
+          ? { mesh: makeDropSprite(icon), kind: 'drop', billboard: true }
+          : ensureExtra(id, 'drop');
+      }
+      var ex = extras[id];
+      ex.mesh.position.set(px(d.x), 0.38 + Math.sin((state.time || 0) * 4 + i) * 0.06, px(d.y));
+      if (!ex.billboard) ex.mesh.rotation.y = (state.time || 0) * 2 + i;
       extraAlive[id] = 1;
     });
     (state.herbs || []).forEach(function (hb, i) {
       var id = 'herb-' + i;
-      var ex = ensureExtra(id, 'herb');
-      ex.mesh.position.set(px(hb.x), 0.16, px(hb.y));
+      var icon = art && art.itemImage ? art.itemImage({ id: hb.id }) : null;
+      if (!extras[id]) {
+        extras[id] = icon
+          ? { mesh: makeDropSprite(icon), kind: 'herb', billboard: true }
+          : ensureExtra(id, 'herb');
+      }
+      var hx = extras[id];
+      hx.mesh.position.set(px(hb.x), hx.billboard ? 0.34 : 0.16, px(hb.y));
       extraAlive[id] = 1;
     });
     (state.fires || []).forEach(function (f, i) {
