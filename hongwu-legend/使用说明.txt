@@ -1,27 +1,25 @@
 大明传说 · 局域网学习服
 ============================
 
-Mac 包 GitHub 直链：
-https://github.com/ertong0129/szf-admin/raw/cursor/hongwu-offline-legend-f2d5/hongwu-mac.zip
+Windows 包 GitHub 直链：
+https://github.com/ertong0129/szf-admin/raw/cursor/hongwu-offline-legend-f2d5/hongwu-windows.zip
 
 国内备用（jsDelivr / GitHub 代理）：
-https://cdn.jsdelivr.net/gh/ertong0129/szf-admin@cursor/hongwu-offline-legend-f2d5/hongwu-mac.zip
-https://gh-proxy.com/https://github.com/ertong0129/szf-admin/raw/cursor/hongwu-offline-legend-f2d5/hongwu-mac.zip
+https://cdn.jsdelivr.net/gh/ertong0129/szf-admin@cursor/hongwu-offline-legend-f2d5/hongwu-windows.zip
+https://gh-proxy.com/https://github.com/ertong0129/szf-admin/raw/cursor/hongwu-offline-legend-f2d5/hongwu-windows.zip
 
-一、Mac
+一、Windows
 1. 解压整个文件夹。
-2. 双击「大明传说」图标，或右键「启动游戏.command」→ 打开。
-   若提示无法验证开发者：系统设置 → 隐私与安全性 → 仍要打开。
-   若提示没有执行权限，在终端执行：
-   chmod +x 启动游戏.command start.command
+2. 双击「启动游戏.bat」或「start.bat」。
 3. 浏览器会在服务就绪后自动打开。
 4. 测试号 demo / 123456。
-5. 不要关终端窗口（或程序坞里的图标），关掉就停服。
+5. 不要关黑色命令行窗口，关掉就停服。
+6. 若提示没有 Node / Python：安装 https://nodejs.org 后重新双击。
 
 二、没有 Node / Python 时
 启动器会尽量用本机已有的 Node 或 Python 起本地服。
 两者都没有时，会直接打开 index.html，图片应仍能显示，但没有服务端存档。
-Mac 一般自带 python3；也可装 Node：https://nodejs.org
+建议安装 Node：https://nodejs.org
 
 三、操作
 点右侧「任务追踪」：自动寻路（跨图会先走传送点，到达后自动对话/打怪/采药）
