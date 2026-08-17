@@ -9,31 +9,41 @@
   var BAG_CAP = H.BAG_CAP, SPAWN = H.SPAWN, SAVE_KEY = H.SAVE_KEY;
 
   H.loop = function (ts) {
-    if (!G.last) G.last = ts;
-    var dt = Math.min(0.05, (ts - G.last) / 1000);
-    G.last = ts;
-    G.time += dt;
-    if (G.mode === 'play' && G.player && !document.getElementById('death').classList.contains('open')) {
-      H.updatePlayer(dt);
-      H.updateMonsters(dt);
-      H.updatePet(dt);
-      H.updateProjectiles(dt);
-      H.updateEscort(dt);
-      H.tickInstance(dt);
-      G.netAcc = (G.netAcc || 0) + dt;
-      if (G.netAcc > 0.28) { G.netAcc = 0; H.netTick(); }
-      if (G.followUser && !G.player._moving) {
-        var fu = null;
-        (G.peers || []).forEach(function (o) { if (o.user === G.followUser) fu = o; });
-        if (fu && G.mapId === fu.mapId && H.dist(G.player, fu) > 48) H.setDest(fu.x, fu.y);
+    try {
+      if (!G.last) G.last = ts;
+      var dt = Math.min(0.05, (ts - G.last) / 1000);
+      G.last = ts;
+      G.time += dt;
+      if (G.mode === 'play' && G.player && !document.getElementById('death').classList.contains('open')) {
+        H.updatePlayer(dt);
+        H.updateMonsters(dt);
+        H.updatePet(dt);
+        H.updateProjectiles(dt);
+        H.updateEscort(dt);
+        H.tickInstance(dt);
+        G.netAcc = (G.netAcc || 0) + dt;
+        if (G.netAcc > 0.28) { G.netAcc = 0; H.netTick(); }
+        if (G.followUser && !G.player._moving) {
+          var fu = null;
+          (G.peers || []).forEach(function (o) { if (o.user === G.followUser) fu = o; });
+          if (fu && G.mapId === fu.mapId && H.dist(G.player, fu) > 48) H.setDest(fu.x, fu.y);
+        }
+        H.updateFx(dt);
+        G.saveAcc = (G.saveAcc || 0) + dt;
+        if (G.saveAcc > 15) { G.saveAcc = 0; H.saveSilent(); }
+      } else if (G.mode === 'play') {
+        H.updateFx(dt);
       }
-      H.updateFx(dt);
-      G.saveAcc = (G.saveAcc || 0) + dt;
-      if (G.saveAcc > 15) { G.saveAcc = 0; H.saveSilent(); }
-    } else if (G.mode === 'play') {
-      H.updateFx(dt);
+      if (G.mode === 'play') H.draw();
+    } catch (err) {
+      if (!G._drawErr) {
+        G._drawErr = 1;
+        console.error(err);
+        if (window.World3D) World3D.enabled = false;
+        if (canvas3d) canvas3d.style.display = 'none';
+        if (canvas) canvas.style.display = 'block';
+      }
     }
-    if (G.mode === 'play') H.draw();
     requestAnimationFrame(H.loop);
   }
 

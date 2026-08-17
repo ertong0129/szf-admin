@@ -38,9 +38,11 @@
         particles: G.particles || [],
         mapId: G.mapId
       });
-      H.drawMinimap();
-      H.drawHud();
-      return;
+      if (World3D.enabled) {
+        H.drawMinimap();
+        H.drawHud();
+        return;
+      }
     }
     var w = canvas.width, h = canvas.height;
     ctx.fillStyle = '#0a0806';

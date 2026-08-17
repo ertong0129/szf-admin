@@ -217,30 +217,11 @@
 
   A.drawTile = function (ctx, type, sx, sy, size, time, tx, ty, grid, mapId) {
     var Gnd = root.GroundPaint;
-    var step = Math.max(2, Math.floor(size / 10));
-    var px, py, wx, wy, c;
-    if (Gnd) {
-      for (py = 0; py < size + 1; py += step) {
-        for (px = 0; px < size + 1; px += step) {
-          wx = tx + (px + 0.5) / size;
-          wy = ty + (py + 0.5) / size;
-          if (grid) c = Gnd.sample(grid, wx, wy, mapId);
-          else c = Gnd.sample([[type]], (px + 0.5) / size, (py + 0.5) / size, mapId);
-          ctx.fillStyle = Gnd.css(c);
-          ctx.fillRect(sx + px, sy + py, step + 1, step + 1);
-        }
-      }
+    if (Gnd && Gnd.paintTile) {
+      Gnd.paintTile(ctx, type, sx, sy, size, time, tx, ty, mapId);
     } else {
       ctx.fillStyle = type === 'water' ? '#2a5a7a' : type === 'stone' ? '#8a8680' : '#4d7a3e';
       ctx.fillRect(sx, sy, size + 1, size + 1);
-    }
-    if (type === 'water' && time != null) {
-      ctx.strokeStyle = 'rgba(190,230,240,' + (0.18 + Math.sin(time * 2 + tx) * 0.08) + ')';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(sx, sy + size * 0.4 + Math.sin(time * 1.6 + ty) * 3);
-      ctx.lineTo(sx + size, sy + size * 0.55 + Math.cos(time * 1.2 + tx) * 3);
-      ctx.stroke();
     }
     if (type === 'wall' || type === 'rock') {
       ctx.fillStyle = 'rgba(20,16,12,0.28)';

@@ -297,6 +297,135 @@
     return 'rgb(' + (c[0] | 0) + ',' + (c[1] | 0) + ',' + (c[2] | 0) + ')';
   };
 
+  Gnd.decorate = function (ctx, kind, x, y, cell, mapId) {
+    var pal = Gnd.palOf(kind);
+    var ox = x * cell;
+    var oy = y * cell;
+    var i, hx, hy;
+    if (pal.style === 'brick') {
+      ctx.strokeStyle = 'rgba(48, 42, 36, 0.42)';
+      ctx.lineWidth = Math.max(1, cell / 18);
+      ctx.beginPath();
+      for (i = -2; i < 4; i++) {
+        ctx.moveTo(ox, oy + i * cell * 0.38 + (x % 2) * cell * 0.12);
+        ctx.lineTo(ox + cell, oy + (i - 1) * cell * 0.38 + (x % 2) * cell * 0.12);
+      }
+      ctx.stroke();
+      if ((mapId === 'capital' || mapId === 'kaifeng') && Math.abs(x - 25) + Math.abs(y - 18) < 6) {
+        ctx.fillStyle = 'rgba(140, 86, 42, 0.18)';
+        ctx.fillRect(ox, oy, cell, cell);
+      }
+    } else if (pal.style === 'plank') {
+      ctx.strokeStyle = 'rgba(52, 32, 16, 0.45)';
+      ctx.lineWidth = Math.max(1, cell / 16);
+      for (i = 1; i < 3; i++) {
+        hy = oy + (i * cell) / 2.4;
+        ctx.beginPath();
+        ctx.moveTo(ox, hy);
+        ctx.lineTo(ox + cell, hy);
+        ctx.stroke();
+      }
+      ctx.fillStyle = 'rgba(30, 18, 8, 0.28)';
+      ctx.fillRect(ox + cell * 0.48, oy + cell * 0.18, 2, 2);
+    } else if (pal.style === 'grass') {
+      ctx.fillStyle = kind === 'moss' ? 'rgba(20, 50, 36, 0.28)' : 'rgba(36, 64, 24, 0.28)';
+      for (i = 0; i < 7; i++) {
+        hx = Gnd.hash(x * 9.1 + i, y * 7.3);
+        hy = Gnd.hash(x * 4.7 + i, y * 11.1);
+        ctx.fillRect(ox + hx * cell, oy + hy * cell, 2, 2);
+      }
+    } else if (pal.style === 'dirt') {
+      ctx.fillStyle = 'rgba(70, 48, 24, 0.22)';
+      for (i = 0; i < 5; i++) {
+        hx = Gnd.hash(x * 6.2 + i, y * 5.8);
+        hy = Gnd.hash(x * 3.3 + i, y * 8.4);
+        ctx.fillRect(ox + hx * cell, oy + hy * cell, 2, 2);
+      }
+    } else if (pal.style === 'water') {
+      ctx.fillStyle = 'rgba(170, 220, 230, 0.12)';
+      ctx.fillRect(ox, oy + cell * 0.35, cell, 2);
+    } else if (pal.style === 'rock') {
+      ctx.fillStyle = 'rgba(20, 18, 16, 0.28)';
+      ctx.fillRect(ox, oy, cell, cell);
+    }
+  };
+
+  Gnd.paintCanvas = function (ctx, grid, mapId, cell) {
+    cell = cell || 24;
+    var gh = grid.length;
+    var gw = grid[0].length;
+    var x, y, kind, pal, k2, mid;
+    for (y = 0; y < gh; y++) {
+      for (x = 0; x < gw; x++) {
+        kind = Gnd.surface(grid[y][x], mapId);
+        pal = Gnd.palOf(kind);
+        ctx.fillStyle = Gnd.css(pal.base);
+        ctx.fillRect(x * cell, y * cell, cell + 1, cell + 1);
+        Gnd.decorate(ctx, kind, x, y, cell, mapId);
+      }
+    }
+    ctx.globalAlpha = 0.5;
+    for (y = 0; y < gh; y++) {
+      for (x = 0; x < gw; x++) {
+        kind = Gnd.surface(grid[y][x], mapId);
+        if (x + 1 < gw) {
+          k2 = Gnd.surface(grid[y][x + 1], mapId);
+          if (k2 !== kind) {
+            mid = Gnd.lerp3(Gnd.palOf(kind).base, Gnd.palOf(k2).base, 0.5);
+            ctx.fillStyle = Gnd.css(mid);
+            ctx.fillRect((x + 1) * cell - 4, y * cell, 8, cell);
+          }
+        }
+        if (y + 1 < gh) {
+          k2 = Gnd.surface(grid[y + 1][x], mapId);
+          if (k2 !== kind) {
+            mid = Gnd.lerp3(Gnd.palOf(kind).base, Gnd.palOf(k2).base, 0.5);
+            ctx.fillStyle = Gnd.css(mid);
+            ctx.fillRect(x * cell, (y + 1) * cell - 4, cell, 8);
+          }
+        }
+      }
+    }
+    ctx.globalAlpha = 1;
+  };
+
+  Gnd.paintWaterMask = function (ctx, grid, mapId, cell) {
+    cell = cell || 16;
+    var gh = grid.length;
+    var gw = grid[0].length;
+    var x, y;
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, gw * cell, gh * cell);
+    for (y = 0; y < gh; y++) {
+      for (x = 0; x < gw; x++) {
+        if (Gnd.kindAt(grid, x, y, mapId) !== 'water') continue;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(x * cell - 2, y * cell - 2, cell + 4, cell + 4);
+      }
+    }
+  };
+
+  Gnd.paintTile = function (ctx, type, sx, sy, size, time, tx, ty, mapId) {
+    var kind = Gnd.surface(type, mapId);
+    var pal = Gnd.palOf(kind);
+    ctx.fillStyle = Gnd.css(pal.base);
+    ctx.fillRect(sx, sy, size + 1, size + 1);
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(sx, sy, size + 1, size + 1);
+    ctx.clip();
+    ctx.translate(sx - (tx || 0) * size, sy - (ty || 0) * size);
+    Gnd.decorate(ctx, kind, tx || 0, ty || 0, size, mapId);
+    ctx.restore();
+    if (kind === 'water' && time != null) {
+      ctx.strokeStyle = 'rgba(190,230,240,' + (0.18 + Math.sin(time * 2 + (tx || 0)) * 0.08) + ')';
+      ctx.beginPath();
+      ctx.moveTo(sx, sy + size * 0.4 + Math.sin(time * 1.6 + (ty || 0)) * 3);
+      ctx.lineTo(sx + size, sy + size * 0.55 + Math.cos(time * 1.2 + (tx || 0)) * 3);
+      ctx.stroke();
+    }
+  };
+
   root.GroundPaint = Gnd;
   if (typeof module !== 'undefined' && module.exports) module.exports = Gnd;
 })(typeof window !== 'undefined' ? window : global);

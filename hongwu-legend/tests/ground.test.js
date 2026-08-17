@@ -56,4 +56,20 @@ for (var i = 0; i < wdata.length; i += 4) {
 }
 assert.ok(waterPx > 0 && landPx > 0, '水面遮罩应只盖住水域');
 
+var ops = 0;
+var mock = {
+  fillStyle: '', strokeStyle: '', lineWidth: 1, globalAlpha: 1,
+  fillRect: function () { ops += 1; },
+  clearRect: function () { ops += 1; },
+  beginPath: function () {},
+  moveTo: function () {},
+  lineTo: function () {},
+  stroke: function () { ops += 1; }
+};
+Gnd.paintCanvas(mock, [['grass', 'dirt'], ['water', 'dock']], 'taiping', 8);
+assert.ok(ops > 8, 'paintCanvas 应按格绘制，而不是逐像素烘焙');
+ops = 0;
+Gnd.paintWaterMask(mock, [['grass', 'water'], ['grass', 'water']], 'taiping', 8);
+assert.ok(ops > 0);
+
 console.log('ground.test.js ok');

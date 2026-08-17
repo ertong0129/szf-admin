@@ -36,7 +36,7 @@
       camera.position.set(12, 12.5, 12);
 
       renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       renderer.outputEncoding = THREE.sRGBEncoding;
@@ -45,7 +45,7 @@
       var sun = new THREE.DirectionalLight(0xffe2b8, 0.95);
       sun.position.set(16, 22, 10);
       sun.castShadow = true;
-      sun.shadow.mapSize.set(1024, 1024);
+      sun.shadow.mapSize.set(512, 512);
       sun.shadow.camera.near = 2;
       sun.shadow.camera.far = 80;
       sun.shadow.camera.left = -26;
@@ -156,31 +156,32 @@
     return s;
   }
 
-  function canvasTex(canvas, withAlpha) {
+  function canvasTex(canvas) {
     var tex = new THREE.CanvasTexture(canvas);
     tex.encoding = THREE.sRGBEncoding;
     tex.magFilter = THREE.LinearFilter;
-    tex.minFilter = THREE.LinearMipMapLinearFilter;
-    tex.generateMipmaps = true;
-    if (withAlpha) tex.premultiplyAlpha = false;
+    tex.minFilter = THREE.LinearFilter;
+    tex.generateMipmaps = false;
+    tex.wrapS = THREE.ClampToEdgeWrapping;
+    tex.wrapT = THREE.ClampToEdgeWrapping;
     return tex;
   }
 
   function bakeCanvas(grid, mapId, waterOnly) {
     var Gnd = root.GroundPaint;
     var gh = grid.length, gw = grid[0].length;
-    var cell = waterOnly ? 16 : 32;
+    var cell = waterOnly ? 16 : 24;
     var c = document.createElement('canvas');
     c.width = gw * cell;
     c.height = gh * cell;
     var ctx = c.getContext('2d');
-    var img = ctx.createImageData(c.width, c.height);
-    if (Gnd) Gnd.fillRgba(img.data, c.width, c.height, grid, mapId, cell, !!waterOnly);
-    else {
+    if (Gnd) {
+      if (waterOnly) Gnd.paintWaterMask(ctx, grid, mapId, cell);
+      else Gnd.paintCanvas(ctx, grid, mapId, cell);
+    } else {
       ctx.fillStyle = waterOnly ? 'rgba(40,120,150,0)' : '#4d7a3e';
       ctx.fillRect(0, 0, c.width, c.height);
     }
-    ctx.putImageData(img, 0, 0);
     return { canvas: c, gw: gw, gh: gh };
   }
 
@@ -207,6 +208,10 @@
     t.wrapS = THREE.RepeatWrapping;
     t.wrapT = THREE.RepeatWrapping;
     t.encoding = THREE.sRGBEncoding;
+    t.minFilter = THREE.LinearFilter;
+    t.magFilter = THREE.LinearFilter;
+    t.generateMipmaps = false;
+    t.repeat.set(18, 14);
     return t;
   }
 
@@ -216,10 +221,7 @@
     if (m.geometry) m.geometry.dispose();
     if (m.material) {
       if (m.material.map) m.material.map.dispose();
-      if (m.material.uniforms) {
-        if (m.material.uniforms.mask && m.material.uniforms.mask.value) m.material.uniforms.mask.value.dispose();
-        if (m.material.uniforms.wave && m.material.uniforms.wave.value) m.material.uniforms.wave.value.dispose();
-      }
+      if (m.material.alphaMap) m.material.alphaMap.dispose();
       m.material.dispose();
     }
   }
@@ -281,13 +283,10 @@
     var leafMat2 = new THREE.MeshStandardMaterial({ color: 0x3d8544, roughness: 0.8 });
     var a = new THREE.Mesh(new THREE.SphereGeometry(0.48, 8, 6), leafMat);
     a.position.set(x, 1.05, z);
-    a.castShadow = true;
     var b = new THREE.Mesh(new THREE.SphereGeometry(0.36, 8, 6), leafMat2);
     b.position.set(x + 0.22, 1.18, z - 0.08);
-    b.castShadow = true;
     var c = new THREE.Mesh(new THREE.SphereGeometry(0.3, 7, 5), leafMat);
     c.position.set(x - 0.18, 1.22, z + 0.12);
-    c.castShadow = true;
     propGroup.add(trunk);
     propGroup.add(a);
     propGroup.add(b);
@@ -307,6 +306,18 @@
 
   W.rebuild = function (grid, mapId) {
     if (!W.ready || !grid) return;
+    try {
+      rebuildScene(grid, mapId);
+    } catch (err) {
+      console.error(err);
+      W.enabled = false;
+      if (renderer && renderer.domElement) renderer.domElement.style.display = 'none';
+      var two = document.getElementById('world');
+      if (two) two.style.display = 'block';
+    }
+  };
+
+  function rebuildScene(grid, mapId) {
     W.mapId = mapId || W.mapId;
     disposeMesh(ground);
     disposeMesh(waterMesh);
@@ -339,7 +350,7 @@
     var baked = bakeCanvas(grid, mapId || W.mapId, false);
     var geo = new THREE.PlaneGeometry(baked.gw, baked.gh, 1, 1);
     var mat = new THREE.MeshStandardMaterial({
-      map: canvasTex(baked.canvas, false),
+      map: canvasTex(baked.canvas),
       roughness: 0.94,
       metalness: 0.02
     });
@@ -352,35 +363,14 @@
     W.size = { w: baked.gw, h: baked.gh };
 
     var maskBake = bakeCanvas(grid, mapId || W.mapId, true);
-    waterMat = new THREE.ShaderMaterial({
-      uniforms: {
-        time: { value: 0 },
-        mask: { value: canvasTex(maskBake.canvas, true) },
-        wave: { value: makeWaveTex() }
-      },
+    var wave = makeWaveTex();
+    var mask = canvasTex(maskBake.canvas);
+    waterMat = new THREE.MeshBasicMaterial({
+      map: wave,
+      alphaMap: mask,
       transparent: true,
-      depthWrite: false,
-      vertexShader: [
-        'varying vec2 vUv;',
-        'void main(){',
-        '  vUv = uv;',
-        '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);',
-        '}'
-      ].join('\n'),
-      fragmentShader: [
-        'uniform float time;',
-        'uniform sampler2D mask;',
-        'uniform sampler2D wave;',
-        'varying vec2 vUv;',
-        'void main(){',
-        '  vec4 m = texture2D(mask, vUv);',
-        '  if (m.a < 0.02) discard;',
-        '  vec2 uv = vUv * vec2(16.0, 12.0) + vec2(time * 0.045, sin(time * 0.55) * 0.03);',
-        '  vec4 w = texture2D(wave, uv);',
-        '  float spark = 0.55 + 0.45 * sin(time * 2.2 + vUv.x * 30.0);',
-        '  gl_FragColor = vec4(mix(m.rgb, w.rgb, 0.55) * spark, m.a * 0.55);',
-        '}'
-      ].join('\n')
+      opacity: 0.42,
+      depthWrite: false
     });
     waterMesh = new THREE.Mesh(new THREE.PlaneGeometry(baked.gw, baked.gh, 1, 1), waterMat);
     waterMesh.rotation.x = -Math.PI / 2;
@@ -406,7 +396,7 @@
         }
       }
     }
-  };
+  }
 
   function makeShadow() {
     var m = new THREE.Mesh(
@@ -440,7 +430,7 @@
       });
     }
     var mesh = new THREE.Mesh(geo, mat);
-    mesh.castShadow = true;
+    mesh.castShadow = false;
     scene.add(mesh);
     return mesh;
   }
@@ -645,7 +635,19 @@
   }
 
   W.sync = function (state) {
-    if (!W.ready) return;
+    if (!W.ready || !W.enabled) return;
+    try {
+      syncScene(state);
+    } catch (err) {
+      console.error(err);
+      W.enabled = false;
+      if (renderer && renderer.domElement) renderer.domElement.style.display = 'none';
+      var two = document.getElementById('world');
+      if (two) two.style.display = 'block';
+    }
+  };
+
+  function syncScene(state) {
     var p = state.player;
     var px0 = px(p.x), pz0 = px(p.y);
     follow.x += (px0 - follow.x) * 0.14;
@@ -655,7 +657,10 @@
     camera.lookAt(follow.x, 0.42, follow.z);
 
     waterTime = state.time || 0;
-    if (waterMat && waterMat.uniforms) waterMat.uniforms.time.value = waterTime;
+    if (waterMat && waterMat.map && waterMat.map.offset) {
+      waterMat.map.offset.x = waterTime * 0.03;
+      waterMat.map.offset.y = Math.sin(waterTime * 0.45) * 0.02;
+    }
 
     var art = root.Art;
     var heroKey = art && art.classKey ? art.classKey(p.cls) : 'dao';
