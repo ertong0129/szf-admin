@@ -17,8 +17,9 @@ T.manifest = {
       nativeH: 4800,
       imgW: 2048,
       imgH: 1260,
-      walkW: 140,
-      walkH: 130,
+      walkW: 175,
+      walkH: 172,
+      originX: 51,
       originY: 0,
       file: 'jing_cheng.jpg'
     }
@@ -28,37 +29,38 @@ T.manifest = {
 assert.ok(T.has('capital'));
 assert.ok(!T.has('tower'));
 assert.strictEqual(T.metaFor('capital').cols, 26);
+assert.strictEqual(T.metaFor('capital').walkW, 175);
+assert.strictEqual(T.metaFor('capital').originX, 51);
 
-var a = T.walkToImg(0, 0, T.metaFor('capital'), 'capital');
-var b = T.walkToImg(140, 0, T.metaFor('capital'), 'capital');
-var c = T.walkToImg(0, 130, T.metaFor('capital'), 'capital');
-var d = T.walkToImg(140, 130, T.metaFor('capital'), 'capital');
-assert.ok(Math.abs(a.x - 3755.55) < 1, '北角应在拼图上沿中央附近');
-assert.ok(a.y < 2, '格子 0,0 应落在拼图顶部');
-assert.ok(b.x > 7700, '东角应靠右');
-assert.ok(c.x < 20, '西角应靠左');
-assert.ok(d.y > 4700, '南角应靠底');
-
-var back = T.imgToWalk(a.x, a.y, T.metaFor('capital'), 'capital');
+var meta = T.metaFor('capital');
+var a = T.walkToImg(0, 0, meta, 'capital');
+var back = T.imgToWalk(a.x, a.y, meta, 'capital');
 assert.ok(Math.abs(back.tx) < 1e-6 && Math.abs(back.ty) < 1e-6, 'walkToImg 与 imgToWalk 应互逆');
-var mid = T.walkToImg(110, 83, T.metaFor('capital'), 'capital');
-var midBack = T.imgToWalk(mid.x, mid.y, T.metaFor('capital'), 'capital');
-assert.ok(Math.abs(midBack.tx - 110) < 1e-6);
-assert.ok(Math.abs(midBack.ty - 83) < 1e-6);
+
+var shi = T.walkToImg(115, 36, meta, 'capital');
+assert.ok(Math.abs(shi.x / 300 - 22.63) < 0.2, '史可法应落在 HAR 起点列 22');
+assert.ok(Math.abs(shi.y / 300 - 6.96) < 0.2, '史可法应落在 HAR 起点行 6–7 交界（7_22 / 6_22）');
+var shiBack = T.imgToWalk(shi.x, shi.y, meta, 'capital');
+assert.ok(Math.abs(shiBack.tx - 115) < 1e-6);
+assert.ok(Math.abs(shiBack.ty - 36) < 1e-6);
+
+var che = T.walkToImg(110, 83, meta, 'capital');
+assert.ok(che.x > 5200 && che.x < 6100, '京城车夫应在市场南侧街道');
+assert.ok(che.y > 2400 && che.y < 3000, '京城车夫不应被拉到图顶或图底');
 
 T.cam.mapId = 'capital';
-T.cam.x = mid.x;
-T.cam.y = mid.y;
+T.cam.x = shi.x;
+T.cam.y = shi.y;
 T.cam.scale = 1;
 T.cam.cx = 500;
 T.cam.cy = 300;
 T._active = true;
-var scr = T.worldToScreen(110 * 40, 83 * 40);
+var scr = T.worldToScreen(115 * 40, 36 * 40);
 assert.ok(Math.abs(scr.x - 500) < 0.01);
 assert.ok(Math.abs(scr.y - 300) < 0.01);
 var world = T.screenToWorld(500, 300);
-assert.ok(Math.abs(world.x - 110 * 40) < 0.01);
-assert.ok(Math.abs(world.y - 83 * 40) < 0.01);
+assert.ok(Math.abs(world.x - 115 * 40) < 0.01);
+assert.ok(Math.abs(world.y - 36 * 40) < 0.01);
 
 assert.strictEqual(T.VIEW_NATIVE, 1000);
 assert.ok(Math.abs(T.displayScale(1000) - 1) < 1e-9);

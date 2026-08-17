@@ -468,16 +468,16 @@ html, body {
 }
 .hud-acts {
   position: absolute;
-  top: 0.35cqw;
-  left: 42%;
+  top: 0.2cqw;
+  left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 0.15cqw;
+  gap: 0.1cqw;
   z-index: 5;
   pointer-events: auto;
 }
 .hud-acts button {
-  width: 3.6cqw;
+  width: 5.8cqw;
   background: transparent;
   border: 0;
   color: #e8f6c8;
@@ -491,8 +491,8 @@ html, body {
   padding: 0;
 }
 .hud-acts img {
-  width: 3.6cqw;
-  height: 3.6cqw;
+  width: 5.8cqw;
+  height: 5.8cqw;
   object-fit: contain;
   filter: drop-shadow(0 2px 4px #000);
 }
@@ -500,7 +500,7 @@ html, body {
 .hud-acts button:hover { filter: brightness(1.18); }
 #auto-banner {
   position: absolute;
-  top: 5.6cqw;
+  top: 6.4cqw;
   left: 50%;
   transform: translateX(-50%);
   width: 16cqw;
@@ -535,7 +535,7 @@ html, body {
 
 #target-frame {
   position: absolute;
-  top: 5.6cqw;
+  top: 6.4cqw;
   left: 50%;
   transform: translateX(-50%);
   min-width: 18cqw;
@@ -561,21 +561,21 @@ html, body {
 
 .side-right {
   position: absolute;
-  right: 0.4cqw;
-  top: 0.4cqw;
-  width: 17.6cqw;
+  right: 0.2cqw;
+  top: 0.2cqw;
+  width: 16.4cqw;
   display: flex;
   flex-direction: column;
-  gap: 0.6cqw;
+  gap: 0.4cqw;
   z-index: 4;
   pointer-events: auto;
   overflow: visible;
 }
 .minimap-wrap {
   position: relative;
-  width: 16.2cqw;
-  height: 13.7cqw;
-  margin: 0 auto 0.4cqw;
+  width: 15.2cqw;
+  height: 12.9cqw;
+  margin: 0 auto 0.2cqw;
   overflow: visible;
   z-index: 5;
 }
@@ -642,7 +642,7 @@ html, body {
   line-height: 1;
   box-shadow: 0 0 0 1px rgba(4, 16, 18, 0.55), 0 1px 4px rgba(0, 0, 0, 0.45);
   white-space: nowrap;
-  --r: 6.7cqw;
+  --r: 6.3cqw;
   transform: translate(-50%, -50%) rotate(var(--a)) translateY(var(--r)) rotate(calc(-1 * var(--a)));
 }
 .map-tools button:nth-child(1) { --a: 148deg; }
@@ -752,7 +752,7 @@ html, body {
   padding: 8px 10px;
   font-size: 12px;
   line-height: 1.55;
-  max-height: 26cqw;
+  max-height: 22cqw;
   overflow: auto;
 }
 .quest-tabs {

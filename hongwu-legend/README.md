@@ -6,7 +6,7 @@
 
 Windows 解压后双击 `start.bat`。Mac 解压后双击 `大明传说.app`，或右键打开 `启动游戏.command`。
 
-启动器会先起本地服，**等服务就绪再打开浏览器**（测试号 `demo` / `123456`）。登录页应显示 **v20260817j**，没有这个版本号就是旧包。没有 Node 时自动改用 Python。账号、角色、聊天、BOSS 都写在本机 `data/hongwu.db`（SQLite，表结构按 MySQL，以后可换库）。终端窗口不要关。
+启动器会先起本地服，**等服务就绪再打开浏览器**（测试号 `demo` / `123456`）。登录页应显示 **v20260817k**，没有这个版本号就是旧包。没有 Node 时自动改用 Python。账号、角色、聊天、BOSS 都写在本机 `data/hongwu.db`（SQLite，表结构按 MySQL，以后可换库）。终端窗口不要关。
 
 ```bash
 cd hongwu-legend

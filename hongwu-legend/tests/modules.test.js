@@ -126,6 +126,8 @@ assert.ok(art.indexOf("assets/ingame/role/body_") >= 0, '应加载原作时装�
   'tools/fetch-skill-icons.py',
   'assets/ingame/maptiles/manifest.json',
   'assets/ingame/maptiles/jing_cheng.jpg',
+  'assets/ingame/viewui/smallicon/kftt.png',
+  'assets/ingame/viewui/smallicon/hero.png',
   'assets/ingame/skills/21209001.png',
   'assets/ingame/skills/21103002.png'
 ].forEach(function (f) {
@@ -136,7 +138,9 @@ var tileMan = JSON.parse(fs.readFileSync(path.join(root, 'assets/ingame/maptiles
 assert.strictEqual(tileMan.tileSize, 300);
 assert.strictEqual(tileMan.maps.jing_cheng.cols, 26);
 assert.strictEqual(tileMan.maps.jing_cheng.rows, 16);
-assert.ok(tileMan.maps.jing_cheng.nativeW > tileMan.maps.jing_cheng.nativeH, '京城拼图应为横向（行_列）');
+assert.strictEqual(tileMan.maps.jing_cheng.walkW, 175);
+assert.strictEqual(tileMan.maps.jing_cheng.walkH, 172);
+assert.strictEqual(tileMan.maps.jing_cheng.originX, 51);
 assert.ok(fs.statSync(path.join(root, 'assets/ingame/maptiles/jing_cheng.jpg')).size > 200000);
 var fetchPy = fs.readFileSync(path.join(root, 'tools/fetch-map-tiles.py'), 'utf8');
 assert.ok(fetchPy.indexOf('{row}_{col}.jpg') >= 0, '拉取脚本应写明切片文件名规则');
@@ -150,7 +154,7 @@ assert.ok(render.indexOf("class=\"skill-ico\"") >= 0, '技能栏应插入 skill-
 assert.ok(render.indexOf('assets/ingame/skills/') >= 0, '技能栏应使用入库技能图');
 
 var serverJs = fs.readFileSync(path.join(root, 'server.js'), 'utf8');
-assert.ok(serverJs.indexOf("VERSION = '20260817j'") >= 0, 'server.js 版本应为 20260817j');
+assert.ok(serverJs.indexOf("VERSION = '20260817k'") >= 0, 'server.js 版本应为 20260817k');
 assert.ok(serverJs.indexOf("require('./js/store.js')") >= 0, 'server.js 应使用本机数据库');
 assert.ok(core.indexOf('localStorage.setItem(SAVE_KEY') < 0, '角色存档不应再写入 localStorage');
 assert.ok(fs.readFileSync(path.join(root, 'js/api.js'), 'utf8').indexOf('localStorage.setItem(TOKEN_KEY') < 0, '登录令牌不应再写入 localStorage');
@@ -208,6 +212,10 @@ var miniHtml = play.slice(play.indexOf('class="minimap-wrap"'), play.indexOf('cl
 assert.ok(miniHtml.indexOf('class="map-tools"') >= 0, 'VIP榜图GM应围在小地图圆旁');
 assert.ok(miniHtml.indexOf('id="stage-act"') < 0, '打坐骑马不应再围在小地图上');
 assert.ok(css.indexOf('rotate(var(--a))') >= 0, '商城圆和小地图圆旁的功能钮应按圆周排列');
+assert.ok(play.indexOf('assets/ingame/viewui/smallicon/kftt.png') >= 0, '顶栏应用 HAR 里的原作活动图标');
+assert.ok(css.indexOf('width: 5.8cqw') >= 0, '顶栏活动图标应按原作 58px 比例');
+assert.ok(fs.readFileSync(path.join(root, 'js/maptiles.js'), 'utf8').indexOf('originX') >= 0, '京城等距投影应带 MCM X 向偏移');
+assert.ok(fs.readFileSync(path.join(root, 'assets/ingame/maptiles/manifest.json'), 'utf8').indexOf('"originX": 51') >= 0, '京城 MCM originX 应为 51');
 var dockCss = css.slice(css.indexOf('.dock {'), css.indexOf('.chat-box'));
 assert.ok(dockCss.indexOf('overflow: hidden') < 0, '底栏应允许商城圆周菜单溢出到舞台');
 assert.ok(play.indexOf('data-gender="f"') >= 0, '创角应有女侠');

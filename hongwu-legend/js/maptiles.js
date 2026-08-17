@@ -41,9 +41,11 @@
   };
 
   function walkSize(mapId, meta) {
+    /* 拼图像素对齐用 MCM 网格（京城 175×172）；寻路仍用 MAP_SIZE。 */
+    if (meta && meta.walkW && meta.walkH) return { w: meta.walkW, h: meta.walkH };
     var sz = root.GameData && root.GameData.MAP_SIZE && root.GameData.MAP_SIZE[mapId];
     if (sz && sz.w && sz.h) return sz;
-    return { w: (meta && meta.walkW) || 50, h: (meta && meta.walkH) || 36 };
+    return { w: 50, h: 36 };
   }
 
   T.folderOf = function (mapId) {
@@ -95,6 +97,7 @@
       hh: nativeH / span,
       ox: walk.h * (nativeW / span),
       oy: (meta.originY || 0) * nativeH,
+      originX: meta.originX || 0,
       nativeW: nativeW,
       nativeH: nativeH
     };
@@ -103,14 +106,14 @@
   T.walkToImg = function (tx, ty, meta, mapId) {
     var iso = T.iso(meta, mapId);
     return {
-      x: iso.ox + (tx - ty) * iso.hw,
+      x: iso.ox + (tx - ty + iso.originX) * iso.hw,
       y: iso.oy + (tx + ty) * iso.hh
     };
   };
 
   T.imgToWalk = function (ix, iy, meta, mapId) {
     var iso = T.iso(meta, mapId);
-    var u = (ix - iso.ox) / iso.hw;
+    var u = (ix - iso.ox) / iso.hw - iso.originX;
     var v = (iy - iso.oy) / iso.hh;
     return { tx: (u + v) / 2, ty: (v - u) / 2 };
   };
@@ -200,7 +203,8 @@
     T.cam.y = pos.y;
     T.cam.scale = scale;
     T.cam.cx = w / 2;
-    T.cam.cy = h * 0.58;
+    /* HAR 京城镜头一次预加载约 6×5 块：1000×600 视口居中再加一圈缓冲。 */
+    T.cam.cy = h * 0.5;
     setScene(true);
     return true;
   };
