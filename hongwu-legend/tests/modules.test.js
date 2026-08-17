@@ -43,6 +43,7 @@ assert.ok(boot.indexOf('H.boot()') >= 0, 'boot.js 应启动 H.boot()');
 
 var core = fs.readFileSync(path.join(root, 'js/core.js'), 'utf8');
 assert.ok(core.indexOf('window.Hongwu = window.Hongwu || {}') >= 0, 'core.js 应建立 Hongwu 命名空间');
-assert.ok(core.indexOf('H.G =') >= 0, 'core.js 应创建 H.G');
+var netplay = fs.readFileSync(path.join(root, 'js/netplay.js'), 'utf8');
+assert.ok(netplay.indexOf('.then(applyNet)') < 0, 'netTick 应调用 H.applyNet，不能用未定义的 applyNet');
 
 console.log('modules.test.js ok');

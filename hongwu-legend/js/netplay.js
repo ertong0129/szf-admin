@@ -84,7 +84,7 @@
       nation: p.nation || 'ming',
       sit: !!p.sit,
       facing: p.facing || 0
-    }).then(applyNet).catch(function () {});
+    }).then(function (snap) { H.applyNet(snap); }).catch(function () {});
   }
 
   H.applyNet = function (snap) {
