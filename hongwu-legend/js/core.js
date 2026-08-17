@@ -174,8 +174,8 @@
     var mapId = data.mapId || 'taiping';
     if (D.MAP_META[mapId] && D.MAP_META[mapId].instance) {
       mapId = 'capital';
-      G.player.x = 20 * TILE;
-      G.player.y = 20 * TILE;
+      G.player.x = 122 * TILE;
+      G.player.y = 68 * TILE;
       G.instance = null;
     }
     H.buildMap(mapId);

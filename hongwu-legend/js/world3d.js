@@ -32,7 +32,7 @@
       scene.background = new THREE.Color(0x6e96aa);
       scene.fog = new THREE.FogExp2(0x6e96aa, 0.018);
 
-      camera = new THREE.PerspectiveCamera(30, 1, 0.1, 180);
+      camera = new THREE.PerspectiveCamera(30, 1, 0.1, 260);
       camera.position.set(14.4, 14.2, 14.4);
 
       renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
@@ -170,7 +170,8 @@
   function bakeCanvas(grid, mapId, waterOnly) {
     var Gnd = root.GroundPaint;
     var gh = grid.length, gw = grid[0].length;
-    var cell = waterOnly ? 16 : 24;
+    var cityTex = !waterOnly && mapId === 'capital' && root.Art && Art.cityRadar && Art.cityRadar(mapId);
+    var cell = waterOnly ? 16 : (cityTex ? 8 : 24);
     var c = document.createElement('canvas');
     c.width = gw * cell;
     c.height = gh * cell;
@@ -370,7 +371,7 @@
     } else if (mapId === 'tower') {
       fogCol = 0x2a1838; fogD = 0.028;
       } else if (mapId === 'capital' || mapId === 'kaifeng') {
-      fogCol = 0xa8bcc0; fogD = 0.011;
+      fogCol = 0xa8bcc0; fogD = mapId === 'capital' ? 0.006 : 0.011;
     } else if (mapId === 'desert' || mapId === 'tumu' || mapId === 'xiliang') {
       fogCol = 0xc4a070; fogD = 0.016;
     }
@@ -408,6 +409,7 @@
     waterMesh.renderOrder = 1;
     scene.add(waterMesh);
 
+    if (mapId === 'capital') return;
     var placed = {};
     for (var y = 0; y < grid.length; y++) {
       for (var x = 0; x < grid[0].length; x++) {

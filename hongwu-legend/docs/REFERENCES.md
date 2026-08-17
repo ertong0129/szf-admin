@@ -75,7 +75,9 @@
 | `com/assets/role/jiaosebg.png` | 角色面板背景 | 200 |
 | `com/ui/role/man.swf` `woman.swf` | 预渲染角色立绘帧 | 200 |
 
-局内用的是 `MingGame.swf` 再去拉的公开位图：`com/ui/npc/{id}.swf` 预渲染立绘帧、`com/npcs/` 头像与半身像、`com/maps/world.swf` `country.swf`、`com/assets/headImage/`、`com/assets/role/jiaosebg.png`，以及 `viewUI` / `mingUI` / `smallMap` 里的 JPEG/PNG 切图。没有把 SWF 整包打进仓库，也没有去解协议或加密模块。学习服用到的切图放在 `assets/ingame/viewui/` 与 `assets/ingame/map/`。局内 HUD 对齐公开 `viewUI`：`skillbar.jpg` 整条底栏、`window.png` 青玉圆框做小地图、人物框按 174×86 原尺寸叠、菜单用原作「角色 / 背包 / 宠物」等金标小图。京城 / 开封地面会半透明叠对应 `smallMap` 俯视图，不把 SWF 入库。
+局内用的是 `MingGame.swf` 再去拉的公开位图：`com/ui/npc/{id}.swf` 预渲染立绘帧、`com/npcs/` 头像与半身像、`com/maps/world.swf` `country.swf`、`com/assets/headImage/`、`com/assets/role/jiaosebg.png`，以及 `viewUI` / `mingUI` / `smallMap` 里的 JPEG/PNG 切图。没有把 SWF 整包打进仓库，也没有去解协议或加密模块。学习服用到的切图放在 `assets/ingame/viewui/` 与 `assets/ingame/map/`。局内 HUD 对齐公开 `viewUI`：`skillbar.jpg` 整条底栏、`window.png` 青玉圆框做小地图、人物框按 174×86 原尺寸叠、菜单用原作「角色 / 背包 / 宠物」等金标小图。
+
+京城布局对照公开 `com/data/pos.txt`（map 13100，与 4399 明军水兵 [124,63] 一致），地图约 140×130 格，不再用手写 50×36 三座假房子。地面直接铺公开 `jing_cheng.jpg` 俯视图（碰撞掩码 `.mcm` 返回 403，城内大面积可走）。NPC 坐标写入 `js/data.js` 的 `D.NPC_TILES`，不把 `pos.txt` 整包入库。
 
 从公开 `MingGame.swf` 抽出的界面文案（仅作玩法核对，不入库）包括：`鄱阳湖大战`、`大明英雄副本`、`在副本地图中不能进行地图跳转`、`在副本地图中不能自动寻路`、`立即在原地复活`、`返回入口`、`离开副本`、`暂停挑战`、`自动闯关`、`本关卡尚未开通`、`英雄礼包`。怪物专名如张定边、刀兵等在客户端包里没有完整列表，对照 4399 副本说明补齐。
 

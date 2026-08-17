@@ -65,12 +65,14 @@
     G.towerAuto = false;
     var from = G.mapId;
     G.instance = null;
-    var tx = 20, ty = 20;
-    if (from === 'poyang') { tx = 36; ty = 22; }
-    else if (from === 'tower') { tx = 40; ty = 14; }
-    else if (from === 'road') { tx = 32; ty = 20; }
-    else if (from === 'fish' || from === 'treasure' || from === 'arena') { tx = 18; ty = 14; }
-    else if (from === 'mentor') { tx = 30; ty = 16; }
+    var land = (D.CAPITAL_LAND) || {};
+    var tx = (land.center && land.center[0]) || 122;
+    var ty = (land.center && land.center[1]) || 65;
+    if (from === 'poyang') { tx = 122; ty = 63; }
+    else if (from === 'tower') { tx = 124; ty = 59; }
+    else if (from === 'road') { tx = 124; ty = 71; }
+    else if (from === 'fish' || from === 'treasure' || from === 'arena') { tx = 124; ty = 55; }
+    else if (from === 'mentor') { tx = 113; ty = 122; }
     if (from === 'treasure') H.settleTreasure();
     if (from === 'jingxin' || from === 'palace' || from === 'pagoda') {
       H.travel('kaifeng', 18, 20);

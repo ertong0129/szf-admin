@@ -77,7 +77,7 @@
         if (!pt._cd) {
           pt._cd = 1.2;
           if (pt.to === 'poyang' && G.mapId !== 'poyang') {
-            H.travel('capital', 36, 22);
+            H.travel('capital', 122, 63);
             H.toast('找明军水兵，选择难度进入鄱阳湖大战');
           } else if (H.inInstance() && (pt.to === 'capital' || pt.to === 'kaifeng')) {
             H.leaveInstance();
@@ -277,7 +277,7 @@
     if (cart.hp <= 0) {
       H.toast('镖车被劫，任务失败');
       G.escort = null;
-      H.travel('capital', 32, 20);
+      H.travel('capital', 124, 71);
       return;
     }
     if (cart.x > 52 * TILE) {
@@ -288,7 +288,7 @@
       G.escort = null;
       H.questCheck();
       if (H.addActivity) H.addActivity(20);
-      H.travel('capital', 32, 20);
+      H.travel('capital', 124, 71);
     }
   }
 

@@ -135,7 +135,7 @@
     H.closeMapOverlay();
     G.guide = null;
     if (id === 'fish' || id === 'treasure' || id === 'arena') {
-      H.travel('capital', 18, 22);
+      H.travel('capital', 124, 55);
       H.toast('找沐英进入' + node.name);
       return;
     }

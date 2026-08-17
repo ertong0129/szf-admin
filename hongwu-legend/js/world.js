@@ -76,15 +76,12 @@
       H.rect(g, 34, 16, 10, 10, 'house');
       H.scatter(g, 'rock', 12, function (t) { return t === 'dock'; });
     } else if (id === 'capital') {
-      H.fill(g, 'stone');
-      H.rect(g, 0, 0, 50, 36, 'stone');
-      for (var x = 0; x < 50; x++) { H.setTile(g, x, 0, 'wall'); H.setTile(g, x, 35, 'wall'); }
-      for (var y = 0; y < 36; y++) { H.setTile(g, 0, y, 'wall'); H.setTile(g, 49, y, 'wall'); }
-      H.rect(g, 6, 6, 8, 6, 'house'); H.rect(g, 6, 5, 8, 1, 'roof');
-      H.rect(g, 20, 8, 10, 7, 'house'); H.rect(g, 20, 7, 10, 1, 'roof');
-      H.rect(g, 36, 10, 8, 6, 'house'); H.rect(g, 36, 9, 8, 1, 'roof');
-      H.rect(g, 8, 18, 34, 4, 'dirt');
-      H.rect(g, 22, 4, 4, 28, 'dirt');
+      w = (D.MAP_SIZE && D.MAP_SIZE.capital && D.MAP_SIZE.capital.w) || 140;
+      h = (D.MAP_SIZE && D.MAP_SIZE.capital && D.MAP_SIZE.capital.h) || 130;
+      g = H.makeGrid(w, h, 'stone');
+      var cx, cy;
+      for (cx = 0; cx < w; cx++) { H.setTile(g, cx, 0, 'wall'); H.setTile(g, cx, h - 1, 'wall'); }
+      for (cy = 0; cy < h; cy++) { H.setTile(g, 0, cy, 'wall'); H.setTile(g, w - 1, cy, 'wall'); }
     } else if (id === 'tower') {
       H.fill(g, 'arena');
       for (x = 0; x < 26; x++) for (y = 0; y < 26; y++) {
@@ -289,16 +286,18 @@
     }
     G.fires = [];
     if (id === 'taiping') G.fires = [{ x: 24.5 * TILE, y: 18.5 * TILE }];
-    if (id === 'capital') G.fires = [{ x: 24 * TILE, y: 20 * TILE }, { x: 12 * TILE, y: 20 * TILE }];
     if (id === 'capital') {
+      G.fires = [{ x: 124.5 * TILE, y: 54.5 * TILE }, { x: 68.5 * TILE, y: 53.5 * TILE }];
       for (var yi = 0; yi < 4; yi++) {
-        var yx = H.rand(10, 40) * TILE, yy = H.rand(10, 28) * TILE;
+        var yx = H.rand(20, 120) * TILE, yy = H.rand(20, 110) * TILE;
         if (H.canWalk(yx, yy)) G.herbs.push({ id: 'yibao', x: yx, y: yy, yibao: true });
       }
     }
   }
 
   H.npcPos = function (id, map) {
+    var tiles = D.NPC_TILES && D.NPC_TILES[id];
+    if (tiles) return { x: (tiles[0] + 0.5) * TILE, y: (tiles[1] + 0.5) * TILE };
     var table = {
       cunzheng: [19.5 * TILE, 17.6 * TILE],
       tiesmith: [28 * TILE, 17.6 * TILE],
@@ -311,21 +310,7 @@
       xiaoliu: [22.5 * TILE, 20 * TILE],
       xunyang: [30 * TILE, 12 * TILE],
       jingche: [10 * TILE, 20 * TILE],
-      xuda: [18 * TILE, 14 * TILE],
-      bagong: [24 * TILE, 12 * TILE],
-      yabiao: [32 * TILE, 20 * TILE],
-      shilian: [40 * TILE, 14 * TILE],
       chuansong: [6 * TILE, 18 * TILE],
-      shuibing: [36 * TILE, 22 * TILE],
-      lishizhen: [28 * TILE, 26 * TILE],
-      yiyi: [14 * TILE, 26 * TILE],
-      shenwansan: [12 * TILE, 16 * TILE],
-      jineng: [22 * TILE, 18 * TILE],
-      muying: [18 * TILE, 22 * TILE],
-      limengyang: [30 * TILE, 16 * TILE],
-      yuelao: [34 * TILE, 12 * TILE],
-      shichang: [16 * TILE, 20 * TILE],
-      yushi: [26 * TILE, 16 * TILE],
       yufu: [8 * TILE, 16 * TILE],
       baoku: [8 * TILE, 12 * TILE],
       jiaochang: [6 * TILE, 12 * TILE],

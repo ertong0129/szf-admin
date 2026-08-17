@@ -356,6 +356,7 @@
 
   Gnd.paintCanvas = function (ctx, grid, mapId, cell) {
     cell = cell || 24;
+    if (mapId === 'capital' && Gnd.paintCityOverlay(ctx, grid, mapId, cell)) return;
     var gh = grid.length;
     var gw = grid[0].length;
     var x, y, kind, pal, k2, mid;
@@ -395,19 +396,21 @@
   };
 
   Gnd.paintCityOverlay = function (ctx, grid, mapId, cell) {
-    if (!ctx || typeof ctx.drawImage !== 'function') return;
+    if (!ctx || typeof ctx.drawImage !== 'function') return false;
     var Art = (typeof window !== 'undefined' && window.Art) ? window.Art
       : (typeof root !== 'undefined' && root.Art) ? root.Art : null;
-    if (!Art || !Art.cityRadar) return;
+    if (!Art || !Art.cityRadar) return false;
     var img = Art.cityRadar(mapId);
-    if (!img || !img.width) return;
+    if (!img || !img.width) return false;
     var gw = grid[0].length;
     var gh = grid.length;
+    var asBase = mapId === 'capital';
     ctx.save();
-    ctx.globalAlpha = 0.58;
-    if (ctx.globalCompositeOperation) ctx.globalCompositeOperation = 'overlay';
+    ctx.globalAlpha = asBase ? 1 : 0.58;
+    if (!asBase && ctx.globalCompositeOperation) ctx.globalCompositeOperation = 'overlay';
     ctx.drawImage(img, 0, 0, gw * cell, gh * cell);
     ctx.restore();
+    return asBase;
   };
 
   Gnd.paintWaterMask = function (ctx, grid, mapId, cell) {

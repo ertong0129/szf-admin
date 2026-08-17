@@ -280,7 +280,7 @@
 
   D.NPCS = {
     cunzheng: { id: 'cunzheng', name: '村正', title: '太平村知事', map: 'taiping', lines: ['洪武元年，太平村刚从兵火里喘过气来。', '村外野猪成灾，壮丁又被征去守江。你若肯出手，全村感激。'] },
-    chefu: { id: 'chefu', name: '车夫', title: '太平车夫', map: 'taiping', travel: 'capital:8:30', lines: ['要进京，坐我这车。应天城里徐达、百工炉、明军水兵都在。'] },
+    chefu: { id: 'chefu', name: '车夫', title: '太平车夫', map: 'taiping', travel: 'capital:122:68', lines: ['要进京，坐我这车。应天城里徐达、百工炉、明军水兵都在。'] },
     tiesmith: { id: 'tiesmith', name: '铁匠', title: '装备锻造师', map: 'taiping', shop: 'smith', lines: ['刀钝了就来找我。京城师傅的手艺更地道。'] },
     yaopu: { id: 'yaopu', name: '王翠翘', title: '杂货商人', map: 'taiping', shop: 'drug', lines: ['草药能炼药。路边的乌风草、三七别浪费。'] },
     shanshan: { id: 'shanshan', name: '姗姗', title: '仓库管理员', map: 'taiping', warehouse: true, lines: ['第一个仓库免费。东西多了就寄我这儿，最多开四仓。'] },
@@ -317,11 +317,93 @@
     yuelao: { id: 'yuelao', name: '月老', title: '月下老人', map: 'capital', rank: true, lines: ['点好友送花可增亲密度。鲜花榜奖励通过邮件发放。'] },
     shichang: { id: 'shichang', name: '市场司事', title: '交易市场', map: 'capital', market: true, lines: ['装备、技能书、药品、灵石、坐骑宠物、杂货，摊位货物按类浏览。'] },
     yushi: { id: 'yushi', name: '吏部主事', title: '官职', map: 'capital', office: true, lines: ['按等级授予官职，有属性加成。可在角色面板查看。'] },
+    jingzhishi: { id: 'jingzhishi', name: '京城知事', title: '应天府', map: 'capital', lines: ['任务自动化，每天来找我。学习服日常仍在 U 面板。'] },
+    jingtie: { id: 'jingtie', name: '铁匠', title: '装备锻造师', map: 'capital', shop: 'smith', lines: ['来亲手打造几件神兵利器吧。升星、开孔去旁边百工炉。'] },
+    xiaoqi: { id: 'xiaoqi', name: '小七', title: '武器店伙计', map: 'capital', shop: 'smith', lines: ['小店货物齐全，童叟无欺。快来挑两件装备吧。'] },
+    xiaoba: { id: 'xiaoba', name: '小八', title: '防具店伙计', map: 'capital', shop: 'smith', lines: ['防具也在这儿。钝了就去铁匠铺。'] },
+    tangbohu: { id: 'tangbohu', name: '唐伯虎', title: '大才子', map: 'capital', lines: ['别人笑我太疯癫，我笑他人看不穿。'] },
+    gaoming: { id: 'gaoming', name: '高明', title: '累积经验', map: 'capital', lines: ['错过了日常任务，没关系。学习服经验仍按任务与打怪结算。'] },
+    jinwei: { id: 'jinwei', name: '禁卫将军', title: '京城禁卫', map: 'capital', lines: ['国战、攻城本学习服未开。守住城门便是。'] },
+    changyuchun: { id: 'changyuchun', name: '常遇春', title: '将军', map: 'capital', lines: ['给我十万大军，我便能横行天下。'] },
+    tanwei: { id: 'tanwei', name: '摆摊区管事', title: '摆摊区', map: 'capital', lines: ['城里可摆摊。按 K 支摊，货物按类上架。'] },
+    nanguan: { id: 'nanguan', name: '南门校尉', title: '往横涧山', map: 'capital', lines: ['出南门便是横涧山。太平村车夫也能送你回村。'] },
+    xiguan: { id: 'xiguan', name: '西门校尉', title: '西门', map: 'capital', lines: ['西去西凉、边城。开封要再转边城。'] },
+    beifa: { id: 'beifa', name: '北伐军伍长', title: '捕鱼儿海', map: 'capital', lines: ['捕鱼儿海、大明宝藏、校场，去找沐英报名。'] },
     yufu: { id: 'yufu', name: '渔夫', title: '捕鱼儿海', map: 'fish', lines: ['这片海出宠物灵石。打渔寇、采珠，离开时回京。'] },
     baoku: { id: 'baoku', name: '宝库看守', title: '大明宝藏', map: 'treasure', lines: ['采集宝箱积宝藏积分。时间到或离开时结算。'] },
     jiaochang: { id: 'jiaochang', name: '校尉', title: '竞技场', map: 'arena', lines: ['挑战校场教头，或与同场玩家切磋。'] },
     tongxin: { id: 'tongxin', name: '同心使者', title: '师徒同心', map: 'mentor', lines: ['师徒并肩。击败场中敌人，离开时回京城李梦阳处。'] }
   };
+
+  /* 京城格子取公开 pos.txt（map 13100）。4399 明军水兵 [124,63] 与表一致。 */
+  D.MAP_SIZE = { capital: { w: 140, h: 130 } };
+  D.CAPITAL_LAND = {
+    chefu: [122, 68],
+    shuibing: [122, 63],
+    shilian: [124, 59],
+    yabiao: [124, 71],
+    muying: [124, 55],
+    limengyang: [113, 122],
+    bagong: [113, 119],
+    wild: [85, 118],
+    boyang: [134, 63],
+    pingjiang: [134, 101],
+    xiliang: [5, 64],
+    border: [5, 69],
+    center: [112, 65]
+  };
+  D.NPC_TILES = {
+    jingche: [124, 67],
+    shuibing: [124, 63],
+    muying: [124, 55],
+    shilian: [124, 59],
+    yabiao: [124, 71],
+    jingtie: [113, 116],
+    bagong: [113, 119],
+    jineng: [113, 113],
+    limengyang: [113, 122],
+    gaoming: [113, 125],
+    xiaoqi: [113, 110],
+    lishizhen: [112, 56],
+    yiyi: [112, 60],
+    shenwansan: [112, 65],
+    yushi: [112, 52],
+    shichang: [112, 48],
+    yuelao: [111, 40],
+    xuda: [110, 83],
+    tangbohu: [111, 36],
+    jingzhishi: [107, 65],
+    jinwei: [1, 64],
+    changyuchun: [111, 77],
+    tanwei: [68, 53],
+    nanguan: [85, 120],
+    xiguan: [1, 69],
+    beifa: [126, 46],
+    xiaoba: [111, 93]
+  };
+  D.CAPITAL_CROWD = [
+    { id: 'weibin_a', name: '卫兵', title: '京城禁卫', x: 35, y: 83, lines: ['禁卫值守。城内不可对战。'] },
+    { id: 'xuxiake', name: '徐霞客', title: '旅行家', x: 46, y: 20, lines: ['大明的山山水水，总能给我不断探索的激情。'] },
+    { id: 'zhangfu', name: '张辅', title: '将军', x: 63, y: 21, lines: ['两军交战，攻人为下，攻心为上。'] },
+    { id: 'songyingxing', name: '宋应星', title: '天工', x: 64, y: 15, lines: ['看到百姓收成丰盈，我就心满意足了。'] },
+    { id: 'fuyoude', name: '傅友德', title: '将军', x: 79, y: 84, lines: ['没错，我就是传说中七战七胜的傅友德。'] },
+    { id: 'aimeili', name: '艾美丽', title: '美容师', x: 101, y: 42, lines: ['一天比一天美丽，皆因有我。学习服未开美容。'] },
+    { id: 'wanjianying', name: '万民英', title: '命理宗师', x: 107, y: 42, lines: ['我掐指一算，便知你最近要交好运了。'] },
+    { id: 'wangziqiao', name: '王紫翘', title: '杂货', x: 111, y: 96, lines: ['金创药去李时珍处。我这儿只聊聊市井。'] },
+    { id: 'dongxiaowan', name: '董小宛', title: '活动专员', x: 111, y: 100, lines: ['常来做活动，收获一定多。日常在 U。'] },
+    { id: 'jiexie', name: '解缙', title: '翰林学士', x: 115, y: 36, lines: ['永乐大典之后，再无能出其右者。'] },
+    { id: 'kangmaocai', name: '康茂才', title: '将军', x: 114, y: 76, lines: ['徐将军就在附近。建功立业找徐达。'] },
+    { id: 'baoku_man', name: '宝藏向导', title: '大明宝藏', x: 126, y: 51, lines: ['宝藏地图油水很足。报名仍找沐英。'] },
+    { id: 'dongmen1', name: '卫兵', title: '东门', x: 121, y: 101, lines: ['东出平江。'] },
+    { id: 'dongmen2', name: '卫兵', title: '东门', x: 129, y: 101, lines: ['东出平江。'] },
+    { id: 'dongmen3', name: '卫兵', title: '东门', x: 133, y: 101, lines: ['东出平江。'] },
+    { id: 'dongmen4', name: '卫兵', title: '东门', x: 137, y: 101, lines: ['城门在侧，小心车马。'] },
+    { id: 'beimen', name: '卫兵', title: '北门', x: 119, y: 36, lines: ['北面宫墙。'] }
+  ];
+  D.CAPITAL_CROWD.forEach(function (n) {
+    D.NPCS[n.id] = { id: n.id, name: n.name, title: n.title, map: 'capital', lines: n.lines };
+    D.NPC_TILES[n.id] = [n.x, n.y];
+  });
 
   D.SHOPS = {
     smith: [
@@ -394,7 +476,7 @@
   D.WAREHOUSE = { cap: 36, maxTabs: 4, unlock: [0, 200, 500, 1000] };
 
   D.WORLD_NODES = [
-    { id: 'capital', name: '京城', left: '48%', top: '44%', tx: 20, ty: 20, desc: '主城' },
+    { id: 'capital', name: '京城', left: '48%', top: '44%', tx: 122, ty: 68, desc: '主城' },
     { id: 'taiping', name: '太平村', left: '54%', top: '58%', tx: 24, ty: 17, desc: '新手村' },
     { id: 'wild', name: '横涧山', left: '62%', top: '50%', tx: 24, ty: 18, desc: '可通往神农架' },
     { id: 'shennong', name: '神农架', left: '38%', top: '38%', tx: 24, ty: 18, desc: '灵宠 / 猛犸象' },
@@ -553,38 +635,39 @@
   D.PORTALS = {
     taiping: [
       { x: 47, y: 18, to: 'wild', tx: 3, ty: 18, label: '横涧山' },
-      { x: 24, y: 2, to: 'capital', tx: 8, ty: 30, label: '京城' }
+      { x: 24, y: 2, to: 'capital', tx: 122, ty: 68, label: '京城' }
     ],
     wild: [
       { x: 1, y: 18, to: 'taiping', tx: 45, ty: 18, label: '太平村' },
       { x: 24, y: 1, to: 'shennong', tx: 24, ty: 32, label: '神农架' },
-      { x: 47, y: 18, to: 'capital', tx: 40, ty: 20, label: '京城' }
+      { x: 47, y: 18, to: 'capital', tx: 85, ty: 118, label: '京城' }
     ],
     shennong: [
       { x: 24, y: 34, to: 'wild', tx: 24, ty: 3, label: '横涧山' }
     ],
     capital: [
-      { x: 8, y: 33, to: 'taiping', tx: 24, ty: 4, label: '太平村' },
-      { x: 46, y: 22, to: 'boyang', tx: 4, ty: 18, label: '鄱阳湖' },
-      { x: 46, y: 12, to: 'pingjiang', tx: 4, ty: 18, label: '平江' },
-      { x: 4, y: 12, to: 'xiliang', tx: 44, ty: 18, label: '西凉' },
-      { x: 4, y: 22, to: 'border', tx: 44, ty: 18, label: '边城' }
+      { x: 122, y: 72, to: 'taiping', tx: 24, ty: 4, label: '太平村' },
+      { x: 137, y: 63, to: 'boyang', tx: 4, ty: 18, label: '鄱阳湖' },
+      { x: 136, y: 101, to: 'pingjiang', tx: 4, ty: 18, label: '平江' },
+      { x: 85, y: 127, to: 'wild', tx: 24, ty: 3, label: '横涧山' },
+      { x: 3, y: 64, to: 'xiliang', tx: 44, ty: 18, label: '西凉' },
+      { x: 3, y: 69, to: 'border', tx: 44, ty: 18, label: '边城' }
     ],
     boyang: [
-      { x: 2, y: 18, to: 'capital', tx: 44, ty: 22, label: '京城' }
+      { x: 2, y: 18, to: 'capital', tx: 134, ty: 63, label: '京城' }
     ],
     pingjiang: [
-      { x: 2, y: 18, to: 'capital', tx: 44, ty: 12, label: '京城' },
+      { x: 2, y: 18, to: 'capital', tx: 134, ty: 101, label: '京城' },
       { x: 46, y: 18, to: 'xinghua', tx: 4, ty: 18, label: '杏花岭' }
     ],
     xinghua: [
       { x: 2, y: 18, to: 'pingjiang', tx: 44, ty: 18, label: '平江' }
     ],
     xiliang: [
-      { x: 46, y: 18, to: 'capital', tx: 6, ty: 12, label: '京城' }
+      { x: 46, y: 18, to: 'capital', tx: 5, ty: 64, label: '京城' }
     ],
     border: [
-      { x: 46, y: 18, to: 'capital', tx: 6, ty: 22, label: '京城' },
+      { x: 46, y: 18, to: 'capital', tx: 5, ty: 69, label: '京城' },
       { x: 4, y: 18, to: 'kaifeng', tx: 40, ty: 18, label: '开封' }
     ],
     kaifeng: [
@@ -615,25 +698,25 @@
       { x: 2, y: 18, to: 'quanzhou', tx: 44, ty: 24, label: '泉州' }
     ],
     poyang: [
-      { x: 2, y: 18, to: 'capital', tx: 36, ty: 22, label: '离开副本' }
+      { x: 2, y: 18, to: 'capital', tx: 122, ty: 63, label: '离开副本' }
     ],
     tower: [
-      { x: 12, y: 22, to: 'capital', tx: 40, ty: 14, label: '离开副本' }
+      { x: 12, y: 22, to: 'capital', tx: 124, ty: 59, label: '离开副本' }
     ],
     road: [
-      { x: 2, y: 10, to: 'capital', tx: 20, ty: 20, label: '放弃押镖' }
+      { x: 2, y: 10, to: 'capital', tx: 124, ty: 71, label: '放弃押镖' }
     ],
     fish: [
-      { x: 2, y: 18, to: 'capital', tx: 18, ty: 14, label: '离开副本' }
+      { x: 2, y: 18, to: 'capital', tx: 124, ty: 55, label: '离开副本' }
     ],
     treasure: [
-      { x: 2, y: 12, to: 'capital', tx: 18, ty: 14, label: '离开副本' }
+      { x: 2, y: 12, to: 'capital', tx: 124, ty: 55, label: '离开副本' }
     ],
     arena: [
-      { x: 2, y: 12, to: 'capital', tx: 18, ty: 14, label: '退出竞技场' }
+      { x: 2, y: 12, to: 'capital', tx: 124, ty: 55, label: '退出竞技场' }
     ],
     mentor: [
-      { x: 2, y: 12, to: 'capital', tx: 30, ty: 16, label: '离开同心副本' }
+      { x: 2, y: 12, to: 'capital', tx: 113, ty: 122, label: '离开同心副本' }
     ],
     jingxin: [
       { x: 2, y: 12, to: 'kaifeng', tx: 18, ty: 20, label: '离开副本' }
@@ -704,6 +787,7 @@
     '世界 BOSS：每日出现在浙东或泉州。U 日常可看位置、伤害榜。第一刀/最后一刀/排名 1·2·3·5·8·11·15·19 可领奖；最后一刀所在阵营为归属国。',
     'L 信件，Y 传奇目标，O 排行，U 日常，I 明朝贵族。除恶令、天降异宝、活跃度在日常面板。宠物可洗灵/提悟/训练。',
     '元宝、银两、道具均分不绑定与绑定。优先消耗绑定银两与绑定道具。商店购得绑定；任务/日常奖绑定银两与绑定道具；打怪掉落不绑定。绑定物不能交易、摆摊。穿装备与坐骑装备后绑定。钱庄兑元宝用不绑定银两。',
+    '京城按公开 pos.txt（map 13100）铺 140×130 格：明军水兵 [124,63]，车夫在侧。地面用公开京城小地图，不再摆三座假房子。',
     '太平村与京城篝火旁打坐饮酒加经验。野外死亡可回村或原地健康复活（耗银）。资料对照 MingGame.swf 与 91wan。'
   ];
 

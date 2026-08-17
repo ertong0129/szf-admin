@@ -82,7 +82,7 @@ assert.ok(art.indexOf('A.drawDamage') >= 0, '伤害飘字应使用原作数字�
 });
 
 var serverJs = fs.readFileSync(path.join(root, 'server.js'), 'utf8');
-assert.ok(serverJs.indexOf("VERSION = '20260816r'") >= 0, 'server.js 版本应为 20260816r');
+assert.ok(serverJs.indexOf("VERSION = '20260816s'") >= 0, 'server.js 版本应为 20260816s');
 
 function assertWinBat(rel) {
   var buf = fs.readFileSync(path.join(root, rel));

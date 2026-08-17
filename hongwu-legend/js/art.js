@@ -114,10 +114,11 @@
   var NPC_SRC = {
     cunzheng: 'officer', tiesmith: 'smith', yaopu: 'fairy', xunshou: 'fox',
     chefu: 'officer', bagong: 'smith', yabiao: 'guard', shilian: 'dao',
-    shuibing: 'guard', chuansong: 'wanderer',
+    shuibing: 'guard', chuansong: 'wanderer', jingtie: 'smith', xiaoqi: 'smith', xiaoba: 'smith',
     xuda: 'officer', lishizhen: 'healer', shenwansan: 'elder', zhangsanfeng: 'elder',
     muying: 'guard', limengyang: 'officer', yuelao: 'elder', yushi: 'officer',
     shichang: 'smith', yufu: 'wanderer', baoku: 'guard', jiaochang: 'dao', tongxin: 'elder',
+    jinwei: 'guard', changyuchun: 'guard', nanguan: 'guard', xiguan: 'guard', tangbohu: 'wanderer',
     liubowen: 'elder', zhuwenzheng: 'guard', pingzhi: 'officer', lanyu: 'guard',
     zhusu: 'officer', wangyangming: 'elder',
     zhangxiaoxiao: 'fairy', jinyi: 'guard', tieta: 'dao',
@@ -130,13 +131,13 @@
     shilian: 'portraitMaster', shuibing: 'portraitCun', chuansong: 'portraitLady', tiesmith: 'portraitCun',
     xuda: 'portraitXuda', lishizhen: 'portraitLi', zhangsanfeng: 'portraitZhang',
     muying: 'portraitMu', yuelao: 'portraitYue', limengyang: 'portraitMaster', yushi: 'portraitXuda',
-    shenwansan: 'portraitShen'
+    shenwansan: 'portraitShen', jingtie: 'portraitCun', jingzhishi: 'portraitCun', jinwei: 'portraitXuda'
   };
 
   var NPC_ICON = {
     cunzheng: 'iconCun', tiesmith: 'iconTie', yaopu: 'iconShop', xunshou: 'iconFarmer',
     chefu: 'iconChe', bagong: 'iconElder', yabiao: 'iconMaster', shilian: 'iconMaster',
-    chuansong: 'iconBoat', shuibing: 'iconBoat',
+    chuansong: 'iconBoat', shuibing: 'iconBoat', jingtie: 'iconTie',
     xuda: 'iconXuda', lishizhen: 'iconLi', shenwansan: 'iconShen', zhangsanfeng: 'iconZhang',
     muying: 'iconMu', limengyang: 'iconClan', yushi: 'iconXuda'
   };
