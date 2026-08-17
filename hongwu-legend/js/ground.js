@@ -356,7 +356,8 @@
 
   Gnd.paintCanvas = function (ctx, grid, mapId, cell) {
     cell = cell || 24;
-    if (mapId === 'capital' && Gnd.paintCityOverlay(ctx, grid, mapId, cell)) return;
+    var city = (root.GameData && root.GameData.CITY_GROUND) || {};
+    if (city[mapId] && Gnd.paintCityOverlay(ctx, grid, mapId, cell)) return;
     var gh = grid.length;
     var gw = grid[0].length;
     var x, y, kind, pal, k2, mid;
@@ -404,7 +405,8 @@
     if (!img || !img.width) return false;
     var gw = grid[0].length;
     var gh = grid.length;
-    var asBase = mapId === 'capital';
+    var city = (root.GameData && root.GameData.CITY_GROUND) || {};
+    var asBase = !!city[mapId];
     ctx.save();
     ctx.globalAlpha = asBase ? 1 : 0.58;
     if (!asBase && ctx.globalCompositeOperation) ctx.globalCompositeOperation = 'overlay';

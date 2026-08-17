@@ -44,44 +44,68 @@
     return false;
   }
 
+  H.npcOccupied = function (mapId) {
+    var occ = {};
+    Object.keys(D.NPCS || {}).forEach(function (k) {
+      var n = D.NPCS[k];
+      if (!n || n.map !== mapId) return;
+      var t = D.NPC_TILES && D.NPC_TILES[k];
+      if (t) occ[t[0] + ',' + t[1]] = 1;
+    });
+    return occ;
+  };
+
+  H.keepNpcWalkable = function (g, mapId, t) {
+    var occ = H.npcOccupied(mapId);
+    Object.keys(occ).forEach(function (k) {
+      var p = k.split(',');
+      H.setTile(g, +p[0], +p[1], t || 'dirt');
+    });
+  };
+
   H.buildMap = function (id) {
-    var w = 50, h = 36;
+    var sz = (D.MAP_SIZE && D.MAP_SIZE[id]) || { w: 50, h: 36 };
+    var w = sz.w, h = sz.h;
     var g = H.makeGrid(w, h, 'grass');
+    var occ = H.npcOccupied(id);
     G.decals = [];
-    if (id === 'taiping') {
+    if (D.CITY_GROUND && D.CITY_GROUND[id]) {
+      H.fill(g, 'stone');
+      var cx, cy;
+      for (cx = 0; cx < w; cx++) { H.setTile(g, cx, 0, 'wall'); H.setTile(g, cx, h - 1, 'wall'); }
+      for (cy = 0; cy < h; cy++) { H.setTile(g, 0, cy, 'wall'); H.setTile(g, w - 1, cy, 'wall'); }
+      H.keepNpcWalkable(g, id, 'stone');
+    } else if (id === 'taiping') {
       H.fill(g, 'grass');
-      H.rect(g, 16, 12, 16, 12, 'dirt');
-      for (var i = 0; i < 50; i++) H.setTile(g, 24, i, i > 2 && i < 34 ? 'dirt' : g[Math.min(i, h - 1)][24]);
-      H.rect(g, 18, 14, 4, 3, 'house'); H.rect(g, 18, 13, 4, 1, 'roof');
-      H.rect(g, 26, 14, 4, 3, 'house'); H.rect(g, 26, 13, 4, 1, 'roof');
-      H.rect(g, 22, 20, 5, 3, 'house'); H.rect(g, 22, 19, 5, 1, 'roof');
-      H.rect(g, 0, 30, 50, 6, 'water');
-      H.scatter(g, 'tree', 36, function (t) { return t === 'grass'; });
+      H.rect(g, 44, 62, 14, 12, 'dirt');
+      H.rect(g, 66, 50, 10, 8, 'dirt');
+      H.rect(g, 34, 18, 12, 10, 'dirt');
+      H.rect(g, 52, 100, 12, 10, 'dirt');
+      H.rect(g, 10, 34, 10, 8, 'dirt');
+      H.rect(g, 58, 62, 4, 16, 'dirt');
+      H.rect(g, 0, 110, w, 5, 'water');
+      H.scatter(g, 'tree', 70, function (t, x, y) { return t === 'grass' && !occ[x + ',' + y]; });
+      H.keepNpcWalkable(g, id, 'dirt');
     } else if (id === 'wild') {
       H.fill(g, 'grass');
-      H.rect(g, 1, 16, 48, 4, 'dirt');
-      H.scatter(g, 'tree', 70, function (t) { return t === 'grass'; });
-      H.scatter(g, 'dirt', 40, function (t) { return t === 'grass'; });
-      H.rect(g, 36, 22, 10, 8, 'dirt');
+      H.rect(g, 1, 38, w - 2, 4, 'dirt');
+      H.rect(g, 50, 10, 12, 8, 'dirt');
+      H.rect(g, 96, 36, 10, 8, 'dirt');
+      H.scatter(g, 'tree', 110, function (t, x, y) { return t === 'grass' && !occ[x + ',' + y]; });
+      H.scatter(g, 'dirt', 50, function (t, x, y) { return t === 'grass' && !occ[x + ',' + y]; });
+      H.keepNpcWalkable(g, id, 'dirt');
     } else if (id === 'shennong') {
       H.fill(g, 'moss');
-      H.rect(g, 0, 0, 50, 36, 'moss');
-      H.scatter(g, 'tree', 90, function (t) { return t === 'moss'; });
-      H.scatter(g, 'water', 18, function (t) { return t === 'moss'; });
-      H.rect(g, 20, 14, 10, 8, 'dirt');
+      H.rect(g, 94, 112, 14, 12, 'dirt');
+      H.scatter(g, 'tree', 140, function (t, x, y) { return t === 'moss' && !occ[x + ',' + y]; });
+      H.scatter(g, 'water', 24, function (t, x, y) { return t === 'moss' && !occ[x + ',' + y]; });
+      H.keepNpcWalkable(g, id, 'dirt');
     } else if (id === 'poyang') {
       H.fill(g, 'water');
       H.rect(g, 2, 14, 46, 8, 'dock');
       H.rect(g, 18, 6, 16, 24, 'dock');
       H.rect(g, 34, 16, 10, 10, 'house');
       H.scatter(g, 'rock', 12, function (t) { return t === 'dock'; });
-    } else if (id === 'capital') {
-      w = (D.MAP_SIZE && D.MAP_SIZE.capital && D.MAP_SIZE.capital.w) || 140;
-      h = (D.MAP_SIZE && D.MAP_SIZE.capital && D.MAP_SIZE.capital.h) || 130;
-      g = H.makeGrid(w, h, 'stone');
-      var cx, cy;
-      for (cx = 0; cx < w; cx++) { H.setTile(g, cx, 0, 'wall'); H.setTile(g, cx, h - 1, 'wall'); }
-      for (cy = 0; cy < h; cy++) { H.setTile(g, 0, cy, 'wall'); H.setTile(g, w - 1, cy, 'wall'); }
     } else if (id === 'tower') {
       H.fill(g, 'arena');
       for (x = 0; x < 26; x++) for (y = 0; y < 26; y++) {
@@ -141,6 +165,7 @@
       g = g.slice(0, 28).map(function (row) { return row.slice(0, 24); });
     } else {
       H.paintOverworld(g, id);
+      H.keepNpcWalkable(g, id, id === 'boyang' || id === 'quanzhou' || id === 'zhedong' ? 'dock' : 'dirt');
     }
     G.grid = g;
     G.mapId = id;
@@ -150,35 +175,32 @@
 
   H.paintOverworld = function (g, id) {
     var theme = (D.MAP_META[id] && D.MAP_META[id].theme) || 'grass';
+    var gw = g[0].length, gh = g.length;
+    var occ = H.npcOccupied(id);
     if (theme === 'water') {
       H.fill(g, 'water');
-      H.rect(g, 4, 12, 42, 12, 'dock');
-      H.rect(g, 16, 8, 18, 20, 'dock');
-      H.scatter(g, 'rock', 10, function (t) { return t === 'dock'; });
+      H.rect(g, 4, Math.max(8, Math.floor(gh * 0.28)), gw - 8, Math.max(10, Math.floor(gh * 0.32)), 'dock');
+      H.rect(g, Math.floor(gw * 0.28), Math.floor(gh * 0.18), Math.max(12, Math.floor(gw * 0.28)), Math.max(16, Math.floor(gh * 0.48)), 'dock');
+      H.scatter(g, 'rock', 14, function (t, x, y) { return t === 'dock' && !occ[x + ',' + y]; });
     } else if (theme === 'city') {
       H.fill(g, 'stone');
       var x, y;
-      for (x = 0; x < 50; x++) { H.setTile(g, x, 0, 'wall'); H.setTile(g, x, 35, 'wall'); }
-      for (y = 0; y < 36; y++) { H.setTile(g, 0, y, 'wall'); H.setTile(g, 49, y, 'wall'); }
-      H.rect(g, 8, 8, 8, 6, 'house'); H.rect(g, 8, 7, 8, 1, 'roof');
-      H.rect(g, 22, 10, 10, 6, 'house'); H.rect(g, 22, 9, 10, 1, 'roof');
-      H.rect(g, 36, 8, 8, 6, 'house'); H.rect(g, 36, 7, 8, 1, 'roof');
-      H.rect(g, 8, 18, 34, 4, 'dirt');
-      H.rect(g, 22, 4, 4, 28, 'dirt');
+      for (x = 0; x < gw; x++) { H.setTile(g, x, 0, 'wall'); H.setTile(g, x, gh - 1, 'wall'); }
+      for (y = 0; y < gh; y++) { H.setTile(g, 0, y, 'wall'); H.setTile(g, gw - 1, y, 'wall'); }
     } else if (theme === 'sand') {
       H.fill(g, 'dirt');
-      H.rect(g, 18, 14, 14, 8, 'stone');
-      H.scatter(g, 'rock', 28, function (t) { return t === 'dirt'; });
+      H.rect(g, Math.floor(gw * 0.32), Math.floor(gh * 0.32), Math.max(10, Math.floor(gw * 0.28)), Math.max(8, Math.floor(gh * 0.2)), 'stone');
+      H.scatter(g, 'rock', 36, function (t, x, y) { return t === 'dirt' && !occ[x + ',' + y]; });
     } else if (theme === 'moss') {
       H.fill(g, 'moss');
-      H.scatter(g, 'tree', 80, function (t) { return t === 'moss'; });
-      H.scatter(g, 'water', 14, function (t) { return t === 'moss'; });
-      H.rect(g, 20, 14, 10, 8, 'dirt');
+      H.scatter(g, 'tree', 90, function (t, x, y) { return t === 'moss' && !occ[x + ',' + y]; });
+      H.scatter(g, 'water', 16, function (t, x, y) { return t === 'moss' && !occ[x + ',' + y]; });
+      H.rect(g, Math.floor(gw * 0.36), Math.floor(gh * 0.36), 12, 10, 'dirt');
     } else {
       H.fill(g, 'grass');
-      H.rect(g, 1, 16, 48, 4, 'dirt');
-      H.scatter(g, 'tree', 56, function (t) { return t === 'grass'; });
-      H.scatter(g, 'dirt', 24, function (t) { return t === 'grass'; });
+      H.rect(g, 1, Math.floor(gh * 0.42), gw - 2, 4, 'dirt');
+      H.scatter(g, 'tree', 70, function (t, x, y) { return t === 'grass' && !occ[x + ',' + y]; });
+      H.scatter(g, 'dirt', 28, function (t, x, y) { return t === 'grass' && !occ[x + ',' + y]; });
     }
   }
 
@@ -285,7 +307,7 @@
       H.spawnWorldBoss(id);
     }
     G.fires = [];
-    if (id === 'taiping') G.fires = [{ x: 24.5 * TILE, y: 18.5 * TILE }];
+    if (id === 'taiping') G.fires = [{ x: 50.5 * TILE, y: 68.5 * TILE }];
     if (id === 'capital') {
       G.fires = [{ x: 124.5 * TILE, y: 54.5 * TILE }, { x: 68.5 * TILE, y: 53.5 * TILE }];
       for (var yi = 0; yi < 4; yi++) {

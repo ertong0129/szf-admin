@@ -23,6 +23,8 @@ for (var i = 1; i < order.length; i++) {
 }
 
 assert.ok(play.indexOf('src="js/game.js"') < 0, 'play.html 不应再加载已拆分的 game.js');
+assert.ok(play.indexOf('src="js/npc-layout.js"') >= 0, 'play.html 应加载 NPC 公开坐标');
+assert.ok(play.indexOf('src="js/data.js"') < play.indexOf('src="js/npc-layout.js"'), 'npc-layout.js 应在 data.js 之后');
 assert.ok(play.indexOf('src="js/ground.js"') >= 0, 'play.html 应加载程序地面');
 assert.ok(play.indexOf('src="js/ground.js"') < play.indexOf('src="js/world3d.js"'), 'ground.js 应在 world3d.js 之前');
 assert.ok(play.indexOf('src="js/art.js"') < play.indexOf('src="js/world3d.js"'), 'art.js 应在 world3d.js 之前');
@@ -82,7 +84,7 @@ assert.ok(art.indexOf('A.drawDamage') >= 0, '伤害飘字应使用原作数字�
 });
 
 var serverJs = fs.readFileSync(path.join(root, 'server.js'), 'utf8');
-assert.ok(serverJs.indexOf("VERSION = '20260816s'") >= 0, 'server.js 版本应为 20260816s');
+assert.ok(serverJs.indexOf("VERSION = '20260816t'") >= 0, 'server.js 版本应为 20260816t');
 
 function assertWinBat(rel) {
   var buf = fs.readFileSync(path.join(root, rel));

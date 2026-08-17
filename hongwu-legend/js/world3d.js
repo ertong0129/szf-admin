@@ -170,7 +170,8 @@
   function bakeCanvas(grid, mapId, waterOnly) {
     var Gnd = root.GroundPaint;
     var gh = grid.length, gw = grid[0].length;
-    var cityTex = !waterOnly && mapId === 'capital' && root.Art && Art.cityRadar && Art.cityRadar(mapId);
+    var city = (root.GameData && root.GameData.CITY_GROUND) || {};
+    var cityTex = !waterOnly && city[mapId] && root.Art && Art.cityRadar && Art.cityRadar(mapId);
     var cell = waterOnly ? 16 : (cityTex ? 8 : 24);
     var c = document.createElement('canvas');
     c.width = gw * cell;
@@ -365,12 +366,13 @@
         ch.material.dispose();
       }
     }
+    var cityFog = (root.GameData && root.GameData.CITY_GROUND) || {};
     var fogCol = 0x6e96aa, fogD = 0.018;
     if (mapId === 'poyang' || mapId === 'boyang' || mapId === 'quanzhou' || mapId === 'zhedong' || mapId === 'fish') {
       fogCol = 0x4a6e88; fogD = 0.02;
     } else if (mapId === 'tower') {
       fogCol = 0x2a1838; fogD = 0.028;
-      } else if (mapId === 'capital' || mapId === 'kaifeng') {
+    } else if (cityFog[mapId]) {
       fogCol = 0xa8bcc0; fogD = mapId === 'capital' ? 0.006 : 0.011;
     } else if (mapId === 'desert' || mapId === 'tumu' || mapId === 'xiliang') {
       fogCol = 0xc4a070; fogD = 0.016;
@@ -409,7 +411,7 @@
     waterMesh.renderOrder = 1;
     scene.add(waterMesh);
 
-    if (mapId === 'capital') return;
+    if (cityFog[mapId]) return;
     var placed = {};
     for (var y = 0; y < grid.length; y++) {
       for (var x = 0; x < grid[0].length; x++) {

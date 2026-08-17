@@ -66,16 +66,16 @@
     var from = G.mapId;
     G.instance = null;
     var land = (D.CAPITAL_LAND) || {};
-    var tx = (land.center && land.center[0]) || 122;
-    var ty = (land.center && land.center[1]) || 65;
-    if (from === 'poyang') { tx = 122; ty = 63; }
-    else if (from === 'tower') { tx = 124; ty = 59; }
-    else if (from === 'road') { tx = 124; ty = 71; }
-    else if (from === 'fish' || from === 'treasure' || from === 'arena') { tx = 124; ty = 55; }
-    else if (from === 'mentor') { tx = 113; ty = 122; }
+    var tx = (land.center && land.center[0]) || 110;
+    var ty = (land.center && land.center[1]) || 83;
+    if (from === 'poyang') { tx = (land.shuibing && land.shuibing[0]) || 124; ty = (land.shuibing && land.shuibing[1]) || 63; }
+    else if (from === 'tower') { tx = (land.shilian && land.shilian[0]) || 124; ty = (land.shilian && land.shilian[1]) || 59; }
+    else if (from === 'road') { tx = (land.yabiao && land.yabiao[0]) || 111; ty = (land.yabiao && land.yabiao[1]) || 38; }
+    else if (from === 'fish' || from === 'treasure' || from === 'arena') { tx = (land.muying && land.muying[0]) || 124; ty = (land.muying && land.muying[1]) || 55; }
+    else if (from === 'mentor') { tx = (land.limengyang && land.limengyang[0]) || 135; ty = (land.limengyang && land.limengyang[1]) || 101; }
     if (from === 'treasure') H.settleTreasure();
     if (from === 'jingxin' || from === 'palace' || from === 'pagoda') {
-      H.travel('kaifeng', 18, 20);
+      H.travel('kaifeng', 73, 81);
     } else {
       H.travel('capital', tx, ty);
     }

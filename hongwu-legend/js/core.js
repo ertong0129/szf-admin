@@ -8,7 +8,7 @@
   H.TILE = 40;
   H.SAVE_KEY = 'hongwu-legend-save-v1';
   H.BAG_CAP = 36;
-  H.SPAWN = { x: 24.5 * 40, y: 17.5 * 40 };
+  H.SPAWN = { x: 50.5 * 40, y: 68.5 * 40 };
 
   H.canvas = document.getElementById('world');
   H.canvas3d = document.getElementById('world3d');
