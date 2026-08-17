@@ -575,7 +575,7 @@ html, body {
   position: relative;
   width: 16.2cqw;
   height: 13.7cqw;
-  margin: 0 auto 1.6cqw;
+  margin: 0 auto 0.4cqw;
   overflow: visible;
   z-index: 5;
 }
@@ -611,39 +611,30 @@ html, body {
   z-index: 3;
 }
 #map-coord { color: #8ad4d6; letter-spacing: 0; }
-.map-tools,
-.minimap-wrap .stage-act {
+.map-tools {
   position: absolute;
   inset: 0;
   display: block;
   width: auto;
   height: auto;
   margin: 0;
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  gap: 0;
-  transform: none;
   pointer-events: none;
   z-index: 4;
 }
-.map-tools button,
-.minimap-wrap .stage-act button {
+.map-tools button {
   position: absolute;
   left: 47%;
   top: 54%;
-  width: 2.45cqw;
-  height: 2.45cqw;
+  width: 2.35cqw;
+  height: 2.35cqw;
   min-width: 0;
-  flex: none;
   margin: 0;
   padding: 0;
   background: rgba(8, 28, 30, 0.92);
   border: 1px solid #2ec4c8;
   color: #e8f6c8;
   font-family: inherit;
-  font-size: 0.95cqw;
+  font-size: 0.9cqw;
   letter-spacing: 0;
   cursor: pointer;
   border-radius: 50%;
@@ -651,27 +642,15 @@ html, body {
   line-height: 1;
   box-shadow: 0 0 0 1px rgba(4, 16, 18, 0.55), 0 1px 4px rgba(0, 0, 0, 0.45);
   white-space: nowrap;
+  --r: 6.7cqw;
   transform: translate(-50%, -50%) rotate(var(--a)) translateY(var(--r)) rotate(calc(-1 * var(--a)));
 }
-.map-tools button { --r: 6.85cqw; }
-.map-tools button:nth-child(1) { --a: 124deg; }
-.map-tools button:nth-child(2) { --a: 100deg; }
-.map-tools button:nth-child(3) { --a: 76deg; }
-.map-tools button:nth-child(4) { --a: 52deg; }
-.map-tools button:nth-child(5) { --a: 28deg; }
-.minimap-wrap .stage-act button { --r: 9.55cqw; }
-.minimap-wrap .stage-act button:nth-child(1) { --a: 130deg; }
-.minimap-wrap .stage-act button:nth-child(2) { --a: 108deg; }
-.minimap-wrap .stage-act button:nth-child(3) { --a: 86deg; }
-.minimap-wrap .stage-act button:nth-child(4) { --a: 64deg; }
-.minimap-wrap .stage-act button:nth-child(5) { --a: 42deg; }
-.map-tools button:hover,
-.minimap-wrap .stage-act button:hover { color: #ffe7a0; border-color: #ffe7a0; }
-.minimap-wrap .stage-act button.on {
-  color: #ffe7a0;
-  border-color: #ffe7a0;
-  box-shadow: 0 0 8px rgba(46,196,200,0.45);
-}
+.map-tools button:nth-child(1) { --a: 148deg; }
+.map-tools button:nth-child(2) { --a: 118deg; }
+.map-tools button:nth-child(3) { --a: 90deg; }
+.map-tools button:nth-child(4) { --a: 62deg; }
+.map-tools button:nth-child(5) { --a: 34deg; }
+.map-tools button:hover { color: #ffe7a0; border-color: #ffe7a0; }
 .map-region-btn {
   position: absolute;
   right: -8px;
@@ -864,21 +843,21 @@ html, body {
 .dock-xp span { display: none; }
 .dock-menu {
   position: absolute;
-  right: 0.4%;
-  bottom: 0.27cqw;
-  width: 8.4%;
-  height: 6.26cqw;
-  left: auto;
-  top: auto;
-  display: block;
+  left: 41.6%;
+  right: 9.2%;
+  bottom: 0.12cqw;
+  height: 6.2cqw;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
   overflow: visible;
   pointer-events: none;
   z-index: 8;
 }
 .dock-menu img {
-  height: 2.7cqw;
+  height: 3.5cqw;
   width: auto;
-  max-width: 2.6cqw;
+  max-width: 3.4cqw;
   object-fit: contain;
   display: block;
   margin: 0 auto;
@@ -886,74 +865,82 @@ html, body {
   pointer-events: none;
 }
 .dock-menu img[src*="title/"] {
-  height: 1.45cqw;
-  max-width: 4.2cqw;
+  height: 1.55cqw;
+  max-width: 4.4cqw;
   margin-top: 0;
 }
 .dock-menu button, .dock-menu a {
-  position: absolute;
-  left: 50%;
-  top: 50%;
   padding: 0;
-  width: 2.8cqw;
   min-width: 0;
-  flex: none;
+  flex: 1 1 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   gap: 0;
   background: transparent;
   border: 0;
   cursor: pointer;
   overflow: visible;
   pointer-events: auto;
-  transform: translate(-50%, -50%) rotate(var(--a)) translateY(var(--r)) rotate(calc(-1 * var(--a)));
+  transform: translateY(var(--lift, 0));
 }
-.dock-menu button:nth-child(1) { --a: 78deg; --r: 6.8cqw; }
-.dock-menu button:nth-child(2) { --a: 96deg; --r: 6.8cqw; }
-.dock-menu button:nth-child(3) { --a: 114deg; --r: 6.8cqw; }
-.dock-menu button:nth-child(4) { --a: 132deg; --r: 6.8cqw; }
-.dock-menu button:nth-child(5) { --a: 150deg; --r: 6.8cqw; }
-.dock-menu button:nth-child(6) { --a: 168deg; --r: 6.8cqw; }
-.dock-menu button:nth-child(7) { --a: 82deg; --r: 10.6cqw; }
-.dock-menu button:nth-child(8) { --a: 97deg; --r: 10.6cqw; }
-.dock-menu button:nth-child(9) { --a: 112deg; --r: 10.6cqw; }
-.dock-menu button:nth-child(10) { --a: 127deg; --r: 10.6cqw; }
-.dock-menu button:nth-child(11) { --a: 142deg; --r: 10.6cqw; }
-.dock-menu button:nth-child(12) { --a: 157deg; --r: 10.6cqw; }
-.dock-menu button:nth-child(13) { --a: 172deg; --r: 10.6cqw; }
+.dock-menu button:nth-child(1) { --lift: 0.35cqw; }
+.dock-menu button:nth-child(2) { --lift: 0.2cqw; }
+.dock-menu button:nth-child(3) { --lift: 0.05cqw; }
+.dock-menu button:nth-child(4) { --lift: -0.1cqw; }
+.dock-menu button:nth-child(5) { --lift: -0.28cqw; }
+.dock-menu button:nth-child(6) { --lift: -0.46cqw; }
+.dock-menu button:nth-child(7) { --lift: -0.64cqw; }
+.dock-menu button:nth-child(8) { --lift: -0.82cqw; }
+.dock-menu button:nth-child(9) { --lift: -1cqw; }
+.dock-menu button:nth-child(10) { --lift: -1.18cqw; }
 .dock-menu span { display: none; }
 .dock-menu .dock-title {
-  width: 4.4cqw;
+  flex: 0 0 auto;
+  min-width: 4.4cqw;
 }
-.dock-menu .dock-txt {
-  font-size: 12px;
-  color: #ffe7a0;
-  text-shadow: 0 1px 2px #041014;
-  letter-spacing: 0;
-  padding: 2px 4px;
+.dock-sys {
+  position: absolute;
+  left: 36.4%;
+  bottom: 0.35cqw;
+  display: flex;
+  gap: 0.25cqw;
+  z-index: 8;
+  pointer-events: auto;
+}
+.dock-sys button {
+  padding: 0;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.dock-sys img {
+  height: 1.55cqw;
+  width: auto;
+  max-width: 4.6cqw;
+  display: block;
+  filter: drop-shadow(0 1px 2px #000);
+  pointer-events: none;
 }
 .dock-quick {
   position: absolute;
-  left: 0.35%;
-  top: 10%;
-  width: 4.6%;
-  height: 80%;
+  left: 54%;
+  width: 20%;
+  bottom: 7.15cqw;
+  height: 2.7cqw;
   display: flex;
-  flex-wrap: wrap;
-  align-content: center;
-  justify-content: center;
-  gap: 0.15cqw;
-  right: auto;
-  bottom: auto;
+  align-items: flex-end;
+  justify-content: space-between;
+  z-index: 8;
+  pointer-events: auto;
 }
 .dock-quick button {
-  width: 2cqw;
-  height: 1.7cqw;
-  border-radius: 2px;
+  width: 2.25cqw;
+  height: 2.25cqw;
+  border-radius: 50%;
   border: 1px solid #2ec4c8;
-  background: rgba(8, 28, 30, 0.72);
+  background: rgba(8, 28, 30, 0.88);
   color: #ffe7a0;
   font-family: inherit;
   font-size: 0.95cqw;
@@ -961,10 +948,59 @@ html, body {
   padding: 0;
   overflow: hidden;
   line-height: 1;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
+.dock-quick button:nth-child(1) { transform: translateY(0.4cqw); }
+.dock-quick button:nth-child(2) { transform: translateY(0.12cqw); }
+.dock-quick button:nth-child(3) { transform: translateY(-0.12cqw); }
+.dock-quick button:nth-child(4) { transform: translateY(0.12cqw); }
+.dock-quick button:nth-child(5) { transform: translateY(0.4cqw); }
 .dock-quick img { display: none; }
 .dock-quick button:hover { filter: brightness(1.2); }
 .dock-quick button.on { color: #6fdf7a; border-color: #6fdf7a; }
+.shop-orbit {
+  position: absolute;
+  right: 0.4%;
+  bottom: 0.27cqw;
+  width: 8.4%;
+  height: 6.26cqw;
+  pointer-events: none;
+  z-index: 9;
+}
+.shop-orbit button {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 2.5cqw;
+  height: 2.5cqw;
+  margin: 0;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid #2ec4c8;
+  background: rgba(8, 28, 30, 0.9);
+  color: #8ad4d6;
+  font-family: inherit;
+  font-size: 0.95cqw;
+  cursor: pointer;
+  pointer-events: auto;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: 0 0 0 1px rgba(4, 16, 18, 0.5), 0 1px 4px rgba(0, 0, 0, 0.4);
+  --r: 5.85cqw;
+  transform: translate(-50%, -50%) rotate(var(--a)) translateY(var(--r)) rotate(calc(-1 * var(--a)));
+}
+.shop-orbit button:nth-child(1) { --a: 86deg; }
+.shop-orbit button:nth-child(2) { --a: 104deg; }
+.shop-orbit button:nth-child(3) { --a: 122deg; }
+.shop-orbit button:nth-child(4) { --a: 140deg; }
+.shop-orbit button:nth-child(5) { --a: 158deg; }
+.shop-orbit button:nth-child(6) { --a: 176deg; }
+.shop-orbit button:hover { color: #ffe7a0; border-color: #ffe7a0; }
+.shop-orbit button.on {
+  color: #ffe7a0;
+  border-color: #ffe7a0;
+  box-shadow: 0 0 8px rgba(46,196,200,0.45);
+}
 .dock-utils { display: none; }
 .shop-btn {
   position: absolute;
