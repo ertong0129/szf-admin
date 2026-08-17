@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>大明传说</title>
+  <link rel="stylesheet" href="css/game.css" />
+</head>
+<body>
+  <div id="letterbox">
+    <div id="stage">
+      <canvas id="world" width="1000" height="532"></canvas>
+
+      <div id="create" class="hidden">
+        <img class="create-bg" src="assets/role/jiaosebg.png" alt="" />
+        <div class="create-form">
+          <h2>创建角色</h2>
+          <p>选择职业后踏入洪武元年。</p>
+          <input id="rname" maxlength="8" placeholder="角色名" />
+          <div id="classes" class="class-grid"></div>
+          <div class="sex-row">
+            <label><input type="radio" name="sex" value="m" checked /> 男</label>
+            <label><input type="radio" name="sex" value="f" /> 女</label>
+          </div>
+          <button id="createBtn" type="button">以默认角色名进入游戏</button>
+        </div>
+      </div>
+
+      <div id="hud" class="hidden">
+        <div id="roleFrame">
+          <img src="assets/ui/roleStateBg.png" alt="" />
+          <canvas id="face" width="54" height="54"></canvas>
+          <div class="role-meta">
+            <b id="nameLabel">——</b>
+            <span id="lvLabel">1级 战士</span>
+          </div>
+          <div class="bars">
+            <i id="hpBar"></i><i id="mpBar"></i><i id="expBar"></i>
+          </div>
+          <div class="bar-txt"><span id="hpTxt"></span><span id="mpTxt"></span></div>
+        </div>
+
+        <div id="minimap">
+          <img src="assets/ui/smallMapBg.png" alt="" />
+          <canvas id="radar" width="120" height="90"></canvas>
+          <b id="mapName">太平村</b>
+        </div>
+
+        <div id="questBox">
+          <h3><img src="assets/ui/taskIcon.png" alt="" /> 功业</h3>
+          <p id="questTitle"></p>
+          <p id="questDesc"></p>
+        </div>
+
+        <div id="toolbar">
+          <img class="tb-bg" src="assets/ui/toolbarBg.jpg" alt="" />
+          <div id="skills"></div>
+          <button class="idle-btn" id="idleBtn" title="挂机 Z">挂</button>
+          <div id="menus">
+            <img data-panel="role" src="assets/ui/menu_role.jpg" title="角色 C" alt="角色" />
+            <img data-panel="pack" src="assets/ui/menu_pack.jpg" title="背包 B" alt="背包" />
+            <img data-panel="skill" src="assets/ui/menu_skill.png" title="技能 V" alt="技能" />
+            <img data-panel="pet" src="assets/ui/menu_pet.jpg" title="灵宠 P" alt="灵宠" />
+            <img data-panel="forge" src="assets/ui/menu_tgl.jpg" title="天工炉 E" alt="天工" />
+            <img id="mapBtn" src="assets/ui/menu_friends.jpg" title="地图 M" alt="地图" />
+            <img data-panel="social" src="assets/ui/menu_zazen.png" title="打坐" alt="打坐" />
+          </div>
+          <img id="shopBtn" src="assets/ui/shop.png" title="商城" alt="商" />
+        </div>
+      </div>
+
+      <div id="dialog" class="hidden">
+        <img class="dlg-bg" src="assets/ui/npcPanel.png" alt="" />
+        <img id="dlgFace" alt="" />
+        <div class="dlg-body">
+          <h4 id="dlgName"></h4>
+          <p id="dlgText"></p>
+          <div id="dlgActs"></div>
+        </div>
+      </div>
+
+      <div id="panel" class="hidden">
+        <header><b id="panelTitle"></b><img id="panelClose" src="assets/ui/close.png" alt="关闭" /></header>
+        <div id="panelBody"></div>
+      </div>
+
+      <div id="toast"></div>
+    </div>
+  </div>
+  <script src="js/game.js"></script>
+</body>
+</html>

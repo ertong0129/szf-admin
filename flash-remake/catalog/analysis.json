@@ -1,0 +1,39 @@
+{
+  "title": "明朝传奇 Main.swf 分析结果",
+  "website": "https://www.91wan.com/mccq/",
+  "mainSwf": "http://mccq.static.mingchao.com/55598/Main.swf",
+  "cdn": "http://mccq.static.mingchao.com/55598/",
+  "loader": {
+    "file": "Main.swf",
+    "type": "Flex 4 CWS loader",
+    "sizeBytes": 112453,
+    "stage": [500, 375],
+    "fps": 30,
+    "note": "Not the game. Loads MingGame.swf / createRoleCQ2.swf / viewUI.swf."
+  },
+  "runtime": {
+    "file": "MingGame.swf",
+    "sizeBytes": 2444073,
+    "stage": [500, 375],
+    "fps": 24
+  },
+  "createRole": { "file": "assets/createRoleCQ2.swf", "stage": [1002, 580] },
+  "hud": {
+    "file": "com/assets/viewUI/viewUI.swf",
+    "roleFrame": [174, 86],
+    "toolbar": [978, 68],
+    "minimap": [162, 137]
+  },
+  "maps": {
+    "world": [540, 315],
+    "country": [446, 315],
+    "smallMap": [446, 315]
+  },
+  "publicTables": {
+    "pos.txt": "20-byte BE records, type 4 NPC / type 5 spawn",
+    "npc_data.txt": "zlib + AMF3, 461 named NPCs",
+    "missions.txt": "zlib + concatenated AMF3 arrays, 2007 missions"
+  },
+  "blocked": ["assets/login.swf 403", "assets/configure.xml 403"],
+  "avoid": ["DoABC decompile", "cmodule.encrypt / FSM_unEncrySWF", "official socket protocol"]
+}

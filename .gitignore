@@ -14,3 +14,9 @@ tests/**/coverage/
 *.ntvs*
 *.njsproj
 *.sln
+
+# Flash dumps — never commit SWF binaries or local saves
+*.swf
+*.db
+__pycache__/
+flash-remake/**/dump/

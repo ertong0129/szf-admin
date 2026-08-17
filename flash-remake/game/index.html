@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>大明传说 · 登录</title>
+  <link rel="stylesheet" href="css/game.css" />
+</head>
+<body>
+  <div id="letterbox">
+    <div id="stage" class="login-stage">
+      <img class="login-bg" src="assets/login/bg.jpg" alt="" />
+      <div class="login-panel">
+        <img class="login-logo" src="assets/ui/logo.png" alt="明朝传奇" />
+        <p class="ver">Flash 复刻管线 · v20260817c</p>
+        <label>账号<input id="user" value="demo" maxlength="16" /></label>
+        <label>密码<input id="pass" type="password" value="123456" maxlength="16" /></label>
+        <button id="enter" type="button">进入游戏</button>
+        <p class="hint">本地存档，无需原服。由官网 + Main.swf 分析重建。</p>
+      </div>
+    </div>
+  </div>
+  <script>
+    document.getElementById('enter').onclick = function () {
+      var u = document.getElementById('user').value.trim() || 'demo';
+      localStorage.setItem('mccq_user', u);
+      location.href = 'play.html';
+    };
+    document.getElementById('pass').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') document.getElementById('enter').click();
+    });
+  </script>
+</body>
+</html>
