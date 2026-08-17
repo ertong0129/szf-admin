@@ -248,6 +248,15 @@
           }
         } else if (dockBtn.id === 'btn-smith') H.openShop('smith');
         else if (dockBtn.id === 'btn-gm') H.toast('单机无 GM');
+        else if (dockBtn.id === 'btn-officer') H.toast('官职请找京城官员');
+        else if (dockBtn.id === 'btn-bbs') H.toast('论坛请到明朝互动官网');
+        else if (dockBtn.id === 'btn-fold-acts') {
+          var side = document.querySelector('.side-right');
+          if (side) {
+            side.classList.toggle('acts-off');
+            dockBtn.textContent = side.classList.contains('acts-off') ? '‹' : '›';
+          }
+        }
         else if (dockBtn.id === 'btn-save') H.saveNow();
       }
       if (ev.target.dataset.add && G.player.unspentAttr > 0) {

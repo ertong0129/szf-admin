@@ -67,35 +67,38 @@
               <span id="online-line">在线 —</span>
             </div>
           </div>
-          <div class="hud-acts" id="hud-acts">
-            <button type="button" data-panel="shop" title="藏宝阁"><img src="assets/ingame/viewui/smallicon/mysteryShop.png" alt="" /></button>
-            <button type="button" data-panel="help" title="天罡罗盘"><img src="assets/ingame/viewui/smallicon/tglp.png" alt="" /></button>
-            <button type="button" data-panel="daily" title="缤纷活动"><img src="assets/ingame/viewui/smallicon/activityIcon.png" alt="" /></button>
-            <button type="button" data-panel="vip" title="每日充值"><img src="assets/ingame/viewui/smallicon/mrcz.png" alt="" /></button>
-            <button type="button" data-act="pagoda" title="开封铁塔"><img src="assets/ingame/viewui/smallicon/kftt.png" alt="" /></button>
-            <button type="button" data-act="tower" title="天下英雄"><img src="assets/ingame/viewui/smallicon/hero.png" alt="" /></button>
-            <button type="button" data-panel="achieve" title="传奇图鉴"><img src="assets/ingame/viewui/smallicon/cqtj.png" alt="" /></button>
-            <button type="button" data-panel="rank" title="封将台"><img src="assets/ingame/viewui/smallicon/fjt.png" alt="" /></button>
-          </div>
           <div id="auto-banner" hidden title="自动打怪中"></div>
           <div id="target-frame" hidden>
             <div id="target-name">—</div>
             <div class="bar hp target-hp"><i id="target-hp"></i><span id="target-hp-text"></span></div>
           </div>
           <div class="side-right">
+            <div class="hud-acts" id="hud-acts">
+              <button type="button" class="acts-title" data-panel="achieve" title="传奇目标">传奇目标</button>
+              <button type="button" data-act="tower" title="天下英雄"><img src="assets/ingame/viewui/smallicon/hero.png" alt="" /></button>
+              <button type="button" class="act-live" data-act="pagoda" title="开封铁塔"><img src="assets/ingame/viewui/smallicon/kftt.png" alt="" /><em>活动进行中</em></button>
+              <button type="button" data-panel="daily" title="缤纷活动"><img src="assets/ingame/viewui/smallicon/activityIcon.png" alt="" /></button>
+              <button type="button" data-panel="shop" title="藏宝阁"><img src="assets/ingame/viewui/smallicon/mysteryShop.png" alt="" /></button>
+            </div>
+            <button type="button" id="btn-fold-acts" class="acts-fold" title="收起活动">›</button>
+            <div class="minimap-col">
             <div class="minimap-wrap">
               <canvas id="minimap" width="168" height="168"></canvas>
               <div class="minimap-ring"></div>
-              <div class="map-name">
-                <span id="map-name">洪武·太平村</span>
-                <span id="map-coord">[24,17]</span>
-              </div>
+              <div class="map-title" id="map-name">洪武-太平村</div>
+              <div class="map-north">北</div>
+              <div class="map-coord" id="map-coord">[24,17]</div>
               <div class="map-tools">
-                <button type="button" data-panel="vip" title="VIP">VIP</button>
+                <button type="button" data-panel="vip" title="充值">充值</button>
+                <button type="button" class="tool-hot" data-panel="daily" title="活动">活</button>
+                <button type="button" class="tool-vip" data-panel="vip" title="VIP">VIP</button>
                 <button type="button" data-panel="rank" title="排行">榜</button>
                 <button type="button" id="btn-auto-mini" title="挂机">挂</button>
                 <button type="button" id="btn-world-map" title="地图">图</button>
+                <button type="button" data-panel="mail" title="信件">邮</button>
                 <button type="button" id="btn-gm" title="GM">GM</button>
+                <button type="button" id="btn-officer" title="官方">官</button>
+                <button type="button" id="btn-bbs" title="论坛">论</button>
               </div>
             </div>
             <div class="quest-box" data-qtab="all">
@@ -105,6 +108,7 @@
                 <span data-qtab="act">当前活动</span>
               </div>
               <div id="quest-track"></div>
+            </div>
             </div>
           </div>
           <div class="chat-box">

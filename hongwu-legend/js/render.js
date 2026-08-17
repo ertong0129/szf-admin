@@ -382,7 +382,9 @@
     G.npcs.forEach(function (n) {
       var rp = radarPt(n.x / TILE, n.y / TILE);
       ctx.fillStyle = '#ffd36a';
-      ctx.fillRect(rp.x - 2, rp.y - 2, 4, 4);
+      ctx.beginPath();
+      ctx.arc(rp.x, rp.y, labeled ? 3 : 2.4, 0, Math.PI * 2);
+      ctx.fill();
       if (labeled) {
         var mark = (D.MAP_MARK && D.MAP_MARK[n.id]) || '';
         if (mark) {
@@ -409,8 +411,13 @@
     });
     if (G.player) {
       var me = radarPt(G.player.x / TILE, G.player.y / TILE);
-      ctx.fillStyle = '#e24a3a';
-      ctx.fillRect(me.x - 3, me.y - 3, 6, 6);
+      ctx.fillStyle = '#4aa8ff';
+      ctx.beginPath();
+      ctx.arc(me.x, me.y, labeled ? 4 : 3.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#e8f6ff';
+      ctx.lineWidth = 1;
+      ctx.stroke();
     }
   }
 
@@ -419,7 +426,7 @@
     H.paintRadar(mctx, mini.width, mini.height, false);
     var nameEl = document.getElementById('map-name');
     if (nameEl && D.MAP_META[G.mapId]) {
-      nameEl.textContent = (D.ERA || '洪武') + '·' + D.MAP_META[G.mapId].name;
+      nameEl.textContent = (D.ERA || '洪武') + '-' + D.MAP_META[G.mapId].name;
     }
     var coord = document.getElementById('map-coord');
     if (coord && G.player) {

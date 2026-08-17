@@ -62,7 +62,10 @@ assert.ok(css.indexOf('assets/ingame/viewui/minimap-ring.png') >= 0, '小地图�
 assert.ok(play.indexOf('class="hud-frame"') >= 0, 'play.html 应有原作人物框容器');
 assert.ok(play.indexOf('id="hud-lv"') >= 0, '人物框应显示等级');
 assert.ok(play.indexOf('id="hud-pet"') >= 0, '左上应有宠物条');
-assert.ok(play.indexOf('class="hud-acts"') >= 0, '顶栏应有活动图标');
+assert.ok(play.indexOf('class="hud-acts"') >= 0, '右上应有活动图标');
+assert.ok(play.indexOf('传奇目标') >= 0, '活动栏应有传奇目标标题');
+assert.ok(play.indexOf('class="map-north"') >= 0, '小地图应标北');
+assert.ok(play.indexOf('id="btn-fold-acts"') >= 0, '活动栏应可收起');
 assert.ok(play.indexOf('assets/ingame/title/letter.png') >= 0, '底栏信件应使用原作金标');
 assert.ok(play.indexOf('assets/ingame/title/skill.png') >= 0, '底栏技能应使用原作金标');
 assert.ok(play.indexOf('class="minimap-ring"') >= 0, '小地图应有原作圆框层');
@@ -159,7 +162,7 @@ assert.ok(render.indexOf("class=\"skill-ico\"") >= 0, '技能栏应插入 skill-
 assert.ok(render.indexOf('assets/ingame/skills/') >= 0, '技能栏应使用入库技能图');
 
 var serverJs = fs.readFileSync(path.join(root, 'server.js'), 'utf8');
-assert.ok(serverJs.indexOf("VERSION = '20260817n'") >= 0, 'server.js 版本应为 20260817n');
+assert.ok(serverJs.indexOf("VERSION = '20260817o'") >= 0, 'server.js 版本应为 20260817o');
 assert.ok(serverJs.indexOf("require('./js/store.js')") >= 0, 'server.js 应使用本机数据库');
 assert.ok(core.indexOf('localStorage.setItem(SAVE_KEY') < 0, '角色存档不应再写入 localStorage');
 assert.ok(fs.readFileSync(path.join(root, 'js/api.js'), 'utf8').indexOf('localStorage.setItem(TOKEN_KEY') < 0, '登录令牌不应再写入 localStorage');
@@ -222,7 +225,7 @@ var miniHtml = play.slice(play.indexOf('class="minimap-wrap"'), play.indexOf('cl
 assert.ok(miniHtml.indexOf('class="map-tools"') >= 0, 'VIP榜图GM应围在小地图圆旁');
 assert.ok(miniHtml.indexOf('id="stage-act"') < 0, '打坐骑马不应再围在小地图上');
 assert.ok(css.indexOf('rotate(var(--a))') >= 0, '商城圆和小地图圆旁的功能钮应按圆周排列');
-assert.ok(play.indexOf('assets/ingame/viewui/smallicon/kftt.png') >= 0, '顶栏应用 HAR 里的原作活动图标');
+assert.ok(play.indexOf('assets/ingame/viewui/smallicon/kftt.png') >= 0, '右上活动栏应用 HAR 里的原作活动图标');
 assert.ok(css.indexOf('width: 5.8cqw') >= 0, '顶栏活动图标应按原作 58px 比例');
 assert.ok(fs.readFileSync(path.join(root, 'js/maptiles.js'), 'utf8').indexOf('offsetX') >= 0, '京城等距投影应带 MCM 像素偏移');
 assert.ok(fs.readFileSync(path.join(root, 'js/maptiles.js'), 'utf8').indexOf('TILE_ISO: 44') >= 0, 'SWF TileConstant.TILE_SIZE 应为 44');
