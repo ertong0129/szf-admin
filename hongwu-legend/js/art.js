@@ -579,11 +579,13 @@
   };
 
   A.drawNameplate = function (ctx, x, y, title, name, color) {
-    ctx.font = 'bold 11px "Microsoft YaHei","PingFang SC",sans-serif';
+    var z = A.worldScale();
+    var fs = Math.max(9, Math.round(11 * Math.max(0.85, z)));
+    ctx.font = 'bold ' + fs + 'px "Microsoft YaHei","PingFang SC",sans-serif';
     ctx.textAlign = 'center';
     if (title) {
       ctx.fillStyle = '#c9a227';
-      ctx.fillText(title, x, y - 14);
+      ctx.fillText(title, x, y - Math.round(13 * Math.max(0.85, z)));
     }
     ctx.fillStyle = color || '#e8f6c8';
     ctx.fillText(name, x, y);

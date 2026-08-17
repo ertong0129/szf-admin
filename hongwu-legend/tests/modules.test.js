@@ -150,7 +150,7 @@ assert.ok(render.indexOf("class=\"skill-ico\"") >= 0, '技能栏应插入 skill-
 assert.ok(render.indexOf('assets/ingame/skills/') >= 0, '技能栏应使用入库技能图');
 
 var serverJs = fs.readFileSync(path.join(root, 'server.js'), 'utf8');
-assert.ok(serverJs.indexOf("VERSION = '20260817i'") >= 0, 'server.js 版本应为 20260817i');
+assert.ok(serverJs.indexOf("VERSION = '20260817j'") >= 0, 'server.js 版本应为 20260817j');
 assert.ok(serverJs.indexOf("require('./js/store.js')") >= 0, 'server.js 应使用本机数据库');
 assert.ok(core.indexOf('localStorage.setItem(SAVE_KEY') < 0, '角色存档不应再写入 localStorage');
 assert.ok(fs.readFileSync(path.join(root, 'js/api.js'), 'utf8').indexOf('localStorage.setItem(TOKEN_KEY') < 0, '登录令牌不应再写入 localStorage');
@@ -177,7 +177,7 @@ assert.ok(ui.indexOf('INSTANCE_WARPS') >= 0, '地图列表应含副本');
 var input = fs.readFileSync(path.join(root, 'js/input.js'), 'utf8');
 assert.ok(input.indexOf('MapTiles.active') >= 0, '点地在切片地图上应按等距反算');
 assert.ok(fs.readFileSync(path.join(root, 'js/render.js'), 'utf8').indexOf('MapTiles.follow') >= 0, '2D 绘制应跟切片镜头');
-assert.ok(fs.readFileSync(path.join(root, 'js/maptiles.js'), 'utf8').indexOf('VIEW_NATIVE: 1260') >= 0, '拼图后应按约 4.2 块切片的比例缩放');
+assert.ok(fs.readFileSync(path.join(root, 'js/maptiles.js'), 'utf8').indexOf('VIEW_NATIVE: 1000') >= 0, '拼图后应按原作 1:1 切片比例缩放');
 assert.ok(art.indexOf('A.worldScale') >= 0, '切片地图上角色应随地图比例缩放');
 assert.ok(input.indexOf('H.usePortal(pt)') >= 0, '当前地图跳转点应直接传送');
 assert.ok(input.indexOf('寻路至传送点') < 0, '跳转点不应再寻路');

@@ -29,12 +29,12 @@
   };
 
   D.CAPITAL_LAND = {
-    chefu: [108, 84],
-    shuibing: [122, 63],
-    shilian: [124, 59],
-    yabiao: [111, 38],
-    muying: [124, 55],
-    limengyang: [135, 101],
+    chefu: [110, 84],
+    shuibing: [124, 64],
+    shilian: [124, 60],
+    yabiao: [111, 37],
+    muying: [124, 56],
+    limengyang: [136, 101],
     bagong: [119, 101],
     wild: [85, 118],
     boyang: [134, 63],
@@ -174,7 +174,7 @@
     tanwei: [68, 55],
     nanguan: [85, 118],
     xiguan: [3, 64],
-    gaoming: [113, 124],
+    gaoming: [115, 124],
     weibin_a: [1, 66],
     jing_beidou: [111, 40],
     jing_tianming: [112, 60],

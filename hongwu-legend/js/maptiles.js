@@ -34,8 +34,8 @@
     _active: false,
     slices: {},
     sliceFail: {},
-    /* 拼图后的显示比例：1000 宽舞台约看到 4.2 块 300px 切片（原作截图那种人小景细）。 */
-    VIEW_NATIVE: 1260,
+    /* 原作舞台 1000 宽对 300px 切片为 1:1，约 3.3 块铺满宽度；HAR 京城游览一次预加载约 6×5 块（含四周缓冲）。 */
+    VIEW_NATIVE: 1000,
     TILE_SRC: 300,
     CDN: 'http://mccq.static.mingchao.com/55598/com/maps'
   };
@@ -155,10 +155,10 @@
     return (w || 1000) / T.VIEW_NATIVE;
   };
 
-  /* 角色随地图一起缩：原作立绘约一块地砖高度的 1/5，人走在宽街上才显得精致。 */
+  /* 人物与地图同比例：时装立绘约 80px，300px 地砖上约占 1/4 高，接近原作街上的人。 */
   T.spriteZoom = function () {
     var s = T.cam.scale || 1;
-    return Math.max(0.42, Math.min(1.05, s * 0.78));
+    return Math.max(0.5, Math.min(1.12, s * 0.92));
   };
 
   T.sliceKey = function (folder, row, col) {

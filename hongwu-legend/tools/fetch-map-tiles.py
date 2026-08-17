@@ -243,7 +243,7 @@ def process_folder(folder: str, info: dict, workers: int, max_edge: int) -> dict
         "walkW": info["walkW"],
         "walkH": info["walkH"],
         "originY": 0,
-        "viewNative": 1260,
+        "viewNative": 1000,
         "tiles": len(files),
         "file": f"{folder}.jpg",
         "bytes": dest.stat().st_size,

@@ -468,16 +468,16 @@ html, body {
 }
 .hud-acts {
   position: absolute;
-  top: 0.4cqw;
-  left: 50%;
+  top: 0.35cqw;
+  left: 42%;
   transform: translateX(-50%);
   display: flex;
-  gap: 0.2cqw;
+  gap: 0.15cqw;
   z-index: 5;
   pointer-events: auto;
 }
 .hud-acts button {
-  width: 4.2cqw;
+  width: 3.6cqw;
   background: transparent;
   border: 0;
   color: #e8f6c8;
@@ -491,8 +491,8 @@ html, body {
   padding: 0;
 }
 .hud-acts img {
-  width: 4.2cqw;
-  height: 4.2cqw;
+  width: 3.6cqw;
+  height: 3.6cqw;
   object-fit: contain;
   filter: drop-shadow(0 2px 4px #000);
 }
@@ -752,7 +752,7 @@ html, body {
   padding: 8px 10px;
   font-size: 12px;
   line-height: 1.55;
-  max-height: 34cqw;
+  max-height: 26cqw;
   overflow: auto;
 }
 .quest-tabs {

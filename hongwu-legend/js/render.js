@@ -266,7 +266,7 @@
       ctx.restore();
     }
     if (window.Art && Art.ready) {
-      Art.drawNameplate(ctx, s.x, s.y + 22, D.CLASSES[p.cls].name, p.name, '#d8f5a0');
+      Art.drawNameplate(ctx, s.x, s.y + 22 * ((window.Art && Art.worldScale) ? Art.worldScale() : 1), D.CLASSES[p.cls].name, p.name, '#d8f5a0');
     }
     if (p.target) {
       var ts = H.worldToScreen(p.target.x, p.target.y);
@@ -286,7 +286,7 @@
       H.drawActor(o.x, o.y, '#6cb6ff', 12, o.stall ? '摊' : '');
     }
     var col = o.red ? '#ff6a6a' : (o.nation === 'yuan' ? '#c089ff' : '#8ad4d6');
-    if (window.Art && Art.ready) Art.drawNameplate(ctx, s.x, s.y + 22, (D.CLASSES[o.cls] ? D.CLASSES[o.cls].name : ''), o.name, col);
+    if (window.Art && Art.ready) Art.drawNameplate(ctx, s.x, s.y + 22 * ((window.Art && Art.worldScale) ? Art.worldScale() : 1), (D.CLASSES[o.cls] ? D.CLASSES[o.cls].name : ''), o.name, col);
     else {
       ctx.fillStyle = col;
       ctx.font = '11px sans-serif';

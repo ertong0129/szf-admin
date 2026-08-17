@@ -21,7 +21,11 @@ assert.deepStrictEqual(D.NPC_TILES.qijiguang, [70, 91]);
 assert.ok(D.NPCS.zhenghe && D.NPCS.zhenghe.map === 'quanzhou');
 assert.ok(D.NPCS.border_muying && D.NPCS.border_muying.map === 'border');
 assert.ok(D.NPCS.muying.map === 'capital');
-assert.ok(D.NPCS.chefu.travel.indexOf('capital:108:84') === 0);
+assert.ok(D.NPCS.chefu.travel.indexOf('capital:110:84') === 0);
+assert.deepStrictEqual(D.NPC_TILES.jingche, [110, 83]);
+assert.deepStrictEqual(D.NPC_TILES.shuibing, [124, 63]);
+assert.deepStrictEqual(D.NPC_TILES.shichang, [111, 77]);
+assert.deepStrictEqual(D.CAPITAL_LAND.chefu, [110, 84]);
 assert.ok(D.NPCS.jingche.travel.indexOf('taiping:70:54') === 0);
 
 assert.ok(D.NPC_ART && D.NPC_ART.xuda && D.NPC_ART.xuda.icon === 'xu_da');

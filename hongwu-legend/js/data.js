@@ -280,7 +280,7 @@
 
   D.NPCS = {
     cunzheng: { id: 'cunzheng', name: '村正', title: '太平村知事', map: 'taiping', lines: ['洪武元年，太平村刚从兵火里喘过气来。', '村外野猪成灾，壮丁又被征去守江。你若肯出手，全村感激。'] },
-    chefu: { id: 'chefu', name: '车夫', title: '太平车夫', map: 'taiping', travel: 'capital:108:84', lines: ['要进京，坐我这车。应天城里徐达、百工炉、明军水兵都在。'] },
+    chefu: { id: 'chefu', name: '车夫', title: '太平车夫', map: 'taiping', travel: 'capital:110:84', lines: ['要进京，坐我这车。应天城里徐达、百工炉、明军水兵都在。'] },
     tiesmith: { id: 'tiesmith', name: '铁匠', title: '装备锻造师', map: 'taiping', shop: 'smith', lines: ['刀钝了就来找我。京城师傅的手艺更地道。'] },
     yaopu: { id: 'yaopu', name: '王翠翘', title: '杂货商人', map: 'taiping', shop: 'drug', lines: ['草药能炼药。路边的乌风草、三七别浪费。'] },
     shanshan: { id: 'shanshan', name: '姗姗', title: '仓库管理员', map: 'taiping', warehouse: true, lines: ['第一个仓库免费。东西多了就寄我这儿，最多开四仓。'] },
@@ -636,7 +636,7 @@
   D.PORTALS = {
     taiping: [
       { x: 76, y: 54, to: 'wild', tx: 55, ty: 16, label: '往横涧山' },
-      { x: 72, y: 58, to: 'capital', tx: 108, ty: 84, label: '往京城' },
+      { x: 72, y: 58, to: 'capital', tx: 110, ty: 84, label: '往京城' },
       { x: 8, y: 108, to: 'shennong', tx: 100, ty: 116, label: '往神农架' }
     ],
     wild: [
