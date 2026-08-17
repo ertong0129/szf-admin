@@ -77,9 +77,9 @@ assert.ok(Math.abs(world.y - 36 * 40) < 0.01);
 
 assert.strictEqual(T.VIEW_NATIVE, 1000);
 assert.ok(Math.abs(T.displayScale(1000) - 1) < 1e-9);
+assert.ok(Math.abs(T.displayScale(1800) - 1) < 1e-9, '窗口变宽不应放大 mosaic');
 T.cam.scale = T.displayScale(1000);
-assert.ok(T.spriteZoom() <= T.displayScale(1000) + 1e-9, '角色不应比地砖更大');
-assert.ok(T.spriteZoom() > 0.85, '1:1 切片上人物应接近原作立绘大小');
+assert.ok(Math.abs(T.spriteZoom() - 1) < 1e-9, '角色应与 1:1 地砖同一套屏幕像素');
 var tileOnScreen = 44 * T.displayScale(1000);
 var heroH = 132 * T.spriteZoom();
 assert.ok(heroH / tileOnScreen < 3.3, '人物相对 44px 地砖应约三格高');

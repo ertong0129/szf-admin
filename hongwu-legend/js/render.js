@@ -16,7 +16,9 @@
 
   H.draw = function () {
     H.stampNpcMarks();
-    var w = canvas.width, h = canvas.height;
+    var w = H.viewW || canvas.clientWidth || canvas.width;
+    var h = H.viewH || canvas.clientHeight || canvas.height;
+    if (ctx.setTransform && w > 0) ctx.setTransform(canvas.width / w, 0, 0, canvas.height / Math.max(1, h), 0, 0);
     var tiled = !!(G.player && window.MapTiles && MapTiles.follow(G.mapId, G.player, w, h));
     if (!tiled && window.World3D && World3D.enabled && G.player && G.grid) {
       World3D.sync({

@@ -407,8 +407,8 @@
 
   A.spriteBox = function (key, img) {
     if (key && String(key).indexOf('stand_') === 0) {
-      var sh = 78;
-      var sw = img && img.height ? sh * img.width / img.height : 36;
+      var sh = A.ROLE_SHEET.cellH;
+      var sw = img && img.height ? sh * img.width / img.height : A.ROLE_SHEET.cellW;
       return { w: sw, h: sh };
     }
     if (key && String(key).indexOf('portrait_') === 0) {

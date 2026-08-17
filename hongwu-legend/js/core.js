@@ -119,12 +119,19 @@
     document.getElementById(id).classList.add('active');
   }
 
-  H.sizeCanvas = function (c, w, h) {
+  H.sizeCanvas = function (c, w, h, hiDpi) {
     if (!c) return;
     c.style.width = w + 'px';
     c.style.height = h + 'px';
-    if (c.width !== w) c.width = w;
-    if (c.height !== h) c.height = h;
+    var dpr = hiDpi ? Math.min(2, (typeof window !== 'undefined' && window.devicePixelRatio) || 1) : 1;
+    var bw = Math.max(1, Math.round(w * dpr));
+    var bh = Math.max(1, Math.round(h * dpr));
+    if (c.width !== bw) c.width = bw;
+    if (c.height !== bh) c.height = bh;
+    if (hiDpi) {
+      var cctx = c.getContext && c.getContext('2d');
+      if (cctx && cctx.setTransform) cctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
   };
 
   H.resize = function () {
@@ -138,8 +145,10 @@
     var h = host.clientHeight | 0;
     if (w < 2) w = 1000;
     if (h < 2) h = 532;
-    H.sizeCanvas(canvas, w, h);
-    H.sizeCanvas(canvas3d, w, h);
+    H.viewW = w;
+    H.viewH = h;
+    H.sizeCanvas(canvas, w, h, true);
+    H.sizeCanvas(canvas3d, w, h, false);
     if (window.World3D) World3D.resize();
   }
 

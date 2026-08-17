@@ -159,16 +159,16 @@ html, body {
   width: 200px;
 }
 
-/* —— 游玩层：原作 Flash 约 1000×600（5:3），真实宽高 contain，不用 transform —— */
+/* —— 游玩层：原作 NO_SCALE，窗口撑满；切片 1:1，HUD 随宽度铺满 —— */
 #play-screen { background: #05090a; }
 #play-screen.active {
   display: grid;
-  place-items: center;
+  place-items: stretch;
   font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
 }
 .play-fit {
-  width: min(100vw, calc(100vh * 5 / 3));
-  height: min(100vh, calc(100vw * 3 / 5));
+  width: 100vw;
+  height: 100vh;
   position: relative;
   overflow: hidden;
   background: #05090a;

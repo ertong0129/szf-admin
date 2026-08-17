@@ -20,7 +20,7 @@ except ImportError:
 
 ROOT = os.path.abspath(os.path.dirname(__file__))
 PORT = int(os.environ.get("PORT") or "8088")
-VERSION = "20260817m"
+VERSION = "20260817n"
 HOST = os.environ.get("HOST") or "0.0.0.0"
 WORLD = {}
 CHAT = {}

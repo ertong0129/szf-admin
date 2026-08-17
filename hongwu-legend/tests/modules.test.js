@@ -159,7 +159,7 @@ assert.ok(render.indexOf("class=\"skill-ico\"") >= 0, '技能栏应插入 skill-
 assert.ok(render.indexOf('assets/ingame/skills/') >= 0, '技能栏应使用入库技能图');
 
 var serverJs = fs.readFileSync(path.join(root, 'server.js'), 'utf8');
-assert.ok(serverJs.indexOf("VERSION = '20260817m'") >= 0, 'server.js 版本应为 20260817m');
+assert.ok(serverJs.indexOf("VERSION = '20260817n'") >= 0, 'server.js 版本应为 20260817n');
 assert.ok(serverJs.indexOf("require('./js/store.js')") >= 0, 'server.js 应使用本机数据库');
 assert.ok(core.indexOf('localStorage.setItem(SAVE_KEY') < 0, '角色存档不应再写入 localStorage');
 assert.ok(fs.readFileSync(path.join(root, 'js/api.js'), 'utf8').indexOf('localStorage.setItem(TOKEN_KEY') < 0, '登录令牌不应再写入 localStorage');
@@ -189,7 +189,9 @@ assert.ok(input.indexOf('MapTiles.active') >= 0, '点地在切片地图上应按
 assert.ok(fs.readFileSync(path.join(root, 'js/render.js'), 'utf8').indexOf('walkToRadar') >= 0, '雷达圆点应按等距投影');
 assert.ok(fs.readFileSync(path.join(root, 'js/render.js'), 'utf8').indexOf('MapTiles.follow') >= 0, '2D 绘制应跟切片镜头');
 assert.ok(fs.readFileSync(path.join(root, 'js/maptiles.js'), 'utf8').indexOf('VIEW_NATIVE: 1000') >= 0, '拼图后应按原作 1:1 切片比例缩放');
+assert.ok(fs.readFileSync(path.join(root, 'js/maptiles.js'), 'utf8').indexOf('imageSmoothingEnabled = false') >= 0, '切片应关闭平滑以免边缘发糊');
 assert.ok(art.indexOf('A.worldScale') >= 0, '切片地图上角色应随地图比例缩放');
+assert.ok(art.indexOf('A.ROLE_SHEET.cellH') >= 0, 'NPC 立绘高度应与人物时装格一致');
 assert.ok(input.indexOf('H.usePortal(pt)') >= 0, '当前地图跳转点应直接传送');
 assert.ok(input.indexOf('寻路至传送点') < 0, '跳转点不应再寻路');
 assert.ok(play.indexOf('id="play-fit"') >= 0, '局内应有等比适配舞台');
@@ -198,7 +200,8 @@ assert.ok(core.indexOf('H.fitStage') < 0, '不应再用 transform scale 拉舞�
 assert.ok(core.indexOf('H.sizeCanvas') >= 0, '画布宽高应与显示尺寸一致，避免拉伸');
 assert.ok(core.indexOf('68 / 1000') >= 0, '底栏高度应按 skillbar 原比例随舞台宽度');
 assert.ok(core.indexOf('barH + 36') < 0, '底栏不应再加高第二行');
-assert.ok(css.indexOf('calc(100vh * 5 / 3)') >= 0, '舞台应按原作 5:3 真实尺寸适配');
+assert.ok(css.indexOf('width: 100vw') >= 0 && css.indexOf('height: 100vh') >= 0, '舞台应撑满窗口');
+assert.ok(css.indexOf('calc(100vh * 5 / 3)') < 0, '不应再 letterbox 成固定 5:3');
 var playFitCss = css.slice(css.indexOf('.play-fit'), css.indexOf('.stage-frame'));
 assert.ok(playFitCss.indexOf('transform') < 0, 'play-fit 不应 transform scale');
 assert.ok(css.indexOf('left top / 100% 72px') < 0, '底栏切图不应只拉宽度');

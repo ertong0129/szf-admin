@@ -34,7 +34,7 @@
     _active: false,
     slices: {},
     sliceFail: {},
-    /* 原作舞台 GAME_WIDTH=1000、GAME_HEIGHT=545；切片 JPEG 300×300 1:1 铺在 mosaic 上。 */
+    /* 原作 ReSizeManager：StageScaleMode.NO_SCALE，GAME_WIDTH 随窗口变大，切片仍 1 mosaic 像素 = 1 屏像素。 */
     VIEW_NATIVE: 1000,
     GAME_HEIGHT: 545,
     CAMERA_OFFSET: 40,
@@ -203,14 +203,14 @@
     }
   }
 
-  T.displayScale = function (w) {
-    return (w || 1000) / T.VIEW_NATIVE;
+  T.displayScale = function () {
+    /* 不随窗口放大 mosaic，否则大屏上地砖比人物更大。窗口变宽只增加视野。 */
+    return 1;
   };
 
-  /* 时装格 104×132，TILE_SIZE=44，街上约 3 格高；与 mosaic 1:1，不再压成 64×82。 */
+  /* 时装格 104×132 与 TILE_SIZE=44 同一套屏幕像素，人物约三格高。 */
   T.spriteZoom = function () {
-    var s = T.cam.scale || 1;
-    return Math.max(0.7, Math.min(1.35, s));
+    return T.cam.scale || 1;
   };
 
   T.sliceKey = function (folder, row, col) {
@@ -268,18 +268,18 @@
     var nativeH = meta.nativeH || meta.rows * T.TILE_SRC;
     var dw = nativeW * s;
     var dh = nativeH * s;
-    var dx = T.cam.cx - T.cam.x * s;
-    var dy = T.cam.cy - T.cam.y * s;
+    var dx = Math.round(T.cam.cx - T.cam.x * s);
+    var dy = Math.round(T.cam.cy - T.cam.y * s);
     var tile = meta.tileSize || T.TILE_SRC;
     ctx.fillStyle = '#0a1214';
     ctx.fillRect(0, 0, w, h);
-    if (ctx.imageSmoothingEnabled != null) ctx.imageSmoothingEnabled = true;
-    if (ctx.imageSmoothingQuality) ctx.imageSmoothingQuality = 'high';
+    /* 入库预览图只有长边 2048，拉到 7800 会发糊；关掉平滑，缺块时用邻近采样。 */
+    if (ctx.imageSmoothingEnabled != null) ctx.imageSmoothingEnabled = false;
     ctx.drawImage(img, 0, 0, img.width, img.height, dx, dy, dw, dh);
-    var c0 = Math.max(0, Math.floor((T.cam.x - T.cam.cx / s) / tile) - 1);
-    var r0 = Math.max(0, Math.floor((T.cam.y - T.cam.cy / s) / tile) - 1);
-    var c1 = Math.min(meta.cols - 1, Math.ceil((T.cam.x + (w - T.cam.cx) / s) / tile) + 1);
-    var r1 = Math.min(meta.rows - 1, Math.ceil((T.cam.y + (h - T.cam.cy) / s) / tile) + 1);
+    var c0 = Math.max(0, Math.floor((T.cam.x - T.cam.cx / s) / tile) - 2);
+    var r0 = Math.max(0, Math.floor((T.cam.y - T.cam.cy / s) / tile) - 2);
+    var c1 = Math.min(meta.cols - 1, Math.ceil((T.cam.x + (w - T.cam.cx) / s) / tile) + 2);
+    var r1 = Math.min(meta.rows - 1, Math.ceil((T.cam.y + (h - T.cam.cy) / s) / tile) + 2);
     var row, col, slice, sx, sy, ts;
     ts = tile * s;
     for (row = r0; row <= r1; row++) {
