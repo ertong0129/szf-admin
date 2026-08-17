@@ -63,6 +63,11 @@ assert.ok(play.indexOf('class="hud-acts"') >= 0, '顶栏应有活动图标');
 assert.ok(play.indexOf('assets/ingame/title/letter.png') >= 0, '底栏信件应使用原作金标');
 assert.ok(play.indexOf('assets/ingame/title/skill.png') >= 0, '底栏技能应使用原作金标');
 assert.ok(play.indexOf('class="minimap-ring"') >= 0, '小地图应有原作圆框层');
+assert.ok(play.indexOf('当前地图') >= 0, '地图窗应有当前地图页');
+assert.ok(play.indexOf('国家地图') >= 0, '地图窗应有国家地图页');
+assert.ok(play.indexOf('立即前往') >= 0, '当前地图应有立即前往');
+assert.ok(play.indexOf('assets/ingame/map/country.jpg') >= 0, '国家地图应使用原作 country 切图');
+assert.ok(play.indexOf('id="btn-gm"') >= 0, '小地图旁应有原作 GM 钮');
 assert.ok(css.indexOf('border-radius: 50%') >= 0, '小地图应为圆形');
 
 var art = fs.readFileSync(path.join(root, 'js/art.js'), 'utf8');
@@ -89,6 +94,7 @@ assert.ok(art.indexOf('A.npcArt') >= 0, 'NPC 贴图应按 npc_data 对照，不�
   'assets/ingame/map/xin_shou_cun.png',
   'assets/ingame/map/heng_jian_shan.png',
   'assets/ingame/map/po_yang_hu.png',
+  'assets/ingame/map/country.jpg',
   'assets/ingame/ui/jiaosebg.png',
   'assets/ingame/npc-stand/job_21.png',
   'assets/ingame/npc-stand/job_71.png',
@@ -108,7 +114,7 @@ assert.ok(art.indexOf('A.npcArt') >= 0, 'NPC 贴图应按 npc_data 对照，不�
 });
 
 var serverJs = fs.readFileSync(path.join(root, 'server.js'), 'utf8');
-assert.ok(serverJs.indexOf("VERSION = '20260816w'") >= 0, 'server.js 版本应为 20260816w');
+assert.ok(serverJs.indexOf("VERSION = '20260816x'") >= 0, 'server.js 版本应为 20260816x');
 assert.ok(serverJs.indexOf("require('./js/store.js')") >= 0, 'server.js 应使用本机数据库');
 assert.ok(core.indexOf('localStorage.setItem(SAVE_KEY') < 0, '角色存档不应再写入 localStorage');
 assert.ok(fs.readFileSync(path.join(root, 'js/api.js'), 'utf8').indexOf('localStorage.setItem(TOKEN_KEY') < 0, '登录令牌不应再写入 localStorage');

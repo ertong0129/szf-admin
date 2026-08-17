@@ -84,7 +84,7 @@
         if (!anyOpen) H.openPanel('help');
         return;
       }
-      if (ev.code === 'KeyM') { ev.preventDefault(); H.openMapOverlay('region'); return; }
+      if (ev.code === 'KeyM') { ev.preventDefault(); H.openMapOverlay('current'); return; }
       if (ev.code === 'KeyC') H.openPanel('char');
       if (ev.code === 'KeyB') H.openPanel('bag');
       if (ev.code === 'KeyV') H.openPanel('skills');
@@ -225,6 +225,17 @@
             H.toast('请先获得坐骑');
           }
         } else if (dockBtn.id === 'btn-world-quick') H.openMapOverlay('world');
+        else if (dockBtn.id === 'btn-tame') H.openPanel('pet');
+        else if (dockBtn.id === 'btn-pick') H.pickupNear();
+        else if (dockBtn.id === 'btn-party') H.openPanel('social');
+        else if (dockBtn.id === 'btn-arena') {
+          H.toast('找京城沐英进入竞技场');
+          if (H.followNpcOnMap) {
+            G.guide = { tgt: { kind: 'npc', map: 'capital', npcId: 'muying' } };
+            if (H.guideStep) H.guideStep();
+          }
+        } else if (dockBtn.id === 'btn-smith') H.openShop('smith');
+        else if (dockBtn.id === 'btn-gm') H.toast('单机无 GM');
         else if (dockBtn.id === 'btn-save') H.saveNow();
       }
       if (ev.target.dataset.add && G.player.unspentAttr > 0) {
@@ -466,10 +477,8 @@
         H.setDest((gx + 0.5) * TILE, (gy + 0.5) * TILE);
       });
     }
-    var btnRegion = document.getElementById('btn-region-map');
-    if (btnRegion) btnRegion.addEventListener('click', function () { H.openMapOverlay('region'); });
     var btnWorld = document.getElementById('btn-world-map');
-    if (btnWorld) btnWorld.addEventListener('click', function () { H.openMapOverlay('world'); });
+    if (btnWorld) btnWorld.addEventListener('click', function () { H.openMapOverlay('current'); });
     var pkBtn = document.getElementById('pk-mode');
     if (pkBtn) pkBtn.addEventListener('click', H.cyclePkMode);
     var overlay = document.getElementById('map-overlay');
@@ -481,6 +490,12 @@
         }
         var tab = ev.target.closest && ev.target.closest('[data-map-tab]');
         if (tab) H.showMapTab(tab.dataset.mapTab);
+        var side = ev.target.closest && ev.target.closest('[data-side-tab]');
+        if (side) {
+          G.mapSideTab = side.dataset.sideTab;
+          H.applyMapSideTab();
+          return;
+        }
         var npcBtn = ev.target.closest && ev.target.closest('[data-map-npc]');
         if (npcBtn) H.followNpcOnMap(npcBtn.dataset.mapNpc);
         var ptBtn = ev.target.closest && ev.target.closest('[data-map-portal]');
@@ -490,12 +505,20 @@
           H.setDest((pt.x + 0.5) * TILE, (pt.y + 0.5) * TILE);
           H.toast('寻路至传送点：' + (pt.label || pt.to));
         }
+        var nation = ev.target.closest && ev.target.closest('[data-nation-go]');
+        if (nation) H.worldJump(nation.dataset.nationGo);
         var pin = ev.target.closest && ev.target.closest('[data-world-go]');
-        if (pin) H.worldJump(pin.dataset.worldGo);
+        if (pin) H.worldRegionGo(pin.dataset.worldGo);
+        if (ev.target.id === 'btn-map-tele' || (ev.target.closest && ev.target.closest('#btn-map-tele'))) {
+          H.mapTeleport();
+        }
       });
     }
     var regionCanvas = document.getElementById('region-canvas');
-    if (regionCanvas) regionCanvas.addEventListener('mousedown', H.clickRegionCanvas);
+    if (regionCanvas) {
+      regionCanvas.addEventListener('mousedown', H.clickRegionCanvas);
+      regionCanvas.addEventListener('mousemove', H.hoverRegionCanvas);
+    }
     var coordForm = document.getElementById('map-coord-form');
     if (coordForm) {
       coordForm.addEventListener('submit', function (ev) {

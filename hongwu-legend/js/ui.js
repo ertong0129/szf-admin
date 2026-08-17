@@ -13,9 +13,16 @@
     return !!(el && !el.hidden);
   }
 
+  H.mapTabOn = function () {
+    var current = document.getElementById('map-current');
+    var nation = document.getElementById('map-nation');
+    if (current && !current.hidden) return 'current';
+    if (nation && !nation.hidden) return 'nation';
+    return 'world';
+  }
+
   H.regionTabOn = function () {
-    var pane = document.getElementById('map-region');
-    return !!(pane && !pane.hidden);
+    return H.mapTabOn() === 'current';
   }
 
   H.closeMapOverlay = function () {
@@ -23,23 +30,44 @@
     if (el) el.hidden = true;
   }
 
+  H.eraName = function () {
+    return D.ERA || '洪武';
+  }
+
+  H.mapLocText = function () {
+    var meta = D.MAP_META[G.mapId];
+    return H.eraName() + '-' + (meta ? meta.name : '未知');
+  }
+
   H.showMapTab = function (tab) {
-    var region = document.getElementById('map-region');
+    if (tab === 'region') tab = 'current';
+    var current = document.getElementById('map-current');
+    var nation = document.getElementById('map-nation');
     var world = document.getElementById('map-world');
-    if (region) region.hidden = tab !== 'region';
+    if (current) current.hidden = tab !== 'current';
+    if (nation) nation.hidden = tab !== 'nation';
     if (world) world.hidden = tab !== 'world';
     document.querySelectorAll('[data-map-tab]').forEach(function (b) {
       b.classList.toggle('on', b.dataset.mapTab === tab);
     });
-    var title = document.getElementById('map-overlay-title');
-    if (title) {
-      title.textContent = tab === 'world'
-        ? '世界地图'
-        : (D.MAP_META[G.mapId] ? D.MAP_META[G.mapId].name : '区域地图');
+    var loc = document.getElementById('map-loc');
+    var era = document.getElementById('map-era');
+    var hint = document.getElementById('map-hint');
+    if (loc) {
+      loc.hidden = tab === 'world';
+      loc.textContent = H.mapLocText();
     }
-    if (tab === 'region') {
+    if (era) era.hidden = tab !== 'nation';
+    if (hint) {
+      hint.textContent = tab === 'nation' || tab === 'world' ? '点击场景名称可自动寻路前往' : '';
+    }
+    if (tab === 'current') {
       H.paintRegionMap();
       H.fillMapNpcList();
+      H.fillMapJumpList();
+      H.applyMapSideTab();
+    } else if (tab === 'nation') {
+      H.fillNationPins();
     } else {
       H.fillWorldPins();
     }
@@ -52,12 +80,12 @@
     var el = document.getElementById('map-overlay');
     if (!el) return;
     el.hidden = false;
-    H.showMapTab(tab || 'region');
+    H.showMapTab(tab || 'current');
   }
 
   H.refreshMapOverlay = function () {
     if (!H.mapOverlayOpen()) return;
-    H.showMapTab(H.regionTabOn() ? 'region' : 'world');
+    H.showMapTab(H.mapTabOn());
   }
 
   H.paintRegionMap = function () {
@@ -77,28 +105,79 @@
     var box = document.getElementById('map-npc-list');
     if (!box) return;
     var html = '';
-    G.npcs.forEach(function (n) {
-      var mark = n.questMark === '?' ? '？' : (n.questMark === '!' ? '！' : '');
-      var ico = (window.Art && Art.npcIcon) ? Art.npcIcon(n.id) : '';
-      html += '<button type="button" class="map-npc" data-map-npc="' + n.id + '">' +
-        (ico ? '<img src="' + ico + '" alt="" />' : '') +
-        mark + n.name + (n.title ? '　' + n.title : '') + '</button>';
-    });
+    var spec = (D.MAP_FUNC && D.MAP_FUNC[G.mapId]) || null;
+    function row(id, name) {
+      var n = null;
+      G.npcs.forEach(function (x) { if (x.id === id) n = x; });
+      if (!n && D.NPCS[id] && D.NPCS[id].map === G.mapId) n = D.NPCS[id];
+      if (!n) return;
+      var ico = (window.Art && Art.npcIcon) ? Art.npcIcon(id) : '';
+      html += '<button type="button" class="map-npc" data-map-npc="' + id + '">' +
+        (ico ? '<img src="' + ico + '" alt="" />' : '') + (name || n.name) + '</button>';
+    }
+    if (spec && spec.length) {
+      spec.forEach(function (it) { row(it.id, it.name); });
+    } else {
+      G.npcs.forEach(function (n) { row(n.id, n.name); });
+    }
+    if (!html) html = '<p class="map-tip">此地暂无功能 NPC。</p>';
+    box.innerHTML = html;
+  }
+
+  H.fillMapJumpList = function () {
+    var box = document.getElementById('map-jump-list');
+    if (!box) return;
+    var html = '';
     G.portals.forEach(function (pt, i) {
-      html += '<button type="button" class="map-pt" data-map-portal="' + i + '">传送 · ' +
+      html += '<button type="button" class="map-pt" data-map-portal="' + i + '">' +
         (pt.label || pt.to) + '</button>';
     });
-    if (!html) html = '<p class="map-tip">此地暂无人物。</p>';
+    if (!html) html = '<p class="map-tip">此地暂无跳转点。</p>';
     box.innerHTML = html;
+  }
+
+  H.applyMapSideTab = function () {
+    var tab = G.mapSideTab || 'npc';
+    var npc = document.getElementById('map-npc-list');
+    var jump = document.getElementById('map-jump-list');
+    var title = document.getElementById('map-side-title');
+    if (npc) npc.hidden = tab !== 'npc';
+    if (jump) jump.hidden = tab !== 'jump';
+    if (title) title.textContent = tab === 'jump' ? '跳转点' : '功能NPC';
+    document.querySelectorAll('[data-side-tab]').forEach(function (b) {
+      b.classList.toggle('on', b.dataset.sideTab === tab);
+    });
+  }
+
+  H.fillNationPins = function () {
+    var box = document.getElementById('nation-pins');
+    var list = document.getElementById('nation-list');
+    var era = H.eraName();
+    var nodes = D.NATION_NODES || [];
+    if (box) {
+      box.innerHTML = nodes.map(function (n) {
+        var cls = 'world-pin' + (G.mapId === n.id ? ' here' : '') + (n.locked ? ' locked' : '');
+        return '<button type="button" class="' + cls + '" data-nation-go="' + n.id +
+          '" style="left:' + n.left + ';top:' + n.top + '">' + n.name + '</button>';
+      }).join('');
+    }
+    if (list) {
+      list.innerHTML = nodes.map(function (n) {
+        var cls = 'nation-row' + (G.mapId === n.id ? ' here' : '') + (n.locked ? ' locked' : '');
+        return '<button type="button" class="' + cls + '" data-nation-go="' + n.id + '">' +
+          era + '-' + n.name + '</button>';
+      }).join('');
+    }
   }
 
   H.fillWorldPins = function () {
     var box = document.getElementById('world-pins');
     if (!box) return;
-    box.innerHTML = (D.WORLD_NODES || []).map(function (n) {
-      return '<button type="button" class="world-pin' + (G.mapId === n.id ? ' here' : '') +
-        '" data-world-go="' + n.id + '" style="left:' + n.left + ';top:' + n.top + '" title="' +
-        (n.desc || n.name) + '">' + n.name + '</button>';
+    box.innerHTML = (D.WORLD_REGIONS || []).map(function (n) {
+      var here = (n.go && G.mapId === n.go) || (n.tab === 'nation' && (D.NATION_NODES || []).some(function (m) { return m.id === G.mapId; }));
+      var cls = 'world-pin' + (here ? ' here' : '') + (n.locked ? ' locked' : '');
+      return '<button type="button" class="' + cls + '" data-world-go="' + n.id +
+        '" style="left:' + n.left + ';top:' + n.top + '">' + n.name + '</button>';
     }).join('');
   }
 
@@ -114,6 +193,16 @@
     H.toast('寻路至 ' + Math.floor(gx) + ',' + Math.floor(gy));
   }
 
+  H.hoverRegionCanvas = function (ev) {
+    var c = document.getElementById('region-canvas');
+    var el = document.getElementById('map-cursor');
+    if (!c || !el || !G.grid) return;
+    var r = c.getBoundingClientRect();
+    var gx = Math.floor(((ev.clientX - r.left) / r.width) * G.grid[0].length);
+    var gy = Math.floor(((ev.clientY - r.top) / r.height) * G.grid.length);
+    el.textContent = '[' + gx + ',' + gy + ']';
+  }
+
   H.pathToCoord = function (tx, ty) {
     if (!G.grid || !G.player) return;
     var gw = G.grid[0].length, gh = G.grid.length;
@@ -125,11 +214,21 @@
     H.toast('寻路至 ' + tx + ',' + ty);
   }
 
+  H.mapNode = function (id) {
+    var found = null;
+    (D.WORLD_NODES || []).forEach(function (n) { if (n.id === id) found = n; });
+    (D.NATION_NODES || []).forEach(function (n) { if (n.id === id) found = n; });
+    return found;
+  }
+
   H.worldJump = function (id) {
     if (H.inInstance()) { H.toast('在副本地图中不能进行地图跳转'); return; }
-    var node = null;
-    (D.WORLD_NODES || []).forEach(function (n) { if (n.id === id) node = n; });
+    var node = H.mapNode(id);
     if (!node) return;
+    if (node.locked) {
+      H.toast(node.name + '本学习服未单独开放（对照原作标注）');
+      return;
+    }
     if (G.mapId === id) {
       H.toast('已在' + node.name);
       return;
@@ -150,6 +249,31 @@
     G.guide = { tgt: { kind: 'map', map: id } };
     H.toast('寻路前往' + node.name + '（有传送卷可瞬移）');
     H.guideStep();
+  }
+
+  H.worldRegionGo = function (id) {
+    var node = null;
+    (D.WORLD_REGIONS || []).forEach(function (n) { if (n.id === id) node = n; });
+    if (!node) return;
+    if (node.locked) {
+      H.toast('本学习服对照洪武城拷，' + node.name + '与洪武共用场景');
+      return;
+    }
+    if (node.tab) {
+      H.showMapTab(node.tab);
+      return;
+    }
+    if (node.go) H.worldJump(node.go);
+  }
+
+  H.mapTeleport = function () {
+    if (H.inInstance()) { H.toast('在副本地图中不能进行地图跳转'); return; }
+    var tab = H.mapTabOn();
+    if (tab === 'current') {
+      H.toast('已在当前地图，点坐标或人名寻路');
+      return;
+    }
+    H.toast('点击场景名称寻路；背包有传送卷则瞬移');
   }
 
   H.closePanels = function () {
@@ -279,7 +403,8 @@
         }).join('');
     } else if (id === 'help') {
       document.getElementById('panel-help').innerHTML = H.header('帮助', 'help') +
-        D.HELP.map(function (h) { return '<p style="margin:6px 0;color:#d8c8a0">' + h + '</p>'; }).join('');
+        D.HELP.map(function (h) { return '<p style="margin:6px 0;color:#d8c8a0">' + h + '</p>'; }).join('') +
+        '<p style="margin-top:12px"><a href="index.html" style="color:#ffe7a0">返回选服</a></p>';
     } else if (id === 'warehouse') {
       H.paintWarehouse();
     } else if (id === 'social') {

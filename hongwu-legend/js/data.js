@@ -176,7 +176,7 @@
     feed: { id: 'feed', name: '灵兽口粮', kind: 'feed', desc: '喂食出战灵宠，回复其生命。' },
     badge: { id: 'badge', name: '腰牌', kind: 'mat', desc: '鄱阳湖缴获。使用可换经验。' },
     hero_pack: { id: 'hero_pack', name: '英雄礼包', kind: 'pack', desc: '通关礼包。打开可得灵石或药水。' },
-    scroll: { id: 'scroll', name: '传送卷', kind: 'mat', desc: '世界地图点地名可消耗一张瞬移。没有则自动寻路。' },
+    scroll: { id: 'scroll', name: '传送卷', kind: 'mat', desc: '国家/世界地图点地名可消耗一张瞬移。没有则自动寻路。' },
     mount_token: { id: 'mount_token', name: '坐骑提速牌', kind: 'mat', desc: '角色面板坐骑页提升坐骑速度，不一定成功。' },
     yinpiao: { id: 'yinpiao', name: '五锭银票', kind: 'mat', desc: '钱庄兑换。500 两银子 = 1 张，可再兑回银两。' },
     bag_token: { id: 'bag_token', name: '背包扩展符', kind: 'mat', desc: '扩展背包一栏（+12 格），最多四次。' },
@@ -424,6 +424,65 @@
     { id: 'jianzhou', name: '建州', left: '82%', top: '28%', tx: 24, ty: 18, desc: '女真' }
   ];
 
+  /* 三朝共用城拷，本学习服取洪武。国家地图场景对照原作万历截图，只换朝代前缀。 */
+  D.ERA = '洪武';
+  D.NATION_NODES = [
+    { id: 'border', name: '边城', left: '14%', top: '10%', tx: 6, ty: 71 },
+    { id: 'xiliang', name: '西凉', left: '16%', top: '40%', tx: 84, ty: 36 },
+    { id: 'taiping', name: '太平村', left: '18%', top: '78%', tx: 50, ty: 68 },
+    { id: 'pingjiang', name: '平江', left: '34%', top: '46%', tx: 58, ty: 52 },
+    { id: 'safe', name: '安全地图', left: '48%', top: '8%', locked: true },
+    { id: 'wild', name: '横涧山', left: '48%', top: '42%', tx: 55, ty: 16 },
+    { id: 'xinghua', name: '杏花岭', left: '78%', top: '12%', tx: 47, ty: 52 },
+    { id: 'capital', name: '京城', left: '70%', top: '40%', tx: 110, ty: 84 },
+    { id: 'boyang', name: '鄱阳湖', left: '78%', top: '76%', tx: 33, ty: 31 }
+  ];
+  D.WORLD_REGIONS = [
+    { id: 'neutral', name: '中立区', left: '22%', top: '18%', go: 'kaifeng' },
+    { id: 'yongle', name: '永乐', left: '72%', top: '18%', locked: true },
+    { id: 'wanli', name: '万历', left: '26%', top: '72%', locked: true },
+    { id: 'hongwu', name: '洪武', left: '70%', top: '70%', tab: 'nation' },
+    { id: 'kaifeng', name: '开封', left: '50%', top: '46%', go: 'kaifeng' }
+  ];
+  D.MAP_MARK = {
+    jingche: '车夫',
+    yabiao: '拉镖',
+    shikefa: '拉镖',
+    shuibing: '副本',
+    shilian: '副本',
+    muying: '宝藏',
+    baoku_man: '宝藏',
+    bagong: '铸',
+    jingtie: '铸',
+    jineng: '技能',
+    yiyi: '仓库',
+    shichang: '商',
+    tanwei: '摆摊区',
+    yuelao: '侠侣',
+    hongniang: '侠侣',
+    zhangjuzheng: '禁卫将军',
+    jinwei: '国旗',
+    jingzhishi: '国家',
+    limengyang: '师',
+    shenwansan: '寄',
+    wanjianying: '五行',
+    xuda: '国家'
+  };
+  D.MAP_FUNC = {
+    capital: [
+      { id: 'shenwansan', name: '钱庄老板' },
+      { id: 'aimeili', name: '美容师' },
+      { id: 'wangziqiao', name: '杂货商人' },
+      { id: 'jingche', name: '车夫' },
+      { id: 'shikefa', name: '宗族镖发布人' },
+      { id: 'xiaoyuanji', name: '户部侍郎' },
+      { id: 'baoku_man', name: '大明宝藏传送人' },
+      { id: 'limengyang', name: '师徒管理员' },
+      { id: 'zongzu_adm', name: '宗族管理员' },
+      { id: 'bagong', name: '装备锻造师' }
+    ]
+  };
+
   D.INSTANCES = {
     poyang: {
       name: '鄱阳湖大战',
@@ -564,8 +623,9 @@
 
   D.PORTALS = {
     taiping: [
-      { x: 76, y: 54, to: 'wild', tx: 55, ty: 16, label: '横涧山' },
-      { x: 72, y: 58, to: 'capital', tx: 108, ty: 84, label: '京城' }
+      { x: 76, y: 54, to: 'wild', tx: 55, ty: 16, label: '往横涧山' },
+      { x: 72, y: 58, to: 'capital', tx: 108, ty: 84, label: '往京城' },
+      { x: 8, y: 108, to: 'shennong', tx: 100, ty: 116, label: '往神农架' }
     ],
     wild: [
       { x: 52, y: 14, to: 'taiping', tx: 70, ty: 54, label: '太平村' },
@@ -576,12 +636,13 @@
       { x: 101, y: 122, to: 'wild', tx: 100, ty: 50, label: '横涧山' }
     ],
     capital: [
-      { x: 110, y: 86, to: 'taiping', tx: 70, ty: 54, label: '太平村' },
-      { x: 137, y: 63, to: 'boyang', tx: 31, ty: 31, label: '鄱阳湖' },
-      { x: 136, y: 101, to: 'pingjiang', tx: 56, ty: 52, label: '平江' },
-      { x: 85, y: 127, to: 'wild', tx: 55, ty: 16, label: '横涧山' },
-      { x: 3, y: 64, to: 'xiliang', tx: 82, ty: 36, label: '西凉' },
-      { x: 3, y: 69, to: 'border', tx: 6, ty: 71, label: '边城' }
+      { x: 110, y: 86, to: 'taiping', tx: 70, ty: 54, label: '往太平村' },
+      { x: 137, y: 63, to: 'boyang', tx: 31, ty: 31, label: '往鄱阳湖 17-23级' },
+      { x: 136, y: 101, to: 'pingjiang', tx: 56, ty: 52, label: '往平江 25-45级' },
+      { x: 85, y: 127, to: 'wild', tx: 55, ty: 16, label: '往横涧山 9-25级' },
+      { x: 132, y: 40, to: 'xinghua', tx: 45, ty: 52, label: '往杏花岭 30-60级' },
+      { x: 3, y: 64, to: 'xiliang', tx: 82, ty: 36, label: '往西凉' },
+      { x: 3, y: 69, to: 'border', tx: 6, ty: 71, label: '往边城' }
     ],
     boyang: [
       { x: 31, y: 27, to: 'capital', tx: 134, ty: 63, label: '京城' }
@@ -703,7 +764,7 @@
   D.HELP = [
     '快捷键对照 91wan 资料：C 角色　B 背包　V 技能　Q 任务　E 天工炉　M 地图　Z 挂机　S 商店　D 打坐　Esc 关窗/系统。',
     '空格拾取，A 攻击选中，~ 选最近怪物，1–6 技能，7 金创药，8 内力药。方向键点地行走（原作为点地）。',
-    '区域地图：深蓝自己、黄 NPC、淡蓝出口。世界地图点地名自动寻路；有传送卷则瞬移。副本内不能跳转。',
+    '地图（M）：当前地图红点自己、黄点 NPC、蓝字出口；国家地图点场景名寻路；世界地图点开封或洪武。有传送卷则瞬移。副本内不能跳转。',
     '精力上限 4000，杀 1 怪耗 1。精力为 0 时经验为 1 且不掉落，每日 0 点重置。角色面板可查看。',
     '18 级系统送坐骑。C 面板「坐骑」可骑乘、用提速牌升色（白→橙）。坐骑装备六件：马铠、马鞍、马饰、马缰、马镫、马蹄。穿上后绑定。开封铁塔掉落坐骑装备与坐骑宝石。',
     '仓库找姗姗（太平）或依依（京城）。第一仓免费，最多四仓。钱庄兑银票：500 两一张。',

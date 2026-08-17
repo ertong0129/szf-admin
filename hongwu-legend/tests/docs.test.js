@@ -46,6 +46,14 @@ var help = D.HELP.join('\n');
 });
 
 assert.ok(D.CONSUMABLES.scroll && D.CONSUMABLES.mount_token && D.CONSUMABLES.yinpiao);
+assert.strictEqual(D.ERA, '洪武');
+assert.ok(D.NATION_NODES.some(function (n) { return n.id === 'capital' && n.name === '京城'; }));
+assert.ok(D.NATION_NODES.some(function (n) { return n.id === 'safe' && n.locked; }));
+assert.ok(D.WORLD_REGIONS.some(function (n) { return n.name === '开封'; }));
+assert.ok(D.WORLD_REGIONS.some(function (n) { return n.name === '洪武' && n.tab === 'nation'; }));
+assert.ok(D.MAP_FUNC.capital.some(function (n) { return n.name === '钱庄老板'; }));
+assert.ok(D.MAP_MARK.jingche === '车夫');
+assert.ok(D.PORTALS.capital.some(function (p) { return p.to === 'xinghua' && /杏花岭/.test(p.label); }));
 
 var b = F.meritBand(22);
 assert.strictEqual(b.kill.id, 'wolf');

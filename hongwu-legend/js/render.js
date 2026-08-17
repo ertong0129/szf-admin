@@ -344,23 +344,28 @@
       });
     }
     G.portals.forEach(function (pt) {
-      ctx.fillStyle = '#8ad4d6';
-      ctx.fillRect((pt.x + 0.5) * sx - 2, (pt.y + 0.5) * sy - 2, 4, 4);
+      ctx.fillStyle = '#4aa8ff';
+      ctx.beginPath();
+      ctx.arc((pt.x + 0.5) * sx, (pt.y + 0.5) * sy, labeled ? 4 : 2, 0, Math.PI * 2);
+      ctx.fill();
       if (labeled) {
         ctx.fillStyle = '#8ad4d6';
         ctx.font = '11px "Microsoft YaHei",sans-serif';
         ctx.textAlign = 'left';
-        ctx.fillText(pt.label || '传送', (pt.x + 0.5) * sx + 4, (pt.y + 0.5) * sy);
+        ctx.fillText(pt.label || ('往' + (pt.to || '传送')), (pt.x + 0.5) * sx + 5, (pt.y + 0.5) * sy);
       }
     });
     G.npcs.forEach(function (n) {
       ctx.fillStyle = '#ffd36a';
       ctx.fillRect(n.x / TILE * sx - 2, n.y / TILE * sy - 2, 4, 4);
       if (labeled) {
-        ctx.fillStyle = '#6fdf7a';
-        ctx.font = '11px "Microsoft YaHei",sans-serif';
-        ctx.textAlign = 'left';
-        ctx.fillText(n.name, n.x / TILE * sx + 5, n.y / TILE * sy);
+        var mark = (D.MAP_MARK && D.MAP_MARK[n.id]) || '';
+        if (mark) {
+          ctx.fillStyle = '#ffe7a0';
+          ctx.font = '11px "Microsoft YaHei",sans-serif';
+          ctx.textAlign = 'left';
+          ctx.fillText(mark, n.x / TILE * sx + 5, n.y / TILE * sy);
+        }
       }
     });
     G.entities.forEach(function (e) {
@@ -373,14 +378,8 @@
       ctx.fillRect(o.x / TILE * sx - 2, o.y / TILE * sy - 2, 4, 4);
     });
     if (G.player) {
-      ctx.fillStyle = '#1e4a8a';
+      ctx.fillStyle = '#e24a3a';
       ctx.fillRect(G.player.x / TILE * sx - 3, G.player.y / TILE * sy - 3, 6, 6);
-      if (labeled) {
-        ctx.fillStyle = '#ffe7a0';
-        ctx.font = '11px "Microsoft YaHei",sans-serif';
-        ctx.textAlign = 'left';
-        ctx.fillText('我', G.player.x / TILE * sx + 6, G.player.y / TILE * sy - 4);
-      }
     }
   }
 
@@ -388,10 +387,12 @@
     if (!mini || !mctx) return;
     H.paintRadar(mctx, mini.width, mini.height, false);
     var nameEl = document.getElementById('map-name');
-    if (nameEl && D.MAP_META[G.mapId]) nameEl.textContent = D.MAP_META[G.mapId].name;
+    if (nameEl && D.MAP_META[G.mapId]) {
+      nameEl.textContent = (D.ERA || '洪武') + '·' + D.MAP_META[G.mapId].name;
+    }
     var coord = document.getElementById('map-coord');
     if (coord && G.player) {
-      coord.textContent = Math.floor(G.player.x / TILE) + ',' + Math.floor(G.player.y / TILE);
+      coord.textContent = '[' + Math.floor(G.player.x / TILE) + ', ' + Math.floor(G.player.y / TILE) + ']';
     }
     var qb = document.querySelector('.quest-box');
     var inst = D.INSTANCES[G.mapId];
@@ -402,7 +403,13 @@
 
   H.drawHud = function () {
     var p = G.player, st = H.stats(p);
-    document.getElementById('who-line').textContent = p.name + '  ' + p.level + '级';
+    document.getElementById('who-line').textContent = p.name;
+    var vipEl = document.getElementById('hud-vip');
+    if (vipEl) {
+      var vl = H.vipLevel ? H.vipLevel(p) : 0;
+      vipEl.hidden = !vl;
+      vipEl.textContent = vl ? 'VIP' : '';
+    }
     var lvEl = document.getElementById('hud-lv');
     if (lvEl) lvEl.textContent = String(p.level);
     var port = document.getElementById('portrait');
@@ -517,8 +524,8 @@
     }).join('');
     html += '<div class="util-slot" id="slot-hp"><img class="skill-ico" src="assets/ingame/items/hongyao2.png" alt="金创" /><div class="key">7</div></div>';
     html += '<div class="util-slot" id="slot-mp"><img class="skill-ico" src="assets/ingame/ui/bottle.png" alt="内力" /><div class="key">8</div></div>';
-    html += '<div class="util-slot" id="slot-auto"><div class="key">Z</div><div class="name">挂机</div></div>';
-    html += '<div class="util-slot" id="slot-pick"><img class="skill-ico" src="assets/ingame/items/baoguo.png" alt="拾取" /><div class="key">空格</div></div>';
+    html += '<div class="util-slot empty"><div class="key">9</div></div>';
+    html += '<div class="util-slot empty"><div class="key">0</div></div>';
     box.innerHTML = html;
   }
 
