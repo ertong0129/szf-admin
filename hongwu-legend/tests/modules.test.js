@@ -70,6 +70,18 @@ assert.ok(art.indexOf('A.radarFor') >= 0, '小地图应按场景换原作俯视�
 });
 
 var serverJs = fs.readFileSync(path.join(root, 'server.js'), 'utf8');
-assert.ok(serverJs.indexOf("VERSION = '20260816o'") >= 0, 'server.js 版本应为 20260816o');
+assert.ok(serverJs.indexOf("VERSION = '20260816p'") >= 0, 'server.js 版本应为 20260816p');
+
+function assertWinBat(rel) {
+  var buf = fs.readFileSync(path.join(root, rel));
+  assert.ok(buf.includes(Buffer.from('\r\n')), rel + ' 必须用 CRLF，否则 Windows cmd 会拆行');
+  for (var i = 0; i < buf.length; i++) {
+    assert.ok(buf[i] <= 127, rel + ' 必须是纯 ASCII，UTF-8 中文会被 cmd 咬断命令');
+  }
+  assert.ok(buf.indexOf(Buffer.from('%%')) < 0, rel + ' 不要用 for %%i，编码一乱会变成 %i 命令');
+}
+assertWinBat('start.bat');
+assertWinBat('启动游戏.bat');
+assert.ok(fs.readFileSync(path.join(root, 'start.bat'), 'utf8').indexOf('node server.js') >= 0);
 
 console.log('modules.test.js ok');

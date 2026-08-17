@@ -1,52 +1,51 @@
 @echo off
 setlocal EnableExtensions
 cd /d "%~dp0"
-title 大明传说
+title DaMing Legend
 echo.
-echo  大明传说 · 本地服
+echo  DaMing Legend - local server
 echo  --------------------------------
-echo  正在启动，浏览器会在服务就绪后自动打开。
-echo  不要关这个黑窗口，关掉就停服。
+echo  Starting... browser opens when ready.
+echo  Keep this window open.
 echo.
 
 set "OPEN_BROWSER=1"
-set "STARTED="
 
-REM 先确认是真 Node，不是微软商店空壳
-set "NODEVER="
-for /f "delims=" %%i in ('node -p "process.versions.node" 2^>nul') do set "NODEVER=%%i"
-if defined NODEVER (
-  echo  使用 Node.js %NODEVER%
-  node server.js
-  if not errorlevel 1 goto :done
-  echo  Node 启动失败，改试 Python。
-)
+where node >nul 2>nul
+if errorlevel 1 goto try_py
+node -p "process.versions.node" >nul 2>nul
+if errorlevel 1 goto try_py
+echo  Using Node.js
+node server.js
+if not errorlevel 1 goto done
+echo  Node failed, trying Python.
 
+:try_py
 where py >nul 2>nul
-if %errorlevel%==0 (
-  echo  使用 Python 启动器
-  py -3 server.py
-  if not errorlevel 1 goto :done
-)
+if errorlevel 1 goto try_python
+echo  Using Python launcher
+py -3 server.py
+if not errorlevel 1 goto done
 
+:try_python
 where python >nul 2>nul
-if %errorlevel%==0 (
-  echo  使用 python
-  python server.py
-  if not errorlevel 1 goto :done
-)
+if errorlevel 1 goto try_python3
+echo  Using python
+python server.py
+if not errorlevel 1 goto done
 
+:try_python3
 where python3 >nul 2>nul
-if %errorlevel%==0 (
-  echo  使用 python3
-  python3 server.py
-  if not errorlevel 1 goto :done
-)
+if errorlevel 1 goto nofound
+echo  Using python3
+python3 server.py
+if not errorlevel 1 goto done
 
+:nofound
 echo.
-echo  没找到可用的 Node.js 或 Python。
-echo  将直接打开本地页面（没有服务端存档）。
-echo  建议安装 https://nodejs.org 后重新双击本文件。
+echo  Node.js / Python not found.
+echo  Opening index.html without server save.
+echo  Install Node.js: https://nodejs.org
 echo.
 start "" "%~dp0index.html"
 pause
@@ -54,6 +53,6 @@ exit /b 1
 
 :done
 echo.
-echo  服务已结束。
+echo  Server stopped.
 pause
 exit /b 0
