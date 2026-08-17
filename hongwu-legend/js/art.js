@@ -91,6 +91,24 @@
     }
   };
 
+  A.ROLE_SHEET = {
+    cellW: 104, cellH: 132, cols: 6, rows: 26,
+    row: { stand: 0, walk: 5, attack: 10, arrow: 15, cast: 20, sit: 25 },
+    frames: { stand: 6, walk: 6, attack: 6, arrow: 6, cast: 6, sit: 1 }
+  };
+  A.MOUNT_SHEET = {
+    cellW: 104, cellH: 112, cols: 6, rows: 10,
+    row: { stand: 0, walk: 5 },
+    frames: { stand: 3, walk: 6 }
+  };
+  A.FASHION_IDS = ['plain', 'ink', 'gold', 'crimson'];
+  ['m', 'f'].forEach(function (g) {
+    A.FASHION_IDS.forEach(function (fid) {
+      A.src['body_' + g + '_' + fid] = 'assets/ingame/role/body_' + g + '_' + fid + '.png';
+    });
+    A.src['mount_' + g] = 'assets/ingame/role/mount_' + g + '.png';
+  });
+
   (function registerOriginalArt() {
     var D = root.GameData;
     if (!D) return;
@@ -224,6 +242,81 @@
 
   A.classKey = function (cls) {
     return CLASS_SRC[cls] || 'dao';
+  };
+
+  A.heroGender = function (p) {
+    return p && p.gender === 'f' ? 'f' : 'm';
+  };
+
+  A.heroFashion = function (p) {
+    var id = (p && p.fashionId) || 'plain';
+    return A.FASHION_IDS.indexOf(id) >= 0 ? id : 'plain';
+  };
+
+  A.heroSheetKey = function (p) {
+    if (p && p.mount && p.mount.riding) return 'mount_' + A.heroGender(p);
+    return 'body_' + A.heroGender(p) + '_' + A.heroFashion(p);
+  };
+
+  A.heroSheetSrc = function (gender, fashionId) {
+    var g = gender === 'f' ? 'f' : 'm';
+    var f = A.FASHION_IDS.indexOf(fashionId) >= 0 ? fashionId : 'plain';
+    return A.src['body_' + g + '_' + f];
+  };
+
+  A.heroDir = function (facing) {
+    var oct = Math.round((facing || 0) / (Math.PI / 4));
+    oct = ((oct % 8) + 8) % 8;
+    var tab = [
+      [2, 0], [3, 0], [4, 0], [3, 1],
+      [2, 1], [1, 1], [0, 0], [1, 0]
+    ];
+    return { d: tab[oct][0], flip: tab[oct][1] };
+  };
+
+  A.heroDirIso = function (facing) {
+    return A.heroDir((facing || 0) + Math.PI / 4);
+  };
+
+  A.heroAction = function (p) {
+    if (p && p.mount && p.mount.riding) return p._moving ? 'walk' : 'stand';
+    if (p && p.sit) return 'sit';
+    if (p && p.atkCd > 0.04) {
+      if (p.cls === 'archer') return 'arrow';
+      if (p.cls === 'wanderer' || p.cls === 'healer') return 'cast';
+      return 'attack';
+    }
+    return p && p._moving ? 'walk' : 'stand';
+  };
+
+  A.heroFrame = function (p, time, iso) {
+    var ride = !!(p && p.mount && p.mount.riding);
+    var sheet = ride ? A.MOUNT_SHEET : A.ROLE_SHEET;
+    var act = A.heroAction(p);
+    var dir = iso ? A.heroDirIso(p && p.facing) : A.heroDir(p && p.facing);
+    var nfr = sheet.frames[act] || 1;
+    var fr = 0;
+    if (act === 'sit') {
+      dir = { d: 0, flip: dir.flip };
+    } else if (act === 'attack' || act === 'arrow' || act === 'cast') {
+      fr = Math.min(nfr - 1, Math.floor((1 - Math.min(1, (p.atkCd || 0) / 0.55)) * nfr));
+    } else if (act === 'walk') {
+      fr = Math.floor((time || 0) * 9) % nfr;
+    } else {
+      fr = Math.floor((time || 0) * 2.2) % nfr;
+    }
+    return {
+      key: A.heroSheetKey(p),
+      col: fr,
+      row: (sheet.row[act] || 0) + dir.d,
+      cols: sheet.cols,
+      rows: sheet.rows,
+      cellW: sheet.cellW,
+      cellH: sheet.cellH,
+      flip: !!dir.flip,
+      ride: ride,
+      act: act
+    };
   };
 
   A.classHead = function (cls) {
@@ -487,13 +580,25 @@
   };
 
   A.drawHero = function (ctx, p, screen, time) {
-    var img = A.imgs[A.classKey(p.cls)];
+    var fr = A.heroFrame(p, time, false);
+    var img = A.imgs[fr.key];
+    var ride = fr.ride;
+    A.drawAura(ctx, screen.x, screen.y, ride ? 'rgba(255,170,70,0.62)' : 'rgba(90,210,255,0.5)', time, ride ? 1.15 : 1);
+    if (img && img.width) {
+      var dw = ride ? 70 : 64;
+      var dh = ride ? 76 : 82;
+      ctx.save();
+      ctx.translate(screen.x, screen.y + (ride ? 4 : 10));
+      if (fr.flip) ctx.scale(-1, 1);
+      ctx.drawImage(img, fr.col * fr.cellW, fr.row * fr.cellH, fr.cellW, fr.cellH, -dw / 2, -dh, dw, dh);
+      ctx.restore();
+      return true;
+    }
+    img = A.imgs[A.classKey(p.cls)];
     var flip = Math.cos(p.facing) < 0;
     var moving = !!p._moving;
     var bob = Math.sin(time * (moving ? 11 : 2.2)) * (moving ? 3.2 : 0.7);
     var lean = moving ? Math.sin(time * 11) * 0.08 : 0;
-    var ride = p.mount && p.mount.riding;
-    A.drawAura(ctx, screen.x, screen.y, ride ? 'rgba(255,170,70,0.62)' : 'rgba(90,210,255,0.5)', time, ride ? 1.15 : 1);
     if (!billboard(ctx, img, screen.x, screen.y + (ride ? 4 : 10), 48, 96, flip, bob - (ride ? 8 : 0), lean)) {
       return false;
     }

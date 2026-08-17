@@ -255,13 +255,6 @@
       ctx.fillRect(10, -2, 14, 4);
       ctx.restore();
     }
-    var fdef = (D.FASHIONS || []).filter(function (x) { return x.id === p.fashionId; })[0];
-    if (fdef && fdef.glow) {
-      ctx.strokeStyle = fdef.glow;
-      ctx.globalAlpha = 0.7;
-      ctx.beginPath(); ctx.ellipse(s.x, s.y + 10, 16, 6, 0, 0, Math.PI * 2); ctx.stroke();
-      ctx.globalAlpha = 1;
-    }
     if (window.Art && Art.ready) {
       Art.drawNameplate(ctx, s.x, s.y + 22, D.CLASSES[p.cls].name, p.name, '#d8f5a0');
     }
@@ -274,7 +267,11 @@
 
   H.drawPeer = function (o) {
     var s = H.worldToScreen(o.x, o.y);
-    var fake = { cls: o.cls || 'warrior', name: o.name, x: o.x, y: o.y, facing: o.facing || 0, sit: o.sit, _moving: true };
+    var fake = {
+      cls: o.cls || 'warrior', name: o.name, x: o.x, y: o.y, facing: o.facing || 0,
+      sit: o.sit, _moving: true, gender: o.gender, fashionId: o.fashionId,
+      atkCd: o.atkCd || 0, mount: { riding: !!o.riding }
+    };
     if (!(window.Art && Art.ready && Art.drawHero(ctx, fake, s, G.time))) {
       H.drawActor(o.x, o.y, '#6cb6ff', 12, o.stall ? '摊' : '');
     }

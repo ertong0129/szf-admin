@@ -156,6 +156,8 @@
     if (key && String(key).indexOf('portrait_') === 0) {
       return [0.95, 0.95];
     }
+    if (key && String(key).indexOf('body_') === 0) return [2.08, 2.72];
+    if (key && String(key).indexOf('mount_') === 0) return [2.22, 2.42];
     var map = {
       tiger: [1.35, 2.05], fox: [1.3, 2.4], water: [1.4, 2.25],
       wing: [1.75, 2.2], fairy: [1.7, 1.95], boss: [2.35, 2.85],
@@ -546,24 +548,59 @@
     a._labelKey = key;
   }
 
+  function applyRoleSheet(mesh, img, uv) {
+    if (!img || !img.width || !uv) return;
+    var mat = mesh.material;
+    if (!mat.map || mat.map.image !== img || !mat.map._roleSheet) {
+      if (mat.map && mat.map._roleSheet) mat.map.dispose();
+      var tex = new THREE.Texture(img);
+      tex.needsUpdate = true;
+      tex.encoding = THREE.sRGBEncoding;
+      tex.minFilter = THREE.LinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+      tex.generateMipmaps = false;
+      tex.wrapS = THREE.ClampToEdgeWrapping;
+      tex.wrapT = THREE.ClampToEdgeWrapping;
+      tex._roleSheet = true;
+      mat.map = tex;
+      mat.transparent = true;
+      mat.alphaTest = 0.1;
+      mat.needsUpdate = true;
+    }
+    var t = mat.map;
+    var padU = 0.4 / img.width;
+    var padV = 0.4 / img.height;
+    t.repeat.set(1 / uv.cols - padU * 2, 1 / uv.rows - padV * 2);
+    t.offset.set(uv.col / uv.cols + padU, 1 - (uv.row + 1) / uv.rows + padV);
+  }
+
   function ensureActor(id, img, opt) {
     opt = opt || {};
-    if (actors[id]) {
-      if (opt.label) setActorLabel(actors[id], opt.label, opt.labelColor, opt.title);
-      return actors[id];
+    var a = actors[id];
+    if (!a) {
+      a = {
+        mesh: makeBillboard(img, opt.sx || 1.5, opt.sy || 1.9, opt.color),
+        shadow: makeShadow(),
+        label: null,
+        bar: opt.bar ? makeBar() : null,
+        h: opt.sy || 1.9,
+        lastX: 0,
+        lastZ: 0,
+        seed: Math.random() * 12,
+        _sx: opt.sx || 1.5,
+        _sy: opt.sy || 1.9
+      };
+      actors[id] = a;
     }
-    var a = {
-      mesh: makeBillboard(img, opt.sx || 1.5, opt.sy || 1.9, opt.color),
-      shadow: makeShadow(),
-      label: null,
-      bar: opt.bar ? makeBar() : null,
-      h: opt.sy || 1.9,
-      lastX: 0,
-      lastZ: 0,
-      seed: Math.random() * 12
-    };
     if (opt.label) setActorLabel(a, opt.label, opt.labelColor, opt.title);
-    actors[id] = a;
+    if (opt.sx && opt.sy && (a._sx !== opt.sx || a._sy !== opt.sy)) {
+      a.mesh.geometry.dispose();
+      a.mesh.geometry = new THREE.PlaneGeometry(opt.sx, opt.sy);
+      a.h = opt.sy;
+      a._sx = opt.sx;
+      a._sy = opt.sy;
+    }
+    if (opt.uv) applyRoleSheet(a.mesh, img, opt.uv);
     return a;
   }
 
@@ -579,16 +616,21 @@
     a.lastX = x;
     a.lastZ = z;
     var seed = a.seed || 0;
-    var bob = moving ? Math.sin(t * 11 + seed) * 0.07 : Math.sin(t * 2.2 + seed) * 0.016;
+    var bob = opt.uv ? 0 : (moving ? Math.sin(t * 11 + seed) * 0.07 : Math.sin(t * 2.2 + seed) * 0.016);
     var ride = !!opt.ride;
     var h = a.h || 1.9;
     var y = h * 0.5 + bob + (ride ? 0.22 : 0);
     a.mesh.position.set(x, y, z);
     faceCam(a.mesh);
-    var flip = opt.facing != null ? Math.cos(opt.facing) < 0 : false;
-    var sx = (flip ? -1 : 1) * (opt.hurt ? 0.92 : 1);
-    a.mesh.scale.set(sx, 1 + (moving ? 0 : Math.sin(t * 2.2 + seed) * 0.025), 1);
-    a.mesh.rotation.z = moving ? Math.sin(t * 11 + seed) * 0.07 : 0;
+    if (opt.uv) {
+      a.mesh.scale.set(opt.uv.flip ? -1 : 1, 1, 1);
+      a.mesh.rotation.z = 0;
+    } else {
+      var flip = opt.facing != null ? Math.cos(opt.facing) < 0 : false;
+      var sx = (flip ? -1 : 1) * (opt.hurt ? 0.92 : 1);
+      a.mesh.scale.set(sx, 1 + (moving ? 0 : Math.sin(t * 2.2 + seed) * 0.025), 1);
+      a.mesh.rotation.z = moving ? Math.sin(t * 11 + seed) * 0.07 : 0;
+    }
     a.shadow.position.set(x, 0.025, z);
     a.shadow.material.opacity = ride ? 0.38 : 0.28;
     a.shadow.scale.set(ride ? 1.85 : 1.55, 1, ride ? 0.85 : 0.7);
@@ -727,18 +769,20 @@
     }
 
     var art = root.Art;
-    var heroKey = art && art.classKey ? art.classKey(p.cls) : 'dao';
+    var heroUv = art && art.heroFrame ? art.heroFrame(p, waterTime, true) : null;
+    var heroKey = heroUv ? heroUv.key : (art && art.classKey ? art.classKey(p.cls) : 'dao');
     var heroImg = art && art.imgs ? art.imgs[heroKey] : null;
     var hs = spriteSize(heroKey, false);
     var hero = ensureActor('hero', heroImg, {
-      sx: hs[0], sy: hs[1], label: p.name, labelColor: '#ffe7a0', bar: true
+      sx: hs[0], sy: hs[1], label: p.name, labelColor: '#ffe7a0', bar: true, uv: heroUv
     });
     placeActor(hero, px0, pz0, {
       time: waterTime,
       moving: !!p._moving,
       facing: p.facing,
       ride: p.mount && p.mount.riding,
-      hurt: p.hp < 1
+      hurt: p.hp < 1,
+      uv: heroUv
     });
     paintBar(hero.bar, p.hp / Math.max(1, (state.maxHp || p.hp)), '#c8312a');
 
@@ -794,16 +838,25 @@
 
     (state.peers || []).forEach(function (o) {
       var id = 'peer-' + o.user;
-      var pkey = art && art.classKey ? art.classKey(o.cls) : 'dao';
+      var peer = {
+        cls: o.cls, gender: o.gender, fashionId: o.fashionId, facing: o.facing,
+        sit: o.sit, _moving: o.moving !== false, atkCd: o.atkCd || 0,
+        mount: { riding: !!o.riding }
+      };
+      var puv = art && art.heroFrame ? art.heroFrame(peer, waterTime, true) : null;
+      var pkey = puv ? puv.key : (art && art.classKey ? art.classKey(o.cls) : 'dao');
       var pimg = art && art.imgs ? art.imgs[pkey] : null;
       var psz = spriteSize(pkey, false);
       var a = ensureActor(id, pimg, {
         sx: psz[0], sy: psz[1],
         label: o.name,
         labelColor: o.red ? '#ff8a6a' : '#8ad4d6',
-        bar: true
+        bar: true,
+        uv: puv
       });
-      placeActor(a, px(o.x), px(o.y), { time: waterTime, facing: o.facing, moving: true });
+      placeActor(a, px(o.x), px(o.y), {
+        time: waterTime, facing: o.facing, moving: true, uv: puv, ride: !!o.riding
+      });
       paintBar(a.bar, (o.hp || 0) / Math.max(1, o.maxHp || 1), '#c8312a');
       alive[id] = 1;
     });

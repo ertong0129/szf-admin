@@ -838,10 +838,10 @@
   ];
 
   D.FASHIONS = [
-    { id: 'plain', name: '布衣', min: 1, desc: '出门的常服。', glow: '' },
-    { id: 'ink', name: '墨羽', min: 10, desc: '略有侠气的劲装。', glow: 'rgba(80,100,180,0.85)' },
-    { id: 'gold', name: '金缕', min: 20, desc: '京城裁缝的时新样式。', glow: 'rgba(212,175,55,0.9)' },
-    { id: 'crimson', name: '绯云', min: 30, desc: '军功赏赐的赤袍。', glow: 'rgba(200,50,50,0.9)' }
+    { id: 'plain', name: '布衣', min: 1, fid: 10001, desc: '出门的常服。', glow: '' },
+    { id: 'ink', name: '墨羽', min: 10, fid: 10011, desc: '略有侠气的劲装。', glow: 'rgba(80,100,180,0.85)' },
+    { id: 'gold', name: '金缕', min: 20, fid: 10031, desc: '京城裁缝的时新样式。', glow: 'rgba(212,175,55,0.9)' },
+    { id: 'crimson', name: '绯云', min: 30, fid: 10101, desc: '军功赏赐的赤袍。', glow: 'rgba(200,50,50,0.9)' }
   ];
 
   D.VIP = [

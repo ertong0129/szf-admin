@@ -20,11 +20,13 @@
     return e;
   }
 
-  H.makePlayer = function (name, cls) {
+  H.makePlayer = function (name, cls, gender) {
     var c = D.CLASSES[cls];
     var p = {
       name: name || '无名',
       cls: cls,
+      gender: gender === 'f' ? 'f' : 'm',
+      fashionId: 'plain',
       level: 1,
       exp: 0,
       x: SPAWN.x,

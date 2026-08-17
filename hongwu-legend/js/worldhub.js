@@ -106,6 +106,11 @@
         nation: s.nation || 'ming',
         sit: !!s.sit,
         facing: s.facing || 0,
+        gender: s.gender === 'f' ? 'f' : 'm',
+        fashionId: s.fashionId || 'plain',
+        riding: !!s.riding,
+        atkCd: s.atkCd || 0,
+        moving: !!s.moving,
         stall: s.stall || null,
         party: partyOf[s.user] || '',
         clan: clanOf[s.user] || '',
@@ -158,6 +163,11 @@
         nation: body.nation === 'yuan' ? 'yuan' : 'ming',
         sit: !!body.sit,
         facing: +body.facing || 0,
+        gender: body.gender === 'f' ? 'f' : 'm',
+        fashionId: body.fashionId || 'plain',
+        riding: !!body.riding,
+        atkCd: +body.atkCd || 0,
+        moving: !!body.moving,
         stall: prev.stall || null,
         t: t
       };

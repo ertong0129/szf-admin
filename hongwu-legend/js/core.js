@@ -40,6 +40,7 @@
     last: 0,
     log: [],
     selectedClass: 'warrior',
+    selectedGender: 'm',
     selectedNation: 'ming',
     dialogNpc: null,
     toastT: 0,

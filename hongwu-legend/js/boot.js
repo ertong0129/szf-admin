@@ -76,17 +76,25 @@
   H.paintClasses = function () {
     var box = document.getElementById('class-grid');
     if (!box) return;
+    var g = G.selectedGender === 'f' ? 'f' : 'm';
+    var src = (window.Art && Art.heroSheetSrc) ? Art.heroSheetSrc(g, 'plain') : '';
     box.innerHTML = Object.keys(D.CLASSES).map(function (id) {
       var c = D.CLASSES[id];
-      var src = window.Art && Art.src[Art.classKey(id)] ? Art.src[Art.classKey(id)] : '';
+      var anim = G.selectedClass === id ? 'walk-front' : 'stand-front';
       return '<div class="class-card' + (G.selectedClass === id ? ' selected' : '') + '" data-cls="' + id + '">' +
-        (src ? '<div class="class-art" style="background-image:url(' + src + ')"></div>' : '') +
+        (src ? '<div class="class-art role-preview ' + anim + '" style="background-image:url(' + src + ')"></div>' : '') +
         '<h3 style="color:' + c.accent + '">' + c.name + '</h3>' +
         '<div class="weapon">兵器 · ' + c.weapon + '</div>' +
         '<p>' + c.desc + '</p></div>';
     }).join('');
     var tip = document.getElementById('class-tip');
     if (tip) tip.textContent = D.CLASSES[G.selectedClass].tip;
+    var gp = document.getElementById('gender-pick');
+    if (gp) {
+      gp.querySelectorAll('[data-gender]').forEach(function (x) {
+        x.classList.toggle('selected', x.dataset.gender === g);
+      });
+    }
   }
 
   H.startCreate = function () {
@@ -106,6 +114,15 @@
         nationBox.querySelectorAll('[data-nation]').forEach(function (x) {
           x.classList.toggle('selected', x.dataset.nation === G.selectedNation);
         });
+      });
+    }
+    var genderBox = document.getElementById('gender-pick');
+    if (genderBox) {
+      genderBox.addEventListener('click', function (ev) {
+        var b = ev.target.closest('[data-gender]');
+        if (!b) return;
+        G.selectedGender = b.dataset.gender === 'f' ? 'f' : 'm';
+        H.paintClasses();
       });
     }
     window.addEventListener('beforeunload', function () {
@@ -128,7 +145,7 @@
     if (enter) {
       enter.addEventListener('click', function () {
         var name = (document.getElementById('name-input').value || '').trim() || H.randomName();
-        G.player = H.makePlayer(name, G.selectedClass);
+        G.player = H.makePlayer(name, G.selectedClass, G.selectedGender);
         H.enterPlay(false);
       });
     }

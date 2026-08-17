@@ -656,6 +656,38 @@ html, body {
 }
 #gold-line { color: #ffd36a; }
 #silver-line { color: #d8d0c4; }
+.gender-pick { display: flex; gap: 8px; justify-content: center; margin: 0 0 12px; }
+.gender-pick button {
+  min-width: 88px;
+  padding: 6px 14px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--muted);
+  cursor: pointer;
+}
+.gender-pick button.selected { color: #ffe7a0; border-color: #ffe7a0; }
+.role-preview {
+  width: 104px;
+  height: 132px;
+  margin: 0 auto;
+  background-repeat: no-repeat;
+  background-size: 624px 3432px;
+  image-rendering: auto;
+}
+.class-art.role-preview {
+  width: 104px;
+  height: 132px;
+  background-color: #070a0c;
+  background-size: 624px 3432px;
+  margin: 12px auto 8px;
+  border-bottom: none;
+}
+.role-preview.stand-front { background-position: 0px -528px; }
+.role-preview.walk-front { animation: role-walk-front 0.66s steps(6) infinite; }
+@keyframes role-walk-front {
+  from { background-position: 0px -1188px; }
+  to { background-position: -624px -1188px; }
+}
 .nation-pick { display: flex; gap: 8px; justify-content: center; margin: 8px 0; }
 .nation-pick button {
   background: rgba(8,28,30,0.85);
@@ -988,6 +1020,35 @@ html, body {
   padding: 8px;
   background: url('../assets/ingame/ui/fashionBg.png') right bottom / 180px auto no-repeat;
 }
+.fashion-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.fashion-card {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  padding: 6px;
+  border: 1px solid rgba(200, 170, 90, 0.22);
+  background: rgba(8, 12, 16, 0.55);
+}
+.fashion-card.on { border-color: #ffe7a0; }
+.fashion-card.locked { opacity: 0.55; }
+.fashion-card .role-preview {
+  flex: 0 0 104px;
+  background-color: rgba(0, 0, 0, 0.35);
+}
+.fashion-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding-bottom: 8px;
+}
+.fashion-meta b { color: #ffe7a0; }
+.fashion-meta span { color: #b8a57a; font-size: 12px; line-height: 1.45; }
+.fashion-meta em { color: #9adf7a; font-style: normal; font-size: 12px; }
 .medal-bg {
   height: 72px;
   margin-bottom: 8px;

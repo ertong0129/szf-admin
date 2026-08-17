@@ -344,7 +344,8 @@
         '<div id="char-attr">' +
         '<div class="grid-2"><div>' +
         '<div class="stat-line"><span>名号</span><span>' + p.name + '</span></div>' +
-        '<div class="stat-line"><span>职业</span><span>' + D.CLASSES[p.cls].name + '</span></div>' +
+        '<div class="stat-line"><span>性别 / 职业</span><span>' + (p.gender === 'f' ? '女侠' : '男侠') +
+        '　' + D.CLASSES[p.cls].name + '</span></div>' +
         '<div class="stat-line"><span>等级</span><span>' + p.level + '</span></div>' +
         '<div class="stat-line"><span>阵营 / PK</span><span>' + (p.nation === 'yuan' ? '北元' : '大明') +
         '　' + (p.pkValue || 0) + ((p.pkValue || 0) >= 18 ? ' 红名' : '') + '</span></div>' +
@@ -684,14 +685,19 @@
   }
 
   H.fashionHtml = function (p) {
-    return '<div class="fashion-bg">' + (D.FASHIONS || []).map(function (f) {
+    var g = p.gender === 'f' ? 'f' : 'm';
+    return '<div class="fashion-bg"><div class="fashion-list">' + (D.FASHIONS || []).map(function (f) {
       var locked = p.level < f.min;
-      return '<div class="stat-line"><span>' + f.name + '　' + f.desc +
+      var src = (window.Art && Art.heroSheetSrc) ? Art.heroSheetSrc(g, f.id) : '';
+      var on = p.fashionId === f.id;
+      return '<div class="fashion-card' + (on ? ' on' : '') + (locked ? ' locked' : '') + '">' +
+        (src ? '<div class="role-preview ' + (on ? 'walk-front' : 'stand-front') + '" style="background-image:url(' + src + ')"></div>' : '') +
+        '<div class="fashion-meta"><b>' + f.name + '</b><span>' + f.desc +
         (locked ? '（' + f.min + '级）' : '') + '</span>' +
-        (p.fashionId === f.id ? '<span>使用中</span>' :
+        (on ? '<em>使用中</em>' :
           (locked ? '' : '<button class="btn ghost" data-fashion="' + f.id + '">换装</button>')) +
-        '</div>';
-    }).join('') + '</div>';
+        '</div></div>';
+    }).join('') + '</div></div>';
   };
 
   H.officeHtml = function (p) {

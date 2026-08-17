@@ -83,7 +83,12 @@
       pkValue: p.pkValue || 0,
       nation: p.nation || 'ming',
       sit: !!p.sit,
-      facing: p.facing || 0
+      facing: p.facing || 0,
+      gender: p.gender === 'f' ? 'f' : 'm',
+      fashionId: p.fashionId || 'plain',
+      riding: !!(p.mount && p.mount.riding),
+      atkCd: p.atkCd || 0,
+      moving: !!p._moving
     }).then(function (snap) { H.applyNet(snap); }).catch(function () {});
   }
 

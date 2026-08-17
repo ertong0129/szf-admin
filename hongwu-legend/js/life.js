@@ -17,6 +17,7 @@
     p.intimate = p.intimate || {};
     p.officeId = p.officeId || 'none';
     p.fashionId = p.fashionId || 'plain';
+    p.gender = p.gender === 'f' ? 'f' : 'm';
     p.medalId = p.medalId || '';
     p.mentor = p.mentor || { master: '', pupil: '', moral: 0 };
     p.arenaScore = p.arenaScore || 0;

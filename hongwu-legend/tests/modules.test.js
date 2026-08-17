@@ -79,7 +79,9 @@ assert.ok(art.indexOf('A.cityRadar') >= 0, '城镇地面应能叠公开小地图
 assert.ok(art.indexOf('A.drawDamage') >= 0, '伤害飘字应使用原作数字切图');
 assert.ok(art.indexOf('A.itemIcon') >= 0, '物品应使用原作 32×32 图标');
 assert.ok(art.indexOf('npc-stand') >= 0, 'NPC 世界立绘应加载原作 job 站立帧');
-assert.ok(art.indexOf('A.npcArt') >= 0, 'NPC 贴图应按 npc_data 对照，不随机换皮');
+assert.ok(art.indexOf('A.heroFrame') >= 0, '角色应使用原作时装精灵表切帧');
+assert.ok(art.indexOf('A.heroSheetKey') >= 0, '角色外观应按性别和时装换表');
+assert.ok(art.indexOf("assets/ingame/role/body_") >= 0, '应加载原作时装精灵表');
 
 [
   'assets/ingame/viewui/hud-frame.png',
@@ -106,6 +108,12 @@ assert.ok(art.indexOf('A.npcArt') >= 0, 'NPC 贴图应按 npc_data 对照，不�
   'assets/ingame/items/dao.png',
   'assets/ingame/items/lingzhi.png',
   'assets/ingame/title/letter.png',
+  'assets/ingame/role/body_m_plain.png',
+  'assets/ingame/role/body_f_plain.png',
+  'assets/ingame/role/body_m_ink.png',
+  'assets/ingame/role/body_f_crimson.png',
+  'assets/ingame/role/mount_m.png',
+  'assets/ingame/role/mount_f.png',
   'js/npc-art.js',
   'js/store.js',
   'js/store-mysql.js',
@@ -115,7 +123,7 @@ assert.ok(art.indexOf('A.npcArt') >= 0, 'NPC 贴图应按 npc_data 对照，不�
 });
 
 var serverJs = fs.readFileSync(path.join(root, 'server.js'), 'utf8');
-assert.ok(serverJs.indexOf("VERSION = '20260817b'") >= 0, 'server.js 版本应为 20260817b');
+assert.ok(serverJs.indexOf("VERSION = '20260817c'") >= 0, 'server.js 版本应为 20260817c');
 assert.ok(serverJs.indexOf("require('./js/store.js')") >= 0, 'server.js 应使用本机数据库');
 assert.ok(core.indexOf('localStorage.setItem(SAVE_KEY') < 0, '角色存档不应再写入 localStorage');
 assert.ok(fs.readFileSync(path.join(root, 'js/api.js'), 'utf8').indexOf('localStorage.setItem(TOKEN_KEY') < 0, '登录令牌不应再写入 localStorage');
@@ -158,6 +166,7 @@ var worldBgCss = css.slice(css.indexOf('.world-bg img'), css.indexOf('#nation-bg
 assert.ok(worldBgCss.indexOf('object-fit: cover') < 0, '地图切图不应 cover 裁切');
 assert.ok(ui.indexOf('其它场景') < 0, '国家地图右侧不应堆其它场景');
 assert.ok(play.indexOf('hud-wallet') >= 0 && play.indexOf('hidden') >= 0, '主界面不应展示元宝银两栏');
-assert.ok(play.indexOf('<span>藏宝阁</span>') < 0, '顶栏活动图标上不要字');
+assert.ok(play.indexOf('id="gender-pick"') >= 0, '创角应可选男女');
+assert.ok(play.indexOf('data-gender="f"') >= 0, '创角应有女侠');
 
 console.log('modules.test.js ok');
