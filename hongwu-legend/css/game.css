@@ -207,9 +207,9 @@ html, body {
 .chat-box {
   position: absolute;
   left: 0.6cqw;
-  bottom: 0.6cqw;
-  width: 34cqw;
-  height: 16cqw;
+  bottom: 0.5cqw;
+  width: 32cqw;
+  height: 14.5cqw;
   z-index: 4;
   background:
     url('../assets/official/ui/chat-bar.png') center / 100% 100% no-repeat,
@@ -261,6 +261,9 @@ html, body {
   gap: 2px 4px;
   z-index: 4;
   pointer-events: auto;
+}
+.dock-menu.sys-btns, .dock-menu {
+  flex-wrap: nowrap;
 }
 .sys-btns button, .sys-btns a {
   background: transparent;
@@ -494,11 +497,11 @@ html, body {
 .hud-acts button:hover { filter: brightness(1.18); }
 #auto-banner {
   position: absolute;
-  top: 54px;
+  top: 5.6cqw;
   left: 50%;
   transform: translateX(-50%);
-  width: 190px;
-  height: 52px;
+  width: 16cqw;
+  height: 4.2cqw;
   background: url('../assets/ingame/viewui/auto-farm.png') center / contain no-repeat;
   z-index: 6;
   pointer-events: none;
@@ -529,11 +532,11 @@ html, body {
 
 #target-frame {
   position: absolute;
-  top: 58px;
+  top: 5.6cqw;
   left: 50%;
   transform: translateX(-50%);
-  min-width: 228px;
-  padding: 10px 18px 12px;
+  min-width: 18cqw;
+  padding: 0.6cqw 1.2cqw 0.7cqw;
   background:
     url('../assets/ingame/viewui/tip.png') center / 100% 100% no-repeat,
     rgba(8, 22, 24, 0.9);
@@ -603,13 +606,15 @@ html, body {
 }
 #map-coord { color: #8ad4d6; letter-spacing: 0; }
 .map-tools {
-  position: absolute;
-  left: 50%;
-  bottom: -0.3cqw;
-  transform: translateX(-50%);
   display: flex;
   gap: 0.25cqw;
-  width: 18.8cqw;
+  width: 16.2cqw;
+  margin: 0 auto;
+  position: relative;
+  left: auto;
+  right: auto;
+  bottom: auto;
+  transform: none;
 }
 .map-tools button, .map-region-btn {
   flex: 1;
@@ -716,7 +721,7 @@ html, body {
 .char-tabs button.on { color: #ffe7a0; border-color: #ffe7a0; }
 .quest-box[hidden] { display: none !important; }
 .quest-box, .log-box {
-  margin-top: 8px;
+  margin-top: 0.2cqw;
   background:
     url('../assets/ingame/viewui/panel-round.png') center / 100% 100% no-repeat,
     rgba(8, 22, 24, 0.86);
@@ -724,7 +729,7 @@ html, body {
   padding: 8px 10px;
   font-size: 12px;
   line-height: 1.55;
-  max-height: 280px;
+  max-height: 34cqw;
   overflow: auto;
 }
 .quest-tabs {
@@ -778,13 +783,13 @@ html, body {
 
 .skill-bar {
   position: absolute;
-  left: 2.4%;
-  top: 12%;
+  left: 5.2%;
+  top: 14%;
   display: flex;
-  gap: 0.45%;
-  align-items: center;
-  height: 62%;
-  width: 39.2%;
+  gap: 0.35%;
+  align-items: stretch;
+  height: 72%;
+  width: 36.6%;
 }
 .skill-slot, .util-slot {
   height: 100%;
@@ -794,6 +799,7 @@ html, body {
   cursor: pointer;
   flex: 1 1 0;
   min-width: 0;
+  overflow: hidden;
 }
 .skill-slot.empty {
   cursor: default;
@@ -801,52 +807,64 @@ html, body {
 }
 .dock-xp {
   position: absolute;
-  left: 43.5%;
-  right: 10.5%;
+  left: 42.4%;
+  right: 10.2%;
   top: 10%;
-  height: 0.8cqw;
+  height: 0.55cqw;
   margin: 0;
   background: rgba(12, 8, 6, 0.55);
   border: 1px solid rgba(46, 196, 200, 0.28);
+  pointer-events: none;
+  overflow: hidden;
 }
+.dock-xp span { display: none; }
 .dock-menu {
   position: absolute;
-  left: 42.8%;
-  top: 20%;
-  right: 9.5%;
-  height: 46%;
-  align-items: flex-end;
+  left: 42.2%;
+  top: 28%;
+  right: 9.4%;
+  height: 62%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.15cqw;
   flex-wrap: nowrap;
   overflow: hidden;
 }
 .dock-menu img {
-  height: 2.4cqw;
+  height: 3.6cqw;
   width: auto;
-  max-width: 3.2cqw;
+  max-width: 3.4cqw;
   object-fit: contain;
   display: block;
   margin: 0 auto;
   filter: drop-shadow(0 1px 2px #000);
+  pointer-events: none;
 }
 .dock-menu img[src*="title/"] {
-  height: 1.6cqw;
-  max-width: 4.6cqw;
-  margin-top: 0.2cqw;
+  height: 1.7cqw;
+  max-width: 6.2cqw;
+  margin-top: 0;
 }
 .dock-menu button, .dock-menu a {
-  padding: 0 2px;
+  padding: 0;
   min-width: 0;
+  flex: 1 1 0;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 0;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  overflow: hidden;
 }
-.dock-menu span {
-  font-size: 0.95cqw;
-  color: #e8f6c8;
-  letter-spacing: 0;
-  line-height: 1;
-  text-shadow: 0 1px 2px #041014;
+.dock-menu span { display: none; }
+.dock-menu .dock-title {
+  flex: 0 0 auto;
+  min-width: 4.4cqw;
+  padding: 0 0.15cqw;
 }
 .dock-menu .dock-txt {
   font-size: 12px;
@@ -857,97 +875,101 @@ html, body {
 }
 .dock-quick {
   position: absolute;
-  right: 9.2%;
-  top: auto;
-  bottom: 5%;
+  left: 0.35%;
+  top: 10%;
+  width: 4.6%;
+  height: 80%;
   display: flex;
-  gap: 0.3cqw;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+  gap: 0.15cqw;
+  right: auto;
+  bottom: auto;
 }
 .dock-quick button {
-  width: 2.6cqw;
-  height: 2cqw;
-  border-radius: 3px;
+  width: 2cqw;
+  height: 1.7cqw;
+  border-radius: 2px;
   border: 1px solid #2ec4c8;
   background: rgba(8, 28, 30, 0.72);
   color: #ffe7a0;
   font-family: inherit;
-  font-size: 1.05cqw;
+  font-size: 0.95cqw;
   cursor: pointer;
   padding: 0;
   overflow: hidden;
+  line-height: 1;
 }
-.dock-quick img {
-  height: 1.6cqw;
-  width: auto;
-  max-width: 2.4cqw;
-  display: block;
-  margin: 0 auto;
-  object-fit: contain;
-}
+.dock-quick img { display: none; }
 .dock-quick button:hover { filter: brightness(1.2); }
-.dock-utils {
+.dock-quick button.on { color: #6fdf7a; border-color: #6fdf7a; }
+.stage-act {
   position: absolute;
-  left: 43.5%;
-  top: auto;
-  bottom: 5%;
+  left: 33.2cqw;
+  right: 19cqw;
+  bottom: 0.35cqw;
   display: flex;
-  gap: 0.3cqw;
+  gap: 0.35cqw;
+  z-index: 5;
+  pointer-events: auto;
+  justify-content: flex-start;
 }
-.dock-utils button {
-  min-width: 2.8cqw;
-  height: 1.7cqw;
+.stage-act button {
+  min-width: 3.4cqw;
+  height: 1.8cqw;
   border-radius: 3px;
   border: 1px solid #2ec4c8;
-  background: rgba(8, 28, 30, 0.72);
+  background: rgba(8, 28, 30, 0.82);
   color: #8ad4d6;
   font-family: inherit;
-  font-size: 1cqw;
+  font-size: 1.05cqw;
   cursor: pointer;
-  padding: 0 0.3cqw;
+  padding: 0 0.45cqw;
+  white-space: nowrap;
 }
-.dock-utils button.on { color: #ffe7a0; border-color: #ffe7a0; box-shadow: 0 0 8px rgba(46,196,200,0.45); }
+.stage-act button.on { color: #ffe7a0; border-color: #ffe7a0; box-shadow: 0 0 8px rgba(46,196,200,0.45); }
+.dock-utils { display: none; }
 .shop-btn {
   position: absolute;
-  right: 0.5%;
+  right: 0.4%;
   top: 4%;
-  width: 7.6%;
+  width: 8.4%;
   height: 92%;
   border: 0;
   border-radius: 50%;
   background: transparent;
   color: transparent;
   cursor: pointer;
+  z-index: 2;
 }
 .shop-btn:hover {
   box-shadow: 0 0 16px rgba(200, 48, 40, 0.55);
 }
-.hud-frame .bar { height: 10px; margin-bottom: 4px; border-radius: 4px; }
+.hud-frame .bar {
+  height: 1.15cqw;
+  margin-bottom: 0.35cqw;
+  border-radius: 0.5cqw;
+}
 .skill-slot .skill-ico, .util-slot .skill-ico {
-  width: 28px;
-  height: 28px;
+  width: 62%;
+  height: 62%;
   object-fit: contain;
   display: block;
-  margin: 10px auto 0;
+  margin: 18% auto 0;
   image-rendering: pixelated;
   pointer-events: none;
 }
-.skill-slot .name, .util-slot .name {
-  position: absolute;
-  bottom: 2px;
-  left: 0;
-  right: 0;
-  text-align: center;
-  font-size: 9px;
-  color: var(--paper);
-  text-shadow: 0 1px 2px #000;
-}
+.skill-slot .name, .util-slot .name { display: none; }
 .skill-slot .key, .util-slot .key {
   position: absolute;
-  top: 2px;
-  left: 4px;
-  font-size: 10px;
+  top: 0.1cqw;
+  left: 0.15cqw;
+  font-size: 0.85cqw;
   color: var(--gold);
   font-family: "PingFang SC", sans-serif;
+  text-shadow: 0 1px 2px #000;
+  line-height: 1;
 }
 .skill-slot .cd {
   position: absolute;
@@ -1169,15 +1191,15 @@ html, body {
 
 .dialog {
   position: absolute;
-  left: 16px;
-  right: 220px;
-  bottom: 142px;
-  max-width: 720px;
+  left: 33.4cqw;
+  right: 19cqw;
+  bottom: 2.6cqw;
+  max-width: none;
   background:
     url('../assets/ingame/viewui/dialog-bar.png') center / 100% 100% no-repeat,
     rgba(8, 16, 18, 0.92);
   border: 0;
-  padding: 18px 28px 16px;
+  padding: 1.2cqw 1.8cqw 1cqw;
   display: none;
   z-index: 6;
 }
@@ -1201,7 +1223,7 @@ html, body {
 
 .toast {
   position: absolute;
-  top: 100px;
+  top: 10.4cqw;
   left: 50%;
   transform: translateX(-50%);
   background:
@@ -1516,7 +1538,7 @@ html, body {
 #instance-hud {
   position: absolute;
   left: 50%;
-  top: 8px;
+  top: 5.6cqw;
   transform: translateX(-50%);
   z-index: 6;
   background: rgba(8, 22, 24, 0.9);

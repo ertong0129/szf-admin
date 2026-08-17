@@ -91,13 +91,13 @@
                 <span id="map-name">洪武·太平村</span>
                 <span id="map-coord">[24,17]</span>
               </div>
-              <div class="map-tools">
-                <button type="button" data-panel="vip" title="充值">充值</button>
-                <button type="button" data-panel="rank" title="排行">榜</button>
-                <button type="button" id="btn-auto-mini" title="挂机">挂</button>
-                <button type="button" id="btn-world-map" title="地图">图</button>
-                <button type="button" id="btn-gm" title="GM">GM</button>
-              </div>
+            </div>
+            <div class="map-tools">
+              <button type="button" data-panel="vip" title="充值">充值</button>
+              <button type="button" data-panel="rank" title="排行">榜</button>
+              <button type="button" id="btn-auto-mini" title="挂机">挂</button>
+              <button type="button" id="btn-world-map" title="地图">图</button>
+              <button type="button" id="btn-gm" title="GM">GM</button>
             </div>
             <div class="quest-box" data-qtab="all">
               <div class="quest-tabs">
@@ -127,6 +127,13 @@
           </div>
           <div class="toast" id="toast"></div>
           <div class="dialog" id="dialog"></div>
+          <div class="stage-act" id="stage-act">
+            <button type="button" id="btn-sit" title="打坐（D）">打坐</button>
+            <button type="button" id="btn-auto-2" title="挂机（Z）">挂机</button>
+            <button type="button" id="btn-mount-2" title="骑马">骑马</button>
+            <button type="button" id="btn-arena" title="竞技场">竞</button>
+            <button type="button" id="btn-party" title="组队">队</button>
+          </div>
           <div id="instance-hud" hidden>
             <div id="instance-title">副本</div>
             <div id="instance-info">—</div>
@@ -145,37 +152,30 @@
           </div>
         </div>
         <div class="dock">
-          <div class="skill-bar" id="skill-bar"></div>
           <div class="dock-quick">
             <button type="button" id="btn-auto" title="猎（挂机）">猎</button>
             <button type="button" id="btn-tame" title="驯">驯</button>
             <button type="button" id="btn-pick" title="拾取">拾</button>
             <button type="button" id="btn-world-quick" title="世界地图">拓</button>
-            <button type="button" data-panel="forge" title="强化"><img src="assets/ingame/ui/qianghua.png" alt="强" /></button>
+            <button type="button" data-panel="forge" title="强化">强</button>
           </div>
-          <div class="dock-utils">
-            <button type="button" id="btn-sit" title="打坐（D）">打坐</button>
-            <button type="button" id="btn-auto-2" title="挂机（Z）">挂机</button>
-            <button type="button" id="btn-mount-2" title="骑马">骑马</button>
-            <button type="button" id="btn-arena" title="竞技场">竞</button>
-            <button type="button" id="btn-party" title="组队">队</button>
-          </div>
-          <nav class="dock-menu sys-btns">
-            <button type="button" data-panel="char" title="角色"><img src="assets/ingame/viewui/menu-role.png" alt="" /><span>角色</span></button>
-            <button type="button" data-panel="skills" title="技能"><img src="assets/ingame/title/skill.png" alt="" /><span>技能</span></button>
-            <button type="button" data-panel="bag" title="背包"><img src="assets/ingame/viewui/menu-bag.png" alt="" /><span>背包</span></button>
-            <button type="button" data-panel="pet" title="宠物"><img src="assets/ingame/viewui/menu-pet.png" alt="" /><span>宠物</span></button>
-            <button type="button" data-panel="char" data-char-open="mount" title="坐骑"><img src="assets/ingame/viewui/menu-mount.png" alt="" /><span>坐骑</span></button>
-            <button type="button" data-panel="social" title="好友"><img src="assets/ingame/viewui/menu-friends.png" alt="" /><span>好友</span></button>
-            <button type="button" data-panel="social" title="社会"><img src="assets/ingame/viewui/menu-social.png" alt="" /><span>社会</span></button>
-            <button type="button" data-panel="forge" title="天工炉"><img src="assets/ingame/viewui/menu-forge.png" alt="" /><span>天工炉</span></button>
-            <button type="button" id="btn-smith" title="铁匠铺"><img src="assets/ingame/viewui/menu-smith.png" alt="" /><span>铁匠铺</span></button>
-            <button type="button" data-panel="shop" title="市场"><img src="assets/ingame/viewui/menu-market.png" alt="" /><span>市场</span></button>
-            <button type="button" data-panel="mail" title="信件"><img src="assets/ingame/title/letter.png" alt="信件" /></button>
-            <button type="button" data-panel="quest" title="任务"><img src="assets/ingame/title/goal.png" alt="任务" /></button>
-            <button type="button" data-panel="help" title="系统"><img src="assets/ingame/title/setting.png" alt="系统" /></button>
+          <div class="skill-bar" id="skill-bar"></div>
+          <div class="dock-xp bar xp"><i id="xp-fill"></i></div>
+          <nav class="dock-menu">
+            <button type="button" data-panel="char" title="角色"><img src="assets/ingame/viewui/menu-role.png" alt="" /></button>
+            <button type="button" data-panel="skills" title="技能"><img src="assets/ingame/title/skill.png" alt="" /></button>
+            <button type="button" data-panel="bag" title="背包"><img src="assets/ingame/viewui/menu-bag.png" alt="" /></button>
+            <button type="button" data-panel="pet" title="宠物"><img src="assets/ingame/viewui/menu-pet.png" alt="" /></button>
+            <button type="button" data-panel="char" data-char-open="mount" title="坐骑"><img src="assets/ingame/viewui/menu-mount.png" alt="" /></button>
+            <button type="button" data-panel="social" title="好友"><img src="assets/ingame/viewui/menu-friends.png" alt="" /></button>
+            <button type="button" data-panel="social" title="社会"><img src="assets/ingame/viewui/menu-social.png" alt="" /></button>
+            <button type="button" data-panel="forge" title="天工炉"><img src="assets/ingame/viewui/menu-forge.png" alt="" /></button>
+            <button type="button" id="btn-smith" title="铁匠铺"><img src="assets/ingame/viewui/menu-smith.png" alt="" /></button>
+            <button type="button" data-panel="shop" title="市场"><img src="assets/ingame/viewui/menu-market.png" alt="" /></button>
+            <button type="button" class="dock-title" data-panel="mail" title="信件"><img src="assets/ingame/title/letter.png" alt="" /></button>
+            <button type="button" class="dock-title" data-panel="quest" title="传奇目标"><img src="assets/ingame/title/goal.png" alt="" /></button>
+            <button type="button" class="dock-title" data-panel="help" title="设置"><img src="assets/ingame/title/setting.png" alt="" /></button>
           </nav>
-          <div class="dock-xp bar xp"><i id="xp-fill"></i><span id="xp-text"></span></div>
           <button type="button" id="btn-shop" class="shop-btn" title="商城">商</button>
         </div>
       </div>

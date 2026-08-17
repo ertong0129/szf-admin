@@ -465,6 +465,8 @@
     }
     var sitBtn = document.getElementById('btn-sit');
     if (sitBtn) sitBtn.classList.toggle('on', !!p.sit);
+    var autoHunt = document.getElementById('btn-auto');
+    if (autoHunt) autoHunt.classList.toggle('on', !!p.auto);
     var auto2 = document.getElementById('btn-auto-2');
     if (auto2) auto2.classList.toggle('on', !!p.auto);
     var banner = document.getElementById('auto-banner');
@@ -513,8 +515,10 @@
   }
 
   H.setBar = function (id, cur, max) {
-    document.getElementById(id + '-fill').style.width = (100 * cur / Math.max(1, max)) + '%';
-    document.getElementById(id + '-text').textContent = Math.floor(cur) + '/' + Math.floor(max);
+    var fill = document.getElementById(id + '-fill');
+    if (fill) fill.style.width = (100 * cur / Math.max(1, max)) + '%';
+    var text = document.getElementById(id + '-text');
+    if (text) text.textContent = Math.floor(cur) + '/' + Math.floor(max);
   }
 
   H.ensureSkillBar = function () {
@@ -525,7 +529,6 @@
     var html = D.SKILLS[p.cls].map(function (sk) {
       return '<div class="skill-slot" data-skill="' + sk.id + '">' +
         '<div class="key">' + sk.key + '</div>' +
-        '<div class="name">' + sk.name + '</div>' +
         '<div class="cd" hidden></div></div>';
     }).join('');
     html += '<div class="util-slot" id="slot-hp"><img class="skill-ico" src="assets/ingame/items/hongyao2.png" alt="金创" /><div class="key">7</div></div>';
