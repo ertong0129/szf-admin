@@ -11,7 +11,7 @@ var { exec } = require('child_process');
 
 var ROOT = path.resolve(__dirname);
 var PORT = parseInt(process.env.PORT || '8088', 10);
-var VERSION = '20260817l';
+var VERSION = '20260817m';
 var WorldHub = require('./js/worldhub.js');
 var GameData = require('./js/data.js');
 var Formulas = require('./js/formulas.js');

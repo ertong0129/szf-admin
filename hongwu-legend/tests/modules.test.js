@@ -124,6 +124,9 @@ assert.ok(art.indexOf("assets/ingame/role/body_") >= 0, '应加载原作时装�
   'store_db.py',
   'tools/fetch-map-tiles.py',
   'tools/fetch-skill-icons.py',
+  'tools/swf-abc.py',
+  'tools/parse-mcm.py',
+  'tools/README.md',
   'assets/ingame/maptiles/manifest.json',
   'assets/ingame/maptiles/jing_cheng.jpg',
   'assets/ingame/viewui/smallicon/kftt.png',
@@ -156,7 +159,7 @@ assert.ok(render.indexOf("class=\"skill-ico\"") >= 0, '技能栏应插入 skill-
 assert.ok(render.indexOf('assets/ingame/skills/') >= 0, '技能栏应使用入库技能图');
 
 var serverJs = fs.readFileSync(path.join(root, 'server.js'), 'utf8');
-assert.ok(serverJs.indexOf("VERSION = '20260817l'") >= 0, 'server.js 版本应为 20260817l');
+assert.ok(serverJs.indexOf("VERSION = '20260817m'") >= 0, 'server.js 版本应为 20260817m');
 assert.ok(serverJs.indexOf("require('./js/store.js')") >= 0, 'server.js 应使用本机数据库');
 assert.ok(core.indexOf('localStorage.setItem(SAVE_KEY') < 0, '角色存档不应再写入 localStorage');
 assert.ok(fs.readFileSync(path.join(root, 'js/api.js'), 'utf8').indexOf('localStorage.setItem(TOKEN_KEY') < 0, '登录令牌不应再写入 localStorage');

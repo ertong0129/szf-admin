@@ -82,6 +82,9 @@ var path = require('path');
 var refs = fs.readFileSync(path.join(__dirname, '../docs/REFERENCES.md'), 'utf8');
 assert.ok(refs.indexOf('com/maps/{folder}/{row}_{col}.jpg') >= 0, '应记录场景切片 URL 规则');
 assert.ok(refs.indexOf('12_15.jpg') >= 0, '应举例京城切片');
+assert.ok(refs.indexOf('offsetX=3520') >= 0 && refs.indexOf('TILE_SIZE=44') >= 0, '应记录京城 MCM 像素偏移与 TILE_SIZE');
+assert.ok(refs.indexOf('tools/swf-abc.py') >= 0 && refs.indexOf('tools/parse-mcm.py') >= 0, '应指向 SWF/MCM 分析脚本');
+assert.ok(refs.indexOf('原点偏移 **51**') < 0, '不应再把 nElem=51 写成 originX');
 assert.ok(refs.indexOf('com/assets/skills/{8位数字}.png') >= 0, '应记录技能图标 URL 规则');
 assert.ok(refs.indexOf('21209001') >= 0 && refs.indexOf('21103002') >= 0, '应记录用户提供的技能图标样例');
 
