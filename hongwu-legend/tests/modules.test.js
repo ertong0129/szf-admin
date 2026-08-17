@@ -162,7 +162,7 @@ assert.ok(render.indexOf("class=\"skill-ico\"") >= 0, '技能栏应插入 skill-
 assert.ok(render.indexOf('assets/ingame/skills/') >= 0, '技能栏应使用入库技能图');
 
 var serverJs = fs.readFileSync(path.join(root, 'server.js'), 'utf8');
-assert.ok(serverJs.indexOf("VERSION = '20260817o'") >= 0, 'server.js 版本应为 20260817o');
+assert.ok(serverJs.indexOf("VERSION = '20260817p'") >= 0, 'server.js 版本应为 20260817p');
 assert.ok(serverJs.indexOf("require('./js/store.js')") >= 0, 'server.js 应使用本机数据库');
 assert.ok(core.indexOf('localStorage.setItem(SAVE_KEY') < 0, '角色存档不应再写入 localStorage');
 assert.ok(fs.readFileSync(path.join(root, 'js/api.js'), 'utf8').indexOf('localStorage.setItem(TOKEN_KEY') < 0, '登录令牌不应再写入 localStorage');
@@ -233,5 +233,13 @@ assert.ok(fs.readFileSync(path.join(root, 'assets/ingame/maptiles/manifest.json'
 var dockCss = css.slice(css.indexOf('.dock {'), css.indexOf('.chat-box'));
 assert.ok(dockCss.indexOf('overflow: hidden') < 0, '底栏应允许商城圆周菜单溢出到舞台');
 assert.ok(play.indexOf('data-gender="f"') >= 0, '创角应有女侠');
+assert.ok(play.indexOf('id="sys-feed"') >= 0, '右下应有系统飘字');
+assert.ok(play.indexOf('id="btn-chat-face"') >= 0, '聊天应有表情按钮');
+assert.ok(play.indexOf('id="chat-chan"') >= 0, '输入行应显示当前频道');
+assert.ok(play.indexOf('id="chat-faces" hidden') >= 0, '表情选择器默认应收起');
+assert.ok(play.indexOf('data-chan="clan">家族') >= 0, '聊天页签应为家族');
+assert.ok(core.indexOf('tag-sys') >= 0, '系统消息应变为 [系]');
+assert.ok(core.indexOf('H.sysFeed') >= 0, 'core 应提供右下系统飘字');
+assert.ok(fs.readFileSync(path.join(root, 'js/player.js'), 'utf8').indexOf("获得") >= 0 && fs.readFileSync(path.join(root, 'js/player.js'), 'utf8').indexOf('经验。') >= 0, '获得经验应写入右下飘字');
 
 console.log('modules.test.js ok');

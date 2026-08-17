@@ -238,11 +238,15 @@
     function visibleChat(server, user, lines) {
       var me = slotOf(server, user);
       return (lines || []).filter(function (l) {
-        if (l.chan === 'world' || l.chan === 'sys') return true;
+        if (l.chan === 'world' || l.chan === 'sys' || l.chan === 'horn') return true;
         if (l.chan === 'near') {
           if (!me) return l.user === user;
           if (l.mapId !== me.mapId) return false;
           return dist(me, l) <= NEAR;
+        }
+        if (l.chan === 'nation') {
+          var them = slotOf(server, l.user);
+          return !!(me && them && (them.nation || 'ming') === (me.nation || 'ming'));
         }
         if (l.chan === 'party') return partyOf[user] && partyOf[l.user] === partyOf[user];
         if (l.chan === 'clan') return clanOf[user] && clanOf[l.user] === clanOf[user];

@@ -58,6 +58,7 @@
     peers: [],
     chatChan: 'near',
     chatTo: '',
+    sysFeed: [],
     hidePeers: false,
     followUser: '',
     netAcc: 0,
@@ -89,10 +90,39 @@
     G.toastT = 2.2;
   }
 
-  H.log = function (msg) {
-    G.log.unshift(msg);
-    if (G.log.length > 30) G.log.pop();
+  H.CHAN_LABEL = {
+    world: '世界', nation: '国家', clan: '家族', party: '队伍',
+    near: '附近', horn: '喇叭', whisper: '私聊'
+  };
+
+  H.escHtml = function (s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  H.log = function (msg, opts) {
+    var line = String(msg == null ? '' : msg);
+    if (!(opts && opts.raw) && line.charAt(0) !== '[') line = '[系] ' + line;
+    G.log.unshift(line);
+    if (G.log.length > 40) G.log.pop();
     H.renderLog();
+  }
+
+  H.sysFeed = function (text) {
+    var box = document.getElementById('sys-feed');
+    if (!box || !text) return;
+    var p = document.createElement('p');
+    p.textContent = text;
+    box.appendChild(p);
+    while (box.children.length > 8) box.removeChild(box.firstChild);
+    p.addEventListener('animationend', function () {
+      if (p.parentNode) p.parentNode.removeChild(p);
+    });
+  }
+
+  H.syncChatChan = function () {
+    var el = document.getElementById('chat-chan');
+    if (el) el.textContent = H.CHAN_LABEL[G.chatChan || 'near'] || '附近';
   }
 
   H.emoteHtml = function (s) {
@@ -103,15 +133,32 @@
     return s;
   }
 
+  H.formatLogLine = function (raw) {
+    var line = String(raw == null ? '' : raw);
+    if (line.charAt(0) !== '[') line = '[系] ' + line;
+    var s = H.emoteHtml(H.escHtml(line));
+    return s.replace(/\[([^\]]+)\]/g, function (m, inner) {
+      if (inner.charAt(0) === ':') return m;
+      if (inner === '系') return '<b class="tag-sys">[系]</b>';
+      if (H.CHAN_LABEL && Object.keys(H.CHAN_LABEL).some(function (k) { return H.CHAN_LABEL[k] === inner; }) || inner === '密' || inner === '宗族') {
+        return '<b class="tag-chan">[' + inner + ']</b>';
+      }
+      if (inner === '绑' || /珠|丹|石|卷|药|符|刀|剑|弓|杖|扇|盔|甲|靴|佩|戒|带|果|酒|衣|巾|坠|环/.test(inner)) {
+        return '<b class="tag-item">[' + inner + ']</b>';
+      }
+      return '<b class="tag-name">[' + inner + ']</b>';
+    });
+  }
+
   H.renderLog = function () {
     var chat = document.getElementById('chat-log');
     if (chat) {
       chat.innerHTML = G.log.slice(0, 16).map(function (l) {
-        return '<p><i>系统</i> ' + H.emoteHtml(l) + '</p>';
+        return '<p>' + H.formatLogLine(l) + '</p>';
       }).join('');
     }
     var legacy = document.getElementById('log-list');
-    if (legacy) legacy.innerHTML = G.log.slice(0, 8).map(function (l) { return '<p>' + H.emoteHtml(l) + '</p>'; }).join('');
+    if (legacy) legacy.innerHTML = G.log.slice(0, 8).map(function (l) { return '<p>' + H.formatLogLine(l) + '</p>'; }).join('');
   }
 
   H.showScreen = function (id) {

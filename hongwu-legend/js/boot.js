@@ -66,6 +66,7 @@
     H.refreshQuestUI();
     if (H.ensureLife) H.ensureLife(G.player);
     if (H.paintChatFaces) H.paintChatFaces();
+    if (H.syncChatChan) H.syncChatChan();
     if (H.pullBossState) H.pullBossState();
     H.renderLog();
     H.saveSilent();

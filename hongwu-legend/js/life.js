@@ -654,6 +654,7 @@
     el.innerHTML = (D.CHAT_FACES || []).map(function (f) {
       return '<img src="' + f.src + '" alt="' + f.tag + '" title="' + f.tag + '" data-face="' + f.id + '" />';
     }).join('');
+    el.hidden = true;
   };
 
   H.paintRank = function (tab) {

@@ -178,8 +178,19 @@
             GameAPI.chatSend(text).catch(function () {});
           });
         } else {
-          H.log('我：' + text);
+          var cn = H.CHAN_LABEL[G.chatChan || 'near'] || '附近';
+          var who = (G.player && G.player.name) || '我';
+          H.log('[' + cn + '][' + who + ']：' + text, { raw: true });
         }
+      });
+    }
+    var faceBtn = document.getElementById('btn-chat-face');
+    if (faceBtn) {
+      faceBtn.addEventListener('click', function (ev) {
+        ev.preventDefault();
+        var el = document.getElementById('chat-faces');
+        if (!el) return;
+        el.hidden = !el.hidden;
       });
     }
     document.getElementById('skill-bar').addEventListener('click', function (ev) {
@@ -370,6 +381,8 @@
           inp.value += '[' + ':' + ev.target.dataset.face + ':]';
           inp.focus();
         }
+        var faces = document.getElementById('chat-faces');
+        if (faces) faces.hidden = true;
       }
       if (ev.target.dataset.lookStall) H.lookStall(ev.target.dataset.lookStall);
       if (ev.target.dataset.tradeLock) H.doSocial('trade_lock', '');
@@ -394,6 +407,7 @@
         document.querySelectorAll('.chat-tabs span').forEach(function (s) {
           s.classList.toggle('on', s.dataset.chan === G.chatChan);
         });
+        if (H.syncChatChan) H.syncChatChan();
       }
       var whIn = ev.target.closest && ev.target.closest('[data-wh-in]');
       if (whIn) H.stashIn(+whIn.dataset.whIn);
@@ -428,6 +442,10 @@
       if (ev.target.dataset.whisper) {
         G.chatChan = 'whisper';
         G.chatTo = ev.target.dataset.whisper;
+        document.querySelectorAll('.chat-tabs span').forEach(function (s) {
+          s.classList.toggle('on', s.dataset.chan === 'whisper');
+        });
+        if (H.syncChatChan) H.syncChatChan();
         H.toast('密聊 ' + G.chatTo + '，输入内容回车。或 /账号 内容');
         H.closeDialog();
         var inp = document.getElementById('chat-input');

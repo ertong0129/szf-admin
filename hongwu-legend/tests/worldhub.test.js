@@ -47,6 +47,18 @@ hub.social('s1', 'a', 'say', { text: '你好', chan: 'world' });
 var sc = hub.snapshot('s1', 'b');
 assert.ok(sc.chat.some(function (l) { return l.text === '你好'; }));
 
+hub.social('s1', 'a', 'say', { text: '喇叭', chan: 'horn' });
+var sh = hub.snapshot('s1', 'b');
+assert.ok(sh.chat.some(function (l) { return l.text === '喇叭' && l.chan === 'horn'; }), '喇叭应对全服可见');
+
+var nHub = Hub.create({ now: function () { return 2000; } });
+nHub.upsert('s1', 'a', { name: '甲', mapId: 'wild', x: 0, y: 0, nation: 'ming' });
+nHub.upsert('s1', 'b', { name: '乙', mapId: 'wild', x: 10, y: 0, nation: 'ming' });
+nHub.upsert('s1', 'c', { name: '丙', mapId: 'wild', x: 20, y: 0, nation: 'yuan' });
+nHub.social('s1', 'a', 'say', { text: '国频', chan: 'nation' });
+assert.ok(nHub.snapshot('s1', 'b').chat.some(function (l) { return l.text === '国频' && l.chan === 'nation'; }), '同国应看到国家频道');
+assert.ok(!nHub.snapshot('s1', 'c').chat.some(function (l) { return l.text === '国频'; }), '他国不应看到国家频道');
+
 hub.social('s1', 'a', 'trade_ask', { user: 'b' });
 hub.social('s1', 'b', 'trade_accept', { user: 'a' });
 var tr = hub.snapshot('s1', 'a');

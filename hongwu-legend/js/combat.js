@@ -130,7 +130,9 @@
     G.drops = G.drops.filter(function (d) {
       if (H.dist(p, d) < 36) {
         if (H.addItem(p, d.item)) {
-          H.log('获得 ' + H.itemName(d.item));
+          var nm = H.itemName(d.item).replace(/^\[绑\]/, '');
+          H.log('获得了 [' + nm + ']');
+          if (H.sysFeed) H.sysFeed('获得了 [' + nm + ']');
           return false;
         }
       }

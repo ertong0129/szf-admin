@@ -258,6 +258,7 @@
         if (s.unlock === p.level && p.skills[s.id] == null) p.skills[s.id] = 0;
       });
     }
+    if (n > 0 && H.sysFeed) H.sysFeed('获得' + n + '经验。');
     if (up) {
       H.toast('升至 ' + p.level + ' 级');
       H.log('境界提升：' + p.level + ' 级');

@@ -129,10 +129,8 @@
     var key = (l.t || 0) + ':' + l.user + ':' + l.text;
     if (chatSeen[key]) return;
     chatSeen[key] = 1;
-    var tag = l.chan === 'world' ? '世界' : l.chan === 'party' ? '队伍' : l.chan === 'clan' ? '宗族' : '附近';
-    G.log.unshift('[' + tag + '] ' + l.who + '：' + l.text);
-    if (G.log.length > 40) G.log.pop();
-    H.renderLog();
+    var tag = (H.CHAN_LABEL && H.CHAN_LABEL[l.chan]) || (l.chan === 'clan' ? '家族' : '附近');
+    H.log('[' + tag + '][' + (l.who || l.user || '') + ']：' + l.text, { raw: true });
   }
 
   H.applyNetEvent = function (ev) {

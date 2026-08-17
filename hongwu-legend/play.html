@@ -116,18 +116,23 @@
             <div class="chat-tabs">
               <span data-chan="world">世界</span>
               <span data-chan="nation">国家</span>
-              <span data-chan="clan">宗族</span>
+              <span data-chan="clan">家族</span>
               <span data-chan="party">队伍</span>
               <span class="on" data-chan="near">附近</span>
               <span data-chan="horn">喇叭</span>
               <span data-chan="whisper">私聊</span>
             </div>
-            <div class="chat-faces" id="chat-faces"></div>
             <form id="chat-form">
+              <span id="chat-chan">附近</span>
               <input id="chat-input" maxlength="80" placeholder="回车发言　/账号 密聊" autocomplete="off" />
-              <button type="submit">发送</button>
+              <button type="button" id="btn-chat-face" title="表情" aria-label="表情">☺</button>
+              <button type="submit" id="btn-chat-send" title="发送" aria-label="发送">
+                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.2 3.2h8.2v1.7H4.2v6.2h7.4V9.2H13v4.6H2.2zm8.4-2H15v4.4h-1.7V3.8L8.6 8.5 7.4 7.3l4.7-4.7H10.6z"/></svg>
+              </button>
             </form>
+            <div class="chat-faces" id="chat-faces" hidden></div>
           </div>
+          <div class="sys-feed" id="sys-feed"></div>
           <div class="toast" id="toast"></div>
           <div class="dialog" id="dialog"></div>
           <div id="instance-hud" hidden>
