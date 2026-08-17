@@ -183,6 +183,7 @@ html, body {
   margin: 0;
   border: 0;
   background: #000;
+  position: relative;
 }
 .stage { flex: 1; position: relative; min-height: 0; }
 #world, #world3d, #minimap { display: block; }
@@ -202,7 +203,8 @@ html, body {
   background-position: left top;
   background-size: 100% 100%;
   border-top: 0;
-  overflow: hidden;
+  overflow: visible;
+  z-index: 6;
 }
 .chat-box {
   position: absolute;
@@ -264,6 +266,7 @@ html, body {
 }
 .dock-menu.sys-btns, .dock-menu {
   flex-wrap: nowrap;
+  overflow: visible;
 }
 .sys-btns button, .sys-btns a {
   background: transparent;
@@ -566,12 +569,15 @@ html, body {
   gap: 0.6cqw;
   z-index: 4;
   pointer-events: auto;
+  overflow: visible;
 }
 .minimap-wrap {
   position: relative;
   width: 16.2cqw;
   height: 13.7cqw;
-  margin: 0 auto;
+  margin: 0 auto 1.6cqw;
+  overflow: visible;
+  z-index: 5;
 }
 #minimap {
   position: absolute;
@@ -605,36 +611,74 @@ html, body {
   z-index: 3;
 }
 #map-coord { color: #8ad4d6; letter-spacing: 0; }
-.map-tools {
-  display: flex;
-  gap: 0.25cqw;
-  width: 16.2cqw;
-  margin: 0 auto;
-  position: relative;
-  left: auto;
-  right: auto;
-  bottom: auto;
+.map-tools,
+.minimap-wrap .stage-act {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: auto;
+  height: auto;
+  margin: 0;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  gap: 0;
   transform: none;
+  pointer-events: none;
+  z-index: 4;
 }
-.map-tools button, .map-region-btn {
-  flex: 1;
-  background: rgba(8, 28, 30, 0.9);
+.map-tools button,
+.minimap-wrap .stage-act button {
+  position: absolute;
+  left: 47%;
+  top: 54%;
+  width: 2.45cqw;
+  height: 2.45cqw;
+  min-width: 0;
+  flex: none;
+  margin: 0;
+  padding: 0;
+  background: rgba(8, 28, 30, 0.92);
   border: 1px solid #2ec4c8;
   color: #e8f6c8;
   font-family: inherit;
-  font-size: 1.05cqw;
+  font-size: 0.95cqw;
   letter-spacing: 0;
-  padding: 0.15cqw 0;
   cursor: pointer;
-  border-radius: 3px;
+  border-radius: 50%;
+  pointer-events: auto;
+  line-height: 1;
+  box-shadow: 0 0 0 1px rgba(4, 16, 18, 0.55), 0 1px 4px rgba(0, 0, 0, 0.45);
+  white-space: nowrap;
+  transform: translate(-50%, -50%) rotate(var(--a)) translateY(var(--r)) rotate(calc(-1 * var(--a)));
 }
-.map-tools button:hover, .map-region-btn:hover { color: #ffe7a0; border-color: #ffe7a0; }
+.map-tools button { --r: 6.85cqw; }
+.map-tools button:nth-child(1) { --a: 124deg; }
+.map-tools button:nth-child(2) { --a: 100deg; }
+.map-tools button:nth-child(3) { --a: 76deg; }
+.map-tools button:nth-child(4) { --a: 52deg; }
+.map-tools button:nth-child(5) { --a: 28deg; }
+.minimap-wrap .stage-act button { --r: 9.55cqw; }
+.minimap-wrap .stage-act button:nth-child(1) { --a: 130deg; }
+.minimap-wrap .stage-act button:nth-child(2) { --a: 108deg; }
+.minimap-wrap .stage-act button:nth-child(3) { --a: 86deg; }
+.minimap-wrap .stage-act button:nth-child(4) { --a: 64deg; }
+.minimap-wrap .stage-act button:nth-child(5) { --a: 42deg; }
+.map-tools button:hover,
+.minimap-wrap .stage-act button:hover { color: #ffe7a0; border-color: #ffe7a0; }
+.minimap-wrap .stage-act button.on {
+  color: #ffe7a0;
+  border-color: #ffe7a0;
+  box-shadow: 0 0 8px rgba(46,196,200,0.45);
+}
 .map-region-btn {
   position: absolute;
   right: -8px;
   top: 8px;
   flex: none;
   padding: 4px 6px;
+  transform: none;
 }
 .pk-mode {
   pointer-events: auto;
@@ -820,21 +864,21 @@ html, body {
 .dock-xp span { display: none; }
 .dock-menu {
   position: absolute;
-  left: 42.2%;
-  top: 28%;
-  right: 9.4%;
-  height: 62%;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 0.15cqw;
-  flex-wrap: nowrap;
-  overflow: hidden;
+  right: 0.4%;
+  bottom: 0.27cqw;
+  width: 8.4%;
+  height: 6.26cqw;
+  left: auto;
+  top: auto;
+  display: block;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 8;
 }
 .dock-menu img {
-  height: 3.6cqw;
+  height: 2.7cqw;
   width: auto;
-  max-width: 3.4cqw;
+  max-width: 2.6cqw;
   object-fit: contain;
   display: block;
   margin: 0 auto;
@@ -842,14 +886,18 @@ html, body {
   pointer-events: none;
 }
 .dock-menu img[src*="title/"] {
-  height: 1.7cqw;
-  max-width: 6.2cqw;
+  height: 1.45cqw;
+  max-width: 4.2cqw;
   margin-top: 0;
 }
 .dock-menu button, .dock-menu a {
+  position: absolute;
+  left: 50%;
+  top: 50%;
   padding: 0;
+  width: 2.8cqw;
   min-width: 0;
-  flex: 1 1 0;
+  flex: none;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -858,13 +906,26 @@ html, body {
   background: transparent;
   border: 0;
   cursor: pointer;
-  overflow: hidden;
+  overflow: visible;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) rotate(var(--a)) translateY(var(--r)) rotate(calc(-1 * var(--a)));
 }
+.dock-menu button:nth-child(1) { --a: 78deg; --r: 6.8cqw; }
+.dock-menu button:nth-child(2) { --a: 96deg; --r: 6.8cqw; }
+.dock-menu button:nth-child(3) { --a: 114deg; --r: 6.8cqw; }
+.dock-menu button:nth-child(4) { --a: 132deg; --r: 6.8cqw; }
+.dock-menu button:nth-child(5) { --a: 150deg; --r: 6.8cqw; }
+.dock-menu button:nth-child(6) { --a: 168deg; --r: 6.8cqw; }
+.dock-menu button:nth-child(7) { --a: 82deg; --r: 10.6cqw; }
+.dock-menu button:nth-child(8) { --a: 97deg; --r: 10.6cqw; }
+.dock-menu button:nth-child(9) { --a: 112deg; --r: 10.6cqw; }
+.dock-menu button:nth-child(10) { --a: 127deg; --r: 10.6cqw; }
+.dock-menu button:nth-child(11) { --a: 142deg; --r: 10.6cqw; }
+.dock-menu button:nth-child(12) { --a: 157deg; --r: 10.6cqw; }
+.dock-menu button:nth-child(13) { --a: 172deg; --r: 10.6cqw; }
 .dock-menu span { display: none; }
 .dock-menu .dock-title {
-  flex: 0 0 auto;
-  min-width: 4.4cqw;
-  padding: 0 0.15cqw;
+  width: 4.4cqw;
 }
 .dock-menu .dock-txt {
   font-size: 12px;
@@ -904,31 +965,6 @@ html, body {
 .dock-quick img { display: none; }
 .dock-quick button:hover { filter: brightness(1.2); }
 .dock-quick button.on { color: #6fdf7a; border-color: #6fdf7a; }
-.stage-act {
-  position: absolute;
-  left: 33.2cqw;
-  right: 19cqw;
-  bottom: 0.35cqw;
-  display: flex;
-  gap: 0.35cqw;
-  z-index: 5;
-  pointer-events: auto;
-  justify-content: flex-start;
-}
-.stage-act button {
-  min-width: 3.4cqw;
-  height: 1.8cqw;
-  border-radius: 3px;
-  border: 1px solid #2ec4c8;
-  background: rgba(8, 28, 30, 0.82);
-  color: #8ad4d6;
-  font-family: inherit;
-  font-size: 1.05cqw;
-  cursor: pointer;
-  padding: 0 0.45cqw;
-  white-space: nowrap;
-}
-.stage-act button.on { color: #ffe7a0; border-color: #ffe7a0; box-shadow: 0 0 8px rgba(46,196,200,0.45); }
 .dock-utils { display: none; }
 .shop-btn {
   position: absolute;

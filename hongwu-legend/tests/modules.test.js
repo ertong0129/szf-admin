@@ -123,7 +123,7 @@ assert.ok(art.indexOf("assets/ingame/role/body_") >= 0, '应加载原作时装�
 });
 
 var serverJs = fs.readFileSync(path.join(root, 'server.js'), 'utf8');
-assert.ok(serverJs.indexOf("VERSION = '20260817d'") >= 0, 'server.js 版本应为 20260817d');
+assert.ok(serverJs.indexOf("VERSION = '20260817e'") >= 0, 'server.js 版本应为 20260817e');
 assert.ok(serverJs.indexOf("require('./js/store.js')") >= 0, 'server.js 应使用本机数据库');
 assert.ok(core.indexOf('localStorage.setItem(SAVE_KEY') < 0, '角色存档不应再写入 localStorage');
 assert.ok(fs.readFileSync(path.join(root, 'js/api.js'), 'utf8').indexOf('localStorage.setItem(TOKEN_KEY') < 0, '登录令牌不应再写入 localStorage');
@@ -167,10 +167,16 @@ assert.ok(worldBgCss.indexOf('object-fit: cover') < 0, '地图切图不应 cover
 assert.ok(ui.indexOf('其它场景') < 0, '国家地图右侧不应堆其它场景');
 assert.ok(play.indexOf('hud-wallet') >= 0 && play.indexOf('hidden') >= 0, '主界面不应展示元宝银两栏');
 assert.ok(play.indexOf('id="gender-pick"') >= 0, '创角应可选男女');
-assert.ok(play.indexOf('id="stage-act"') >= 0, '打坐挂机应放在底栏上方，不压菜单');
+assert.ok(play.indexOf('id="stage-act"') >= 0, '打坐挂机应围在小地图圆旁，不压底栏菜单');
 assert.ok(play.indexOf('<span>角色</span>') < 0, '底栏菜单图标已自带文字，不要再叠一层');
 assert.ok(css.indexOf('.dock-menu span { display: none; }') >= 0 || css.indexOf('.dock-menu span {display: none;}') >= 0, '底栏不应再显示重复菜单字');
 assert.ok(css.indexOf('left: 0.35%') >= 0 || css.indexOf('left:0.35%') >= 0, '猎驯拾拓应在底栏左侧，不要压商城');
+var miniHtml = play.slice(play.indexOf('class="minimap-wrap"'), play.indexOf('class="quest-box"'));
+assert.ok(miniHtml.indexOf('class="map-tools"') >= 0, '充值榜图GM应围在小地图圆旁');
+assert.ok(miniHtml.indexOf('id="stage-act"') >= 0, '打坐骑马应围在小地图圆旁');
+assert.ok(css.indexOf('rotate(var(--a))') >= 0, '商城和小地图功能钮应按圆周排列');
+var dockCss = css.slice(css.indexOf('.dock {'), css.indexOf('.chat-box'));
+assert.ok(dockCss.indexOf('overflow: hidden') < 0, '底栏应允许商城圆周菜单溢出到舞台');
 assert.ok(play.indexOf('data-gender="f"') >= 0, '创角应有女侠');
 
 console.log('modules.test.js ok');
