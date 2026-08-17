@@ -1,0 +1,72 @@
+@charset "utf-8";
+* { padding: 0; margin: 0; box-sizing: border-box; }
+body.portal-body {
+  font-family: Arial, "Microsoft YaHei", sans-serif;
+  background: url('../assets/official/login/bg.jpg') no-repeat center top #cabfa1;
+  background-size: auto;
+  font-size: 12px;
+  color: #cabfa1;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+ul { margin: 0; padding: 0; }
+li { list-style: none; }
+.cl { clear: both; }
+a img { border: 0; }
+a:link, a:visited { text-decoration: none; color: #cabfa1; }
+
+.box { width: 930px; margin: 0 auto; transform-origin: top center; }
+@media (max-width: 940px) {
+  .box { transform: scale(calc(100vw / 930)); }
+}
+.hd1 { background: url('../assets/official/login/hd1.jpg') no-repeat; height: 65px; }
+.hd2 { background: url('../assets/official/login/hd2.jpg') no-repeat; height: 108px; }
+.hd21 { float: left; width: 790px; }
+.logo { width: 276px; height: 108px; display: block; margin-left: 336px; }
+.hd3 { background: url('../assets/official/login/hd3.jpg') no-repeat; height: 116px; }
+.srk { float: left; width: 250px; margin-left: 358px; padding-top: 32px; }
+.srk1 { padding-top: 30px; }
+.int { width: 226px; height: 22px; background: #ffdda7; border: none; line-height: 22px; padding: 0 6px; }
+.wjmm { float: left; }
+.zczh { padding-top: 28px; }
+.wjmm1 { padding-top: 30px; font-size: 13px; color: #ffedc0; max-width: 220px; }
+.hd4 { background: url('../assets/official/login/hd4.jpg') no-repeat; height: 82px; }
+.hd41 { padding-top: 20px; }
+.msdl { width: 192px; height: 47px; display: block; margin-left: 366px; }
+.hd5 { background: url('../assets/official/login/hd5.jpg') no-repeat; height: 30px; overflow: hidden; }
+.hd51 { width: 500px; margin-left: 275px; overflow: hidden; height: 30px; }
+.hd51 li { float: left; padding-left: 8px; }
+.hd6 { background: url('../assets/official/login/hd6.jpg') no-repeat; height: 41px; }
+.hd7 { background: url('../assets/official/login/hd7.jpg') no-repeat; height: 123px; }
+.hd71 { margin-left: 320px; padding-top: 8px; width: 360px; }
+.hd71 li {
+  background: url('../assets/official/login/dian.jpg') 0 11px no-repeat;
+  padding-left: 13px;
+  line-height: 26px;
+  color: #ffedc0;
+}
+.hd71 a:link, .hd71 a:visited { color: #ffedc0; }
+.hd8 { background: url('../assets/official/login/hd8.jpg') no-repeat; height: 110px; }
+.hd9 { background: url('../assets/official/login/hd9.jpg') no-repeat; height: 81px; }
+.hd10 { background: url('../assets/official/login/hd10.jpg') no-repeat; height: 97px; }
+.portal-foot { text-align: center; color: #6a5a40; font-size: 12px; padding: 12px; }
+.err { color: #ff8a6a; min-height: 16px; }
+.server-row {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  color: #ffedc0;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 26px;
+  padding-left: 13px;
+  background-image: url('../assets/official/login/dian.jpg');
+  background-repeat: no-repeat;
+  background-position: 0 11px;
+  font-family: inherit;
+}
+.server-row:hover { color: #ffe7a0; }
+.server-row b { font-weight: normal; }
+.server-row span { float: right; color: #c9a227; }

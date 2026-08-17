@@ -1,0 +1,17 @@
+#!/bin/bash
+# 从 Finder 双击 .app 时没有终端，登录后一崩窗口就没了。
+# 改为打开 Terminal 跑 start.command，服务挂了也能看见并自动重启。
+ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
+cd "$ROOT" || exit 1
+
+if [ -n "$HONGWU_IN_TERM" ] || [ -t 1 ]; then
+  export OPEN_BROWSER=1
+  exec bash "$ROOT/start.command"
+fi
+
+osascript <<APPLESCRIPT
+tell application "Terminal"
+  activate
+  do script "export HONGWU_IN_TERM=1 OPEN_BROWSER=1; cd " & quoted form of "$ROOT" & "; bash ./start.command"
+end tell
+APPLESCRIPT

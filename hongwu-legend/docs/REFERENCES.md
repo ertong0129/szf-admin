@@ -1,0 +1,88 @@
+# 网上能查到的原作与学习资料
+
+网上能公开核对到的，主要是新闻评测、官网介绍，以及创作人后来公开的 **Erlang 服务端学习 demo**。没有找到《明朝传奇》官方完整客户端或 Flash 场景源码的合法公开包。
+
+## 原作画面到底是不是 3D
+
+公开新闻写的是：**Flash 页游，3D 建模 + 2D 原画结合**。
+
+- [17173 / 页游网 2010-11：绿色首创，史诗原画曝光](http://web.17173.com/content/2010-11-25/20101125162806768.shtml)
+- [叶子猪评测：画面由 3D 技术与 2D 原画结合，立体而写实](http://webgame.yzz.cn/yiqipingyouxi/201104/289867.shtml)
+- 官网入口：[91wan 明朝传奇](https://www.91wan.com/mccq/)、[4399 专区](https://web.4399.com/mccq/)、[明朝互动产品页](https://mingchao.com/webgame.html)
+
+百科多标注画面为 FLASH。玩家看到的是预渲染立体角色贴在斜视场景上，镜头基本固定，**不是**现在这种自由旋转的真 3D 端游。本学习服用 Three.js 斜视镜头 + 立体房屋树木 + 立绘广告牌，就是在还原这一套。
+
+## 创作人分享过的简易 demo：mgee
+
+就是这个。明朝互动相关开发者 **qingliangcn** 后来公开了 2010 年元旦前后写的 Erlang 服务端学习 demo：
+
+- 仓库：https://github.com/qingliangcn/mgee （约 377 star）
+- 全称：mingchao game engine of erlang version
+- 作者原文：[知乎 · 为什么一些网页游戏喜欢用 Erlang 做服务端](https://www.zhihu.com/question/20405300/answer/45747560)  
+  转载：[CSDN](https://blog.csdn.net/libaineu2004/article/details/77981187)、[掘金](https://juejin.cn/post/6963589703526252551)
+
+作者自己写的经过：
+
+1. 团队四人在 2010.1.1 加班，参考 RabbitMQ 搭框架，用 protobuf 做协议。
+2. 两三周做出：**创建角色、登录、场景、组队、怪物、战斗**。
+3. 这个 demo 就叫 mgee；有学校拿它当 Erlang 课教材。
+4. 压测大约 500 在线后，才继续做成后来的《明朝传奇》（文中写最高约 3100 在线）。
+5. **只有服务端**，没有完整 Flash 3D 客户端。监听 843 是当年 Flash 安全沙箱端口。
+
+公开目录里能对照的模块（只作结构参考，**不整包拷进本仓库**）：
+
+| 模块 | 作用 |
+| --- | --- |
+| `mgee_account` / `mgee_auth` / `mgee_role` | 账号、登录、角色 |
+| `mgee_virtual_world` | 场景 / 虚拟世界 |
+| `mgee_move` | 移动 |
+| `mgee_chat` | 聊天 |
+| `game_mod/mod_fight` `mod_skill` `mod_equip` `mod_team` | 战斗、技能、装备、组队 |
+| `config` | 技能和地图配置（作者写明给前端用） |
+| `doc/设计文档` | EAP 设计文档，需 Enterprise Architect 打开 |
+
+作者注明：部分第三方文件版权需自行处理，代码未美化，离商业化很远。因此本仓库只对照它的模块划分（登录 / 选角 / 场景 / 战斗 / 存档）来做 Node 学习服，不复制其源码或资源。
+
+## 其它可对照的开源 RPG demo
+
+| 项目 | 说明 |
+| --- | --- |
+| [three-pathfinding](https://github.com/donmccurdy/three-pathfinding) | Three.js 点地寻路 |
+| [MDN Three.js 基础 demo](https://developer.mozilla.org/en-US/docs/Games/Techniques/3D_on_the_web/Building_up_a_basic_demo_with_Three.js) | 场景 / 相机 / 光照 |
+| [ET-LegendDemo](https://gitee.com/Leng-ET/ET-LegendDemo) | Unity 传奇向登录、背包、数值（C#，体量很大） |
+| [EB163 Flash RPG Demo](https://www.iteye.com/blog/fis-804684) | 早期 Flash 页游开源演示（地图编辑 + A*） |
+
+## 用户提供的主文件
+
+- 登录页：http://s297.mccq.91wan.com/user/game.php（未登录会 302 到 91wan 登录壳）
+- 客户端加载器：http://mccq.static.mingchao.com/55598/Main.swf?v=55598
+- **局内主包：** http://mccq.static.mingchao.com/55598/MingGame.swf
+
+`Main.swf` 是 **Flex 4 压缩加载器**（约 110KB），不是整包游戏。解压后能看到它再去拉：
+
+| 路径 | 作用 | 公开状态 |
+| --- | --- | --- |
+| `assets/login.swf` | 登录模块 | 403 |
+| `assets/configure.xml` | 配置 | 403 |
+| `assets/loading/bg.jpg` | 加载海报（含四张局内截图） | 200 |
+| `assets/createRoleCQ2.swf` | 创角 | 200 |
+| `MingGame.swf` | 真正的游戏主包（约 2.4MB） | 200 |
+| `com/assets/ui/mingUI.swf` | 界面控件 | 200 |
+| `com/assets/viewUI/viewUI.swf` | 人物框 / 对话条 / 底栏切图 | 200 |
+| `com/maps/smallMap/jing_cheng.swf` | 京城等距小地图 | 200 |
+| `com/maps/smallMap/kai_feng.swf` | 开封小地图 | 200 |
+| `com/maps/smallMap/ping_jiang.swf` 等 | 其它城镇小地图（部分 200） | 部分 200 |
+| `com/assets/role/jiaosebg.png` | 角色面板背景 | 200 |
+| `com/ui/role/man.swf` `woman.swf` | 预渲染角色立绘帧 | 200 |
+
+局内用的是 `MingGame.swf` 再去拉的公开位图：`com/ui/npc/{id}.swf` 预渲染立绘帧、`com/npcs/` 头像与半身像、`com/maps/world.swf` `country.swf`、`com/assets/headImage/`、`com/assets/role/jiaosebg.png`，以及 `viewUI` / `mingUI` / `smallMap` 里的 JPEG/PNG 切图。没有把 SWF 整包打进仓库，也没有去解协议或加密模块。学习服用到的切图放在 `assets/ingame/viewui/` 与 `assets/ingame/map/`。局内 HUD 对齐公开 `viewUI`：`skillbar.jpg` 整条底栏、`window.png` 青玉圆框做小地图、人物框按 174×86 原尺寸叠、菜单用原作「角色 / 背包 / 宠物」等金标小图。
+
+场景大地图不是一张整图，而是公开 CDN 上的 300×300 JPEG 切片，规则为 `com/maps/{folder}/{row}_{col}.jpg`（例如京城 `jing_cheng/12_15.jpg` 是第 12 行、第 15 列）。`MapBackGround` 按像素 `(col*300, row*300)` 轴对齐；`Slice` 的 501×290 只是 debug 矩形，不是 JPEG 摆放。公开 `com/maps/mcm/13.mcms` 里 `13100.mcm` 给出京城行走网格 **175×172**、`nElem=51` / `nTrans=48`（不要把 51 当成 originX）、像素偏移 **offsetX=3520 offsetY=-1232**、有效像素 **7515×4640**。`TileConstant.TILE_SIZE=44`，地面 `indexToFlat` 为 `x=(tx-ty)*44`、`y=(tx+ty)*22`。史可法 `[115,36]` 的 mosaic 约 `(6996, 2112)`，落在切片 `7_23`。HAR 一次镜头大约预加载 6×5 块（含缓冲），对应原作 1000 宽舞台对 300px 切片 **1:1**，镜头居中。顶栏活动钮用公开 `resources/smallIcon/` 里自带四字标题的 58×58 PNG。原 300×300 块只作本地缓存，不入库；拼好后缩到长边 2048，放在 `assets/ingame/maptiles/`。小地图仍用 `com/maps/smallMap` 俯视图；`ptToSmallmap` / `onClickMap` 与行走层同一套 iso + offset。京城 44 个 type=4 NPC 对照公开 `pos.txt` 的 `11100/13100` 格子。`.mcm` 切片表多数 403，网格范围用 HEAD 探测；京城为 26×16 块、原生 7800×4800。SWF/MCM 放本机用 `tools/swf-abc.py`、`tools/parse-mcm.py` 分析（见 `tools/README.md`），不要入库。
+
+各图 NPC 对照公开 `com/data/pos.txt`（type=4）与 `npc_data`：三朝共用同一套城拷，学习取洪武 `11xxx` 与开封 `10200`。京城格子写在 175×172 的 MCM 空间里（明军水兵 [124,63]、车夫 [110,83]、史可法 [115,36]），寻路仍用 140×130 可走范围。太平村 80×115（车夫 [72,54]、村长 [50,68]），边城蓝玉 [2,71]，开封朱橚 [24,70]。城图铺公开俯视图，不摆假房子。坐标写在 `js/npc-layout.js`，不把 `pos.txt` 整包入库。NPC 头像取公开 `com/npcs/{icon}.png`，世界立绘从公开 `com/ui/npc/{job}.swf` 抽出朝南站立帧（不入库 SWF），对照写在 `js/npc-art.js`。物品图标取公开 `com/assets/items/generals/` 下的 32×32 PNG，背包/掉落不再用色块占位。
+
+技能图标取公开 `com/assets/skills/{8位数字}.png`（32×32）。样例：`21209001.png`（尖刺攻击）、`21103002.png`（金光护甲）。编号为 `{kind}{job}{family:03d}{level:03d}`：前两位是技能树/职业侧，中间三位是技能族，后三位是等级变体。`skillTree.xml` 在此 CDN 上 403，用 HEAD 探测补全族号。套装技对照公开 `com/data/skillsuit.xml`：`61201010` 炽焰斩、`61201020` 爆焰箭、`61201030` 降龙诀、`61201040` 役灵印。只用到的 24 张入库，脚本 `tools/fetch-skill-icons.py`。
+
+从公开 `MingGame.swf` 抽出的界面文案（仅作玩法核对，不入库）包括：`鄱阳湖大战`、`大明英雄副本`、`在副本地图中不能进行地图跳转`、`在副本地图中不能自动寻路`、`立即在原地复活`、`返回入口`、`离开副本`、`暂停挑战`、`自动闯关`、`本关卡尚未开通`、`英雄礼包`。怪物专名如张定边、刀兵等在客户端包里没有完整列表，对照 4399 副本说明补齐。
+
+未找到《明朝传奇》官方完整 Flash 场景源码的其它合法公开包。

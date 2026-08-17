@@ -1,0 +1,8 @@
+{
+  "name": "hongwu-legend",
+  "private": true,
+  "description": "大明传说本地学习服",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

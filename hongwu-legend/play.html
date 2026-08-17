@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>大明传说 · 游戏</title>
+  <link rel="stylesheet" href="css/game.css" />
+</head>
+<body>
+  <div id="app" class="game-app">
+    <section id="create-screen" class="screen">
+      <div class="create-wrap">
+        <img class="create-logo" src="assets/official/ui/logo.png" alt="大明传说" />
+        <h2>创建角色</h2>
+        <div class="gender-pick" id="gender-pick">
+          <button type="button" class="selected" data-gender="m">男侠</button>
+          <button type="button" data-gender="f">女侠</button>
+        </div>
+        <div class="class-grid" id="class-grid"></div>
+        <div class="name-row">
+          <label>名号</label>
+          <input id="name-input" maxlength="8" placeholder="少侠之名" />
+        </div>
+        <p id="class-tip" class="disclaimer"></p>
+        <div class="nation-pick" id="nation-pick">
+          <button type="button" class="selected" data-nation="ming">大明</button>
+          <button type="button" data-nation="yuan">北元</button>
+        </div>
+        <div class="btn-row">
+          <a class="btn ghost" href="index.html">返 回 选 服</a>
+          <button class="btn" id="btn-enter">进入游戏</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="play-screen" class="screen">
+      <div class="play-fit" id="play-fit">
+      <div class="stage-frame">
+        <div class="stage">
+          <canvas id="world"></canvas>
+          <canvas id="world3d"></canvas>
+          <div class="hud-top">
+            <div class="hud-unit">
+              <div class="hud-frame">
+                <div class="portrait" id="portrait">武</div>
+                <div class="hud-lv" id="hud-lv">1</div>
+                <div class="who" id="who-line">—</div>
+                <span class="hud-vip" id="hud-vip" hidden>VIP</span>
+                <div class="hud-bars">
+                  <div class="bar hp"><i id="hp-fill"></i><span id="hp-text"></span></div>
+                  <div class="bar mp"><i id="mp-fill"></i><span id="mp-text"></span></div>
+                </div>
+              </div>
+              <div class="hud-pet" id="hud-pet" hidden>
+                <div class="pet-portrait" id="pet-portrait"></div>
+                <div class="pet-lv" id="pet-lv">1</div>
+                <div class="pet-who" id="pet-name">灵宠</div>
+                <div class="bar hp pet-hp"><i id="pet-hp-fill"></i><span id="pet-hp-text"></span></div>
+              </div>
+              <div id="target-frame" hidden>
+                <div class="portrait" id="target-portrait"></div>
+                <div class="hud-lv" id="target-lv"></div>
+                <div id="target-name">—</div>
+                <div class="bar hp target-hp"><i id="target-hp"></i><span id="target-hp-text"></span></div>
+              </div>
+            </div>
+            <button type="button" id="pk-mode" class="pk-mode" title="切换 PK 模式">和平</button>
+            <div class="hud-buffs" id="hud-buffs"></div>
+            <div class="hud-wallet" hidden>
+              <span id="energy-line">精力 4000/4000</span>
+              <span id="gold-line">元宝 0</span>
+              <span id="silver-line">银两 0</span>
+              <span id="online-line">在线 —</span>
+            </div>
+          </div>
+          <div id="auto-banner" hidden title="自动打怪中"></div>
+          <div class="side-right">
+            <div class="hud-acts" id="hud-acts">
+              <button type="button" class="acts-title" data-panel="achieve" title="传奇目标"><img src="assets/ingame/viewui/chrome/acts-title.png" alt="传奇目标" /></button>
+              <button type="button" data-act="tower" title="天下英雄"><img src="assets/ingame/viewui/smallicon/hero.png" alt="" /></button>
+              <button type="button" class="act-live" data-act="pagoda" title="开封铁塔"><img src="assets/ingame/viewui/smallicon/kftt.png" alt="" /><em>活动进行中</em></button>
+              <button type="button" data-panel="daily" title="缤纷活动"><img src="assets/ingame/viewui/smallicon/activityIcon.png" alt="" /></button>
+              <button type="button" data-panel="shop" title="藏宝阁"><img src="assets/ingame/viewui/smallicon/mysteryShop.png" alt="" /></button>
+              <button type="button" data-panel="vip" title="每日充值"><img src="assets/ingame/viewui/smallicon/mrcz.png" alt="" /></button>
+              <button type="button" data-panel="daily" title="种花得宝"><img src="assets/ingame/viewui/smallicon/flower.png" alt="" /></button>
+            </div>
+            <button type="button" id="btn-fold-acts" class="acts-fold" title="收起活动"><img src="assets/ingame/viewui/chrome/btn-right.png" alt="" /></button>
+            <div class="minimap-col">
+            <div class="minimap-wrap">
+              <canvas id="minimap" width="168" height="168"></canvas>
+              <div class="minimap-ring"></div>
+              <div class="map-title" id="map-name">洪武-太平村</div>
+              <div class="map-north">北</div>
+              <div class="map-coord" id="map-coord">[24,17]</div>
+              <div class="map-tools">
+                <button type="button" data-panel="vip" title="充值">充值</button>
+                <button type="button" class="tool-hot" data-panel="daily" title="活动">活</button>
+                <button type="button" class="tool-vip" data-panel="vip" title="VIP">VIP</button>
+                <button type="button" data-panel="rank" title="排行">榜</button>
+                <button type="button" id="btn-auto-mini" title="挂机">挂</button>
+                <button type="button" id="btn-world-map" title="地图">图</button>
+                <button type="button" data-panel="mail" title="信件">邮</button>
+                <button type="button" id="btn-gm" title="GM">GM</button>
+                <button type="button" id="btn-officer" title="官方">官</button>
+                <button type="button" id="btn-bbs" title="论坛">论</button>
+              </div>
+            </div>
+            <div class="quest-box" data-qtab="all">
+              <div class="quest-tabs">
+                <span class="on" data-qtab="all">全部</span>
+                <span data-qtab="now">当前任务</span>
+                <span data-qtab="act">当前活动</span>
+                <button type="button" id="btn-quest-min" class="quest-min" title="收起任务"><img src="assets/ingame/viewui/chrome/btn-minus.png" alt="" /></button>
+              </div>
+              <div id="quest-track"></div>
+            </div>
+            </div>
+          </div>
+          <div class="chat-box">
+            <div class="chat-tools">
+              <button type="button" id="btn-chat-loc" title="发送坐标"><img src="assets/ingame/viewui/chrome/chat-loc.png" alt="" /></button>
+              <button type="button" id="btn-chat-min" title="收起"><img src="assets/ingame/viewui/chrome/btn-minus.png" alt="" /></button>
+              <button type="button" id="btn-chat-close" title="关闭"><img src="assets/ingame/viewui/chrome/btn-close.png" alt="" /></button>
+            </div>
+            <div class="chat-log" id="chat-log"></div>
+            <div class="chat-tabs">
+              <span data-chan="world">世界</span>
+              <span data-chan="nation">国家</span>
+              <span data-chan="clan">家族</span>
+              <span data-chan="party">队伍</span>
+              <span class="on" data-chan="near">附近</span>
+              <span data-chan="horn">喇叭</span>
+              <span data-chan="whisper">私聊</span>
+            </div>
+            <form id="chat-form">
+              <span id="chat-chan">附近</span>
+              <input id="chat-input" maxlength="80" placeholder="回车发言　/账号 密聊" autocomplete="off" />
+              <button type="button" id="btn-chat-face" title="表情" aria-label="表情"><img src="assets/ingame/face/f00.jpg" alt="" /></button>
+              <button type="submit" id="btn-chat-send" title="发送" aria-label="发送"><img src="assets/ingame/viewui/chrome/btn-right.png" alt="" /></button>
+            </form>
+            <div class="chat-faces" id="chat-faces" hidden></div>
+          </div>
+          <button type="button" id="btn-chat-reopen" class="chat-reopen" hidden>聊天</button>
+          <div class="sys-feed" id="sys-feed"></div>
+          <div class="toast" id="toast"></div>
+          <div class="dialog" id="dialog"></div>
+          <div id="instance-hud" hidden>
+            <div id="instance-title">副本</div>
+            <div id="instance-info">—</div>
+            <button type="button" id="btn-leave-instance">离开副本</button>
+          </div>
+          <div id="floor-clear" hidden>
+            <div class="floor-box">
+              <h3>本关挑战成功</h3>
+              <p id="floor-clear-text"></p>
+              <div class="btn-row">
+                <button type="button" class="btn" data-floor="continue">继续挑战</button>
+                <button type="button" class="btn ghost" data-floor="rest">休息一下</button>
+                <button type="button" class="btn ghost" data-floor="leave">离开副本</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="dock">
+          <div class="skill-bar" id="skill-bar"></div>
+          <div class="dock-xp bar xp"><i id="xp-fill"></i></div>
+          <button type="button" id="btn-shop" class="shop-btn" title="商城">商</button>
+        </div>
+        <div class="shop-orbit" id="stage-act">
+          <button type="button" id="btn-sit" title="打坐（D）">打坐</button>
+          <button type="button" id="btn-auto-2" title="挂机（Z）">挂机</button>
+          <button type="button" id="btn-mount-2" title="骑马">骑马</button>
+          <button type="button" id="btn-arena" title="竞技场">竞</button>
+          <button type="button" id="btn-party" title="组队">队</button>
+          <button type="button" data-panel="achieve" title="成就">成</button>
+        </div>
+        <div class="dock-quick">
+          <button type="button" id="btn-auto" title="猎（挂机）">猎</button>
+          <button type="button" id="btn-tame" title="驯">驯</button>
+          <button type="button" id="btn-pick" title="拾取">拾</button>
+          <button type="button" id="btn-world-quick" title="世界地图">拓</button>
+          <button type="button" data-panel="forge" title="强化">强</button>
+        </div>
+        <nav class="dock-menu">
+          <button type="button" data-panel="char" title="角色"><img src="assets/ingame/viewui/menu-role.png" alt="" /></button>
+          <button type="button" data-panel="skills" title="技能"><img src="assets/ingame/viewui/smallicon/skillIcon.png" alt="" /><img class="dock-skill-label" src="assets/ingame/title/skill.png" alt="" /></button>
+          <button type="button" data-panel="bag" title="背包"><img src="assets/ingame/viewui/menu-bag.png" alt="" /></button>
+          <button type="button" data-panel="pet" title="宠物"><img src="assets/ingame/viewui/menu-pet.png" alt="" /></button>
+          <button type="button" data-panel="char" data-char-open="mount" title="坐骑"><img src="assets/ingame/viewui/menu-mount.png" alt="" /></button>
+          <button type="button" data-panel="social" title="好友"><img src="assets/ingame/viewui/menu-friends.png" alt="" /></button>
+          <button type="button" data-panel="social" title="社会"><img src="assets/ingame/viewui/menu-social.png" alt="" /></button>
+          <button type="button" data-panel="forge" title="天工炉"><img src="assets/ingame/viewui/menu-forge.png" alt="" /></button>
+          <button type="button" id="btn-smith" title="铁匠铺"><img src="assets/ingame/viewui/menu-smith.png" alt="" /></button>
+          <button type="button" data-panel="shop" title="市场"><img src="assets/ingame/viewui/menu-market.png" alt="" /></button>
+        </nav>
+        <div class="dock-sys">
+          <button type="button" class="dock-title" data-panel="mail" title="信件"><img src="assets/ingame/title/letter.png" alt="" /></button>
+          <button type="button" class="dock-title" data-panel="help" title="设置"><img src="assets/ingame/title/setting.png" alt="" /></button>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-char"></div>
+      <div class="panel" id="panel-bag"></div>
+      <div class="panel" id="panel-skills"></div>
+      <div class="panel" id="panel-pet"></div>
+      <div class="panel" id="panel-forge"></div>
+      <div class="panel" id="panel-quest"></div>
+      <div class="panel" id="panel-help"></div>
+      <div class="panel" id="panel-shop"></div>
+      <div class="panel" id="panel-warehouse"></div>
+      <div class="panel" id="panel-social"></div>
+      <div class="panel" id="panel-mail"></div>
+      <div class="panel" id="panel-achieve"></div>
+      <div class="panel" id="panel-rank"></div>
+      <div class="panel" id="panel-daily"></div>
+      <div class="panel" id="panel-vip"></div>
+      <div class="panel" id="panel-trade"></div>
+      <div id="map-overlay" hidden>
+        <div class="map-win">
+          <div class="map-head">
+            <h3>地图</h3>
+            <button type="button" class="map-x" data-close-map="1" title="关闭">×</button>
+          </div>
+          <div class="map-tabs">
+            <button type="button" data-map-tab="world">世界地图</button>
+            <button type="button" data-map-tab="nation">国家地图</button>
+            <button type="button" data-map-tab="current" class="on">当前地图</button>
+            <span id="map-loc" class="map-loc">洪武-太平村</span>
+            <select id="map-era" hidden>
+              <option selected>洪武</option>
+            </select>
+            <button type="button" id="btn-map-tele">传送</button>
+            <span id="map-hint" class="map-hint"></span>
+          </div>
+          <div id="map-current" class="map-pane">
+            <div class="map-view">
+              <canvas id="region-canvas" width="446" height="315"></canvas>
+              <div id="map-cursor">[0,0]</div>
+            </div>
+            <div class="map-side">
+              <form id="map-coord-form">
+                <label>x:</label>
+                <input id="map-cx" maxlength="4" />
+                <label>y:</label>
+                <input id="map-cy" maxlength="4" />
+                <button type="submit">立即前往</button>
+              </form>
+              <div class="map-side-tabs">
+                <button type="button" class="on" data-side-tab="npc">NPC</button>
+                <button type="button" data-side-tab="jump">跳转点</button>
+              </div>
+              <h5 id="map-side-title">功能NPC</h5>
+              <div id="map-npc-list"></div>
+              <div id="map-jump-list" hidden></div>
+            </div>
+          </div>
+          <div id="map-nation" class="map-pane" hidden>
+            <div class="world-bg" id="nation-bg">
+              <img src="assets/ingame/map/country.jpg" alt="国家地图" />
+              <div id="nation-pins"></div>
+            </div>
+            <div class="map-side">
+              <h5>地图</h5>
+              <div id="nation-list"></div>
+            </div>
+          </div>
+          <div id="map-world" class="map-pane" hidden>
+            <div class="world-bg" id="world-bg">
+              <img src="assets/ingame/map/world.jpg" alt="世界地图" />
+              <div id="world-pins"></div>
+            </div>
+            <div class="map-side">
+              <div id="world-list"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="log-list" hidden></div>
+
+      <div class="death-mask" id="death">
+        <div>
+          <h2 id="death-title">身死道消</h2>
+          <p id="death-text">银两略有折损，将在太平村回魂。</p>
+          <div class="btn-row" style="margin-top:16px">
+            <button class="btn" id="btn-revive">回 村 再 战</button>
+            <button class="btn ghost" id="btn-revive-here" hidden>原地健康复活</button>
+          </div>
+        </div>
+      </div>
+      </div>
+    </section>
+  </div>
+  <script src="js/formulas.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/npc-layout.js"></script>
+  <script src="js/npc-art.js"></script>
+  <script src="js/bosses.js"></script>
+  <script src="js/vendor/three.min.js"></script>
+  <script src="js/ground.js"></script>
+  <script src="js/art.js"></script>
+  <script src="js/maptiles.js"></script>
+  <script src="js/world3d.js"></script>
+  <script src="js/path.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/core.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/world.js"></script>
+  <script src="js/combat.js"></script>
+  <script src="js/quest.js"></script>
+  <script src="js/dungeon.js"></script>
+  <script src="js/sim.js"></script>
+  <script src="js/netplay.js"></script>
+  <script src="js/life.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/input.js"></script>
+  <script src="js/boot.js"></script>
+</body>
+</html>

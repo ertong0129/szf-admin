@@ -1,0 +1,105 @@
+var assert = require('assert');
+var D = require('../js/data.js');
+var F = require('../js/formulas.js');
+
+assert.strictEqual(D.GAME_TITLE, '大明传说');
+
+assert.strictEqual(D.PK_MODES.map(function (m) { return m.id; }).join(','),
+  'peace,all,nation,party,clan,karma');
+
+assert.ok(D.NPCS.xuda.merit);
+assert.ok(D.NPCS.shanshan.warehouse);
+assert.ok(D.NPCS.yiyi.warehouse);
+assert.ok(D.NPCS.shenwansan.bank);
+assert.ok(D.NPCS.zhangsanfeng.skills);
+assert.ok(D.NPCS.lishizhen.shop);
+assert.ok(D.NPCS.muying.portal);
+assert.ok(D.NPCS.limengyang.mentor);
+assert.ok(D.NPCS.shichang.market);
+assert.ok(D.INSTANCES.fish && D.INSTANCES.treasure && D.INSTANCES.mentor);
+assert.ok(D.INSTANCES.jingxin && D.INSTANCES.palace && D.INSTANCES.pagoda);
+assert.ok(D.NPCS.zhangxiaoxiao.jingxin);
+assert.ok(D.NPCS.jinyi.palace);
+assert.ok(D.NPCS.tieta.pagoda);
+assert.strictEqual(D.NPCS.zhangxiaoxiao.map, 'kaifeng');
+assert.ok(D.MOUNT_SLOTS && D.MOUNT_SLOTS.length === 6);
+assert.ok(D.MOUNT_GEAR.m_armor_1 && D.MOUNT_GEAR.m_hoof_2);
+assert.ok(D.CONSUMABLES.mount_gem && D.CONSUMABLES.shenfu);
+assert.ok(D.CHAT_FACES.length >= 12);
+assert.ok(D.MARKET_CATS.length >= 6);
+assert.ok(D.FASHIONS && D.FASHIONS.length === 4);
+assert.ok(D.FASHIONS.every(function (f) { return f.fid; }), '时装应对照原作编号');
+assert.strictEqual(D.FASHIONS[0].id, 'plain');
+assert.strictEqual(D.VIP[0].lv, 0);
+assert.ok(D.SHOPS.gold.length >= 6);
+assert.ok(D.RECHARGE_PACKS.length >= 3);
+assert.strictEqual(D.NPCS.chefu.map, 'taiping');
+assert.ok(D.NPCS.chefu.travel.indexOf('capital') === 0);
+
+assert.strictEqual(D.BANK.silverPerNote, 500);
+assert.strictEqual(D.WAREHOUSE.maxTabs, 4);
+assert.strictEqual(D.WAREHOUSE.unlock[0], 0);
+
+var help = D.HELP.join('\n');
+['Q 任务', '空格拾取', 'D 打坐', '精力', '坐骑', '建功立业', '91wan', '局域网', '组队',
+  '信件', '传奇目标', '除恶令', '捕鱼儿海', '大明宝藏', '洗灵', '篝火', '元宝', '明朝贵族',
+  '野外 BOSS', '世界 BOSS', '平江', '神农架', '绑定银两', '步步惊心', '深宫谍影', '马铠',
+  '免费瞬移'].forEach(function (k) {
+  assert.ok(help.indexOf(k) >= 0, 'HELP missing ' + k);
+});
+
+assert.ok(D.CONSUMABLES.scroll && D.CONSUMABLES.mount_token && D.CONSUMABLES.yinpiao);
+assert.ok(D.CONSUMABLES.scroll.desc.indexOf('免费') >= 0, '传送卷说明应为免费传送');
+assert.ok(D.INSTANCE_WARPS && D.INSTANCE_WARPS.length >= 10, '应列出全部副本地图');
+['shennong', 'desert', 'tumu', 'annan', 'quanzhou', 'zhedong', 'jianzhou', 'kaifeng'].forEach(function (id) {
+  assert.ok(D.WORLD_NODES.some(function (n) { return n.id === id; }), 'WORLD_NODES missing ' + id);
+});
+D.INSTANCE_WARPS.forEach(function (n) {
+  assert.ok(D.MAP_META[n.id], 'INSTANCE_WARPS 应对应已有地图 ' + n.id);
+});
+assert.strictEqual(D.ERA, '洪武');
+assert.strictEqual(D.NATION_NODES.length, 9);
+assert.ok(D.NATION_NODES.every(function (n) { return n.name !== '神农架'; }), '神农架不是国家图九城');
+assert.ok(D.NATION_NODES.some(function (n) { return n.id === 'capital' && n.name === '京城'; }));
+assert.ok(D.NATION_NODES.some(function (n) { return n.id === 'safe' && n.locked; }));
+assert.ok(D.WORLD_REGIONS.some(function (n) { return n.name === '开封'; }));
+assert.ok(D.WORLD_REGIONS.some(function (n) { return n.name === '洪武' && n.tab === 'nation'; }));
+assert.ok(D.MAP_FUNC.capital.some(function (n) { return n.name === '钱庄老板'; }));
+assert.ok(D.MAP_MARK.jingche === '车夫');
+assert.ok(D.PORTALS.capital.some(function (p) { return p.to === 'xinghua' && /杏花岭/.test(p.label); }));
+
+var b = F.meritBand(22);
+assert.strictEqual(b.kill.id, 'wolf');
+assert.strictEqual(F.meritReward(491, 0), 491);
+assert.ok(F.meritReward(491, 9) > 491);
+assert.strictEqual(F.meritBand(5), null);
+
+assert.ok(F.mountUpgradeChance('white') > F.mountUpgradeChance('purple'));
+assert.strictEqual(F.mountUpgradeChance('orange'), 0);
+
+var fs = require('fs');
+var path = require('path');
+var refs = fs.readFileSync(path.join(__dirname, '../docs/REFERENCES.md'), 'utf8');
+assert.ok(refs.indexOf('com/maps/{folder}/{row}_{col}.jpg') >= 0, '应记录场景切片 URL 规则');
+assert.ok(refs.indexOf('12_15.jpg') >= 0, '应举例京城切片');
+assert.ok(refs.indexOf('offsetX=3520') >= 0 && refs.indexOf('TILE_SIZE=44') >= 0, '应记录京城 MCM 像素偏移与 TILE_SIZE');
+assert.ok(refs.indexOf('tools/swf-abc.py') >= 0 && refs.indexOf('tools/parse-mcm.py') >= 0, '应指向 SWF/MCM 分析脚本');
+assert.ok(refs.indexOf('原点偏移 **51**') < 0, '不应再把 nElem=51 写成 originX');
+assert.ok(refs.indexOf('com/assets/skills/{8位数字}.png') >= 0, '应记录技能图标 URL 规则');
+assert.ok(refs.indexOf('21209001') >= 0 && refs.indexOf('21103002') >= 0, '应记录用户提供的技能图标样例');
+
+var skillIds = [];
+Object.keys(D.SKILLS).forEach(function (cls) {
+  D.SKILLS[cls].forEach(function (sk) {
+    assert.ok(sk.icon && /^\d{8}$/.test(sk.icon), cls + ' ' + sk.id + ' 应有 8 位技能图标编号');
+    var png = path.join(__dirname, '../assets/ingame/skills/' + sk.icon + '.png');
+    assert.ok(fs.existsSync(png), 'missing skill icon ' + sk.icon);
+    skillIds.push(sk.icon);
+  });
+});
+assert.strictEqual(skillIds.length, 24, '四职业应各 6 个技能图标');
+assert.strictEqual(new Set(skillIds).size, 24, '技能图标不应重复');
+assert.ok(skillIds.indexOf('21209001') >= 0, '射手破甲应使用样例 21209001');
+assert.ok(skillIds.indexOf('21103002') >= 0, '战士铁骨应使用样例 21103002');
+
+console.log('docs.test.js ok');

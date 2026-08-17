@@ -1,0 +1,50 @@
+大明传说 · 局域网学习服
+============================
+
+Windows 包 GitHub 直链：
+https://github.com/ertong0129/szf-admin/raw/cursor/hongwu-offline-legend-f2d5/hongwu-windows.zip
+
+国内备用（jsDelivr / GitHub 代理）：
+https://cdn.jsdelivr.net/gh/ertong0129/szf-admin@cursor/hongwu-offline-legend-f2d5/hongwu-windows.zip
+https://gh-proxy.com/https://github.com/ertong0129/szf-admin/raw/cursor/hongwu-offline-legend-f2d5/hongwu-windows.zip
+
+一、Windows
+1. 解压整个文件夹。
+2. 双击「启动游戏.bat」或「start.bat」。黑窗口里是英文提示，这是正常的。
+3. 浏览器会在服务就绪后自动打开。
+4. 测试号 demo / 123456。
+5. 不要关黑色命令行窗口，关掉就停服。
+6. 若提示没有 Node / Python：安装 https://nodejs.org 后重新双击。
+
+二、没有 Node / Python 时
+必须先安装 Node 或 Python。存档写在本机数据库 `data/hongwu.db`，不再写浏览器。
+建议安装 Node：https://nodejs.org
+
+以后若要接 MySQL：设置环境变量 `DB_DRIVER=mysql`，并实现 `js/store-mysql.js`（表结构已按 MySQL 预留）。
+
+三、操作
+点右侧「任务追踪」：自动寻路（跨图会先走传送点，到达后自动对话/打怪/采药）
+M 地图：点场景名或「传送」免费瞬移，可检阅全部地图（含副本）
+局内窗口撑满屏幕，地图切片按原作 1:1 像素，人物和 NPC 一样高
+左键点地：斜视 3D 地面自动寻路（黄圈）
+左键点怪 / NPC：攻击或对话
+底栏红钮「商」：商城    小地图可点击走路
+1-6 技能   7/8 吃药   空格拾取   Z 挂机   Q 任务　R 社交
+C/B/V/E 角色背包技能天工炉　K 摆摊　G 跟随
+
+四、卡住了
+旧存档若出生在房子里，重新进游戏会自动拉到空地。
+也可删掉游戏目录里的 data 文件夹后重建角色（存档在本机数据库，不在浏览器）。
+若页面打开了但图片全无：先看启动窗口是否还在、地址是不是 127.0.0.1:8088，不要用文件协议刷新。
+若 jsDelivr 还是旧包，用上面的 gh-proxy 备用链接。
+登录页应显示「已连接本地服务端 v20260817q」。若没有这个版本号，说明还在跑旧包，请删掉解压目录后重新下载。
+终端窗口必须一直开着；关掉就停服。异常退出会自动重启。
+
+五、局域网联机
+启动窗口会打印局域网地址，例如 http://192.168.1.8:8088/
+朋友用浏览器打开这个地址（不要用 127.0.0.1，那是房主自己的本机）。
+各自注册账号，选同一个服务器。同图即可看见对方。
+点其他玩家：组队、交易、加好友、密聊、跟随。头像下切换 PK 模式后可对打。
+R 社交　K 摆摊　G 跟随　H 隐藏玩家
+聊天可切附近/世界/队伍/宗族，输入 /账号 内容 密聊。
+

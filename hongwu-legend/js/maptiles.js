@@ -1,0 +1,338 @@
+/**
+ * 原作场景切片：CDN 上 300×300 JPEG，按 {col}_{row} 轴对齐拼成等距大图。
+ * 行走仍用方形格子；镜头按等距投影把格子映射到拼图像素。
+ */
+(function (root) {
+  var T = {
+    TILE: 40,
+    FOLDER: {
+      capital: 'jing_cheng',
+      kaifeng: 'kai_feng',
+      pingjiang: 'ping_jiang',
+      quanzhou: 'quan_zhou',
+      zhedong: 'zhe_dong',
+      xiliang: 'xi_liang',
+      taiping: 'xin_shou_cun',
+      wild: 'heng_jian_shan',
+      shennong: 'shen_nong_jia',
+      xinghua: 'xing_hua_ling',
+      annan: 'an_nan',
+      desert: 'da_mo',
+      tumu: 'tu_mu_bao',
+      jianzhou: 'jian_zhou',
+      border: 'bian_cheng_1',
+      arena: 'jing_ji_chang',
+      fish: 'bu_yu_er_hai',
+      palace: 'shen_gong_die_ying',
+      jingxin: 'bu_bu_jing_xin',
+      boyang: 'po_yang_hu'
+    },
+    manifest: null,
+    imgs: {},
+    loading: {},
+    cam: { x: 0, y: 0, scale: 1, mapId: '', cx: 0, cy: 0 },
+    _active: false,
+    slices: {},
+    sliceFail: {},
+    /* 原作 ReSizeManager：StageScaleMode.NO_SCALE，GAME_WIDTH 随窗口变大，切片仍 1 mosaic 像素 = 1 屏像素。 */
+    VIEW_NATIVE: 1000,
+    GAME_HEIGHT: 545,
+    CAMERA_OFFSET: 40,
+    TILE_SRC: 300,
+    TILE_ISO: 44,
+    CDN: 'http://mccq.static.mingchao.com/55598/com/maps'
+  };
+
+  function walkSize(mapId, meta) {
+    /* 拼图像素对齐用 MCM 网格（京城 175×172）；寻路仍用 MAP_SIZE。 */
+    if (meta && meta.walkW && meta.walkH) return { w: meta.walkW, h: meta.walkH };
+    var sz = root.GameData && root.GameData.MAP_SIZE && root.GameData.MAP_SIZE[mapId];
+    if (sz && sz.w && sz.h) return sz;
+    return { w: 50, h: 36 };
+  }
+
+  T.folderOf = function (mapId) {
+    return T.FOLDER[mapId] || '';
+  };
+
+  T.metaFor = function (mapId) {
+    if (!T.manifest || !T.manifest.maps) return null;
+    var folder = T.folderOf(mapId);
+    if (!folder) return null;
+    var m = T.manifest.maps[folder];
+    if (m) return m;
+    var maps = T.manifest.maps;
+    var k;
+    for (k in maps) {
+      if (maps[k] && maps[k].mapId === mapId) return maps[k];
+    }
+    return null;
+  };
+
+  T.has = function (mapId) {
+    return !!T.metaFor(mapId);
+  };
+
+  T.image = function (mapId) {
+    var m = T.metaFor(mapId);
+    if (!m) return null;
+    var img = T.imgs[m.folder];
+    return img && img.width ? img : null;
+  };
+
+  T.ready = function (mapId) {
+    return !!T.image(mapId);
+  };
+
+  T.active = function () {
+    return T._active;
+  };
+
+  T.iso = function (meta, mapId) {
+    var walk = walkSize(mapId, meta);
+    var nativeW = meta.nativeW || meta.imgW;
+    var nativeH = meta.nativeH || meta.imgH;
+    var mapW = meta.mapW || nativeW;
+    var mapH = meta.mapH || nativeH;
+    if (meta.isoTile) {
+      var tile = meta.isoTile || T.TILE_ISO;
+      return {
+        mode: 'swf',
+        walkW: walk.w,
+        walkH: walk.h,
+        tile: tile,
+        half: tile / 2,
+        ox: meta.offsetX || 0,
+        oy: meta.offsetY || 0,
+        nativeW: nativeW,
+        nativeH: nativeH,
+        mapW: mapW,
+        mapH: mapH
+      };
+    }
+    var span = Math.max(1, walk.w + walk.h);
+    return {
+      mode: 'stretch',
+      walkW: walk.w,
+      walkH: walk.h,
+      hw: nativeW / span,
+      hh: nativeH / span,
+      ox: walk.h * (nativeW / span),
+      oy: (meta.originY || 0) * nativeH,
+      originX: meta.originX || 0,
+      nativeW: nativeW,
+      nativeH: nativeH,
+      mapW: mapW,
+      mapH: mapH
+    };
+  };
+
+  /* TileUitls.indexToFlat + getIsoIndexMidVertex：格子中心 (tx-ty)*44, (tx+ty)*22 + 22，再加 MCM offset。 */
+  T.walkToImg = function (tx, ty, meta, mapId) {
+    var iso = T.iso(meta, mapId);
+    if (iso.mode === 'swf') {
+      return {
+        x: (tx - ty) * iso.tile + iso.ox,
+        y: (tx + ty) * iso.half + iso.half + iso.oy
+      };
+    }
+    return {
+      x: iso.ox + (tx - ty + iso.originX) * iso.hw,
+      y: iso.oy + (tx + ty) * iso.hh
+    };
+  };
+
+  T.imgToWalk = function (ix, iy, meta, mapId) {
+    var iso = T.iso(meta, mapId);
+    var u, v;
+    if (iso.mode === 'swf') {
+      u = (ix - iso.ox) / iso.tile;
+      v = (iy - iso.oy - iso.half) / iso.half;
+      return { tx: (u + v) / 2, ty: (v - u) / 2 };
+    }
+    u = (ix - iso.ox) / iso.hw - iso.originX;
+    v = (iy - iso.oy) / iso.hh;
+    return { tx: (u + v) / 2, ty: (v - u) / 2 };
+  };
+
+  /* CurrentCityView.ptToSmallmap / onClickMap：小地图像素 ↔ mosaic ↔ 格子。 */
+  T.walkToRadar = function (tx, ty, w, h, meta, mapId) {
+    var img = T.walkToImg(tx, ty, meta, mapId);
+    var iso = T.iso(meta, mapId);
+    return { x: img.x / iso.mapW * w, y: img.y / iso.mapH * h };
+  };
+
+  T.radarToWalk = function (rx, ry, w, h, meta, mapId) {
+    var iso = T.iso(meta, mapId);
+    return T.imgToWalk(rx / w * iso.mapW, ry / h * iso.mapH, meta, mapId);
+  };
+
+  T.worldToScreen = function (x, y) {
+    var mapId = T.cam.mapId;
+    var meta = T.metaFor(mapId);
+    if (!meta) return { x: 0, y: 0 };
+    var img = T.walkToImg(x / T.TILE, y / T.TILE, meta, mapId);
+    var s = T.cam.scale || 1;
+    return {
+      x: (img.x - T.cam.x) * s + T.cam.cx,
+      y: (img.y - T.cam.y) * s + T.cam.cy
+    };
+  };
+
+  T.screenToWorld = function (sx, sy) {
+    var mapId = T.cam.mapId;
+    var meta = T.metaFor(mapId);
+    if (!meta) return { x: 0, y: 0 };
+    var s = T.cam.scale || 1;
+    var ix = T.cam.x + (sx - T.cam.cx) / s;
+    var iy = T.cam.y + (sy - T.cam.cy) / s;
+    var wlk = T.imgToWalk(ix, iy, meta, mapId);
+    return { x: wlk.tx * T.TILE, y: wlk.ty * T.TILE };
+  };
+
+  function setScene(on) {
+    T._active = on;
+    var c2 = typeof document !== 'undefined' ? document.getElementById('world') : null;
+    var c3 = typeof document !== 'undefined' ? document.getElementById('world3d') : null;
+    if (on) {
+      if (c3) c3.style.display = 'none';
+      if (c2) c2.style.display = 'block';
+    } else if (root.World3D && root.World3D.enabled) {
+      if (c3) c3.style.display = 'block';
+      if (c2) c2.style.display = 'none';
+    }
+  }
+
+  T.displayScale = function () {
+    /* 不随窗口放大 mosaic，否则大屏上地砖比人物更大。窗口变宽只增加视野。 */
+    return 1;
+  };
+
+  /* 时装格 104×132 与 TILE_SIZE=44 同一套屏幕像素，人物约三格高。 */
+  T.spriteZoom = function () {
+    return T.cam.scale || 1;
+  };
+
+  T.sliceKey = function (folder, row, col) {
+    return folder + '/' + row + '_' + col;
+  };
+
+  T.ensureSlice = function (folder, row, col) {
+    var key = T.sliceKey(folder, row, col);
+    if (T.slices[key] || T.sliceFail[key]) return T.slices[key] || null;
+    if (typeof Image === 'undefined') return null;
+    T.sliceFail[key] = 1;
+    var img = new Image();
+    img.onload = function () {
+      T.slices[key] = img;
+      T.sliceFail[key] = 0;
+    };
+    img.onerror = function () { T.sliceFail[key] = 2; };
+    img.referrerPolicy = 'no-referrer';
+    img.src = T.CDN + '/' + folder + '/' + row + '_' + col + '.jpg';
+    return null;
+  };
+
+  T.follow = function (mapId, player, w, h) {
+    var meta = T.metaFor(mapId);
+    if (!meta || !player) {
+      setScene(false);
+      return false;
+    }
+    var img = T.image(mapId);
+    if (!img) {
+      T.ensure(mapId);
+      setScene(false);
+      return false;
+    }
+    var pos = T.walkToImg(player.x / T.TILE, player.y / T.TILE, meta, mapId);
+    var scale = T.displayScale(w);
+    T.cam.mapId = mapId;
+    T.cam.x = pos.x;
+    T.cam.y = pos.y;
+    T.cam.scale = scale;
+    T.cam.cx = w / 2;
+    /* GameScene.centerCamera：Y 向再加 cameraOffset=40，角色略偏画面上方。 */
+    T.cam.cy = h * 0.5 + T.CAMERA_OFFSET * scale;
+    setScene(true);
+    return true;
+  };
+
+  T.draw = function (ctx, w, h) {
+    var mapId = T.cam.mapId;
+    var meta = T.metaFor(mapId);
+    var img = T.image(mapId);
+    if (!meta || !img) return;
+    var s = T.cam.scale || 1;
+    var nativeW = meta.nativeW || meta.cols * T.TILE_SRC;
+    var nativeH = meta.nativeH || meta.rows * T.TILE_SRC;
+    var dw = nativeW * s;
+    var dh = nativeH * s;
+    var dx = Math.round(T.cam.cx - T.cam.x * s);
+    var dy = Math.round(T.cam.cy - T.cam.y * s);
+    var tile = meta.tileSize || T.TILE_SRC;
+    ctx.fillStyle = '#0a1214';
+    ctx.fillRect(0, 0, w, h);
+    /* 入库预览图只有长边 2048，拉到 7800 会发糊；关掉平滑，缺块时用邻近采样。 */
+    if (ctx.imageSmoothingEnabled != null) ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(img, 0, 0, img.width, img.height, dx, dy, dw, dh);
+    var c0 = Math.max(0, Math.floor((T.cam.x - T.cam.cx / s) / tile) - 2);
+    var r0 = Math.max(0, Math.floor((T.cam.y - T.cam.cy / s) / tile) - 2);
+    var c1 = Math.min(meta.cols - 1, Math.ceil((T.cam.x + (w - T.cam.cx) / s) / tile) + 2);
+    var r1 = Math.min(meta.rows - 1, Math.ceil((T.cam.y + (h - T.cam.cy) / s) / tile) + 2);
+    var row, col, slice, sx, sy, ts;
+    ts = tile * s;
+    for (row = r0; row <= r1; row++) {
+      for (col = c0; col <= c1; col++) {
+        slice = T.ensureSlice(meta.folder, row, col);
+        if (!slice || !slice.width) continue;
+        sx = dx + col * ts;
+        sy = dy + row * ts;
+        ctx.drawImage(slice, 0, 0, slice.width, slice.height, sx, sy, ts, ts);
+      }
+    }
+  };
+
+  function loadImage(src, done) {
+    if (typeof Image === 'undefined') {
+      done(null);
+      return;
+    }
+    var img = new Image();
+    img.onload = function () { done(img); };
+    img.onerror = function () { done(null); };
+    img.src = src;
+  }
+
+  T.ensure = function (mapId) {
+    var meta = T.metaFor(mapId);
+    if (!meta) return;
+    if (T.imgs[meta.folder] || T.loading[meta.folder]) return;
+    T.loading[meta.folder] = 1;
+    loadImage('assets/ingame/maptiles/' + meta.file, function (img) {
+      T.loading[meta.folder] = 0;
+      if (img) T.imgs[meta.folder] = img;
+    });
+  };
+
+  T.load = function (done) {
+    if (typeof fetch === 'undefined') {
+      T.manifest = { maps: {} };
+      if (done) done();
+      return;
+    }
+    fetch('assets/ingame/maptiles/manifest.json')
+      .then(function (r) { return r.ok ? r.json() : { maps: {} }; })
+      .then(function (man) {
+        T.manifest = man || { maps: {} };
+        if (done) done();
+      })
+      .catch(function () {
+        T.manifest = { maps: {} };
+        if (done) done();
+      });
+  };
+
+  root.MapTiles = T;
+  if (typeof module !== 'undefined' && module.exports) module.exports = T;
+})(typeof window !== 'undefined' ? window : global);

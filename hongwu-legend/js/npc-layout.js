@@ -1,0 +1,277 @@
+/**
+ * 公开 pos.txt + npc_data 落地：各图 NPC 格子。
+ * 三朝共用同一套坐标，取洪武 11xxx / 开封 10200。
+ */
+(function (root) {
+  var D = root.GameData;
+  if (!D) return;
+
+  D.MAP_SIZE = {
+    taiping: { w: 80, h: 115 },
+    wild: { w: 110, h: 80 },
+    shennong: { w: 115, h: 150 },
+    boyang: { w: 100, h: 90 },
+    pingjiang: { w: 120, h: 110 },
+    xinghua: { w: 115, h: 115 },
+    xiliang: { w: 100, h: 50 },
+    border: { w: 90, h: 85 },
+    kaifeng: { w: 160, h: 120 },
+    quanzhou: { w: 135, h: 135 },
+    zhedong: { w: 120, h: 130 },
+    annan: { w: 110, h: 105 },
+    desert: { w: 90, h: 100 },
+    capital: { w: 140, h: 130 }
+  };
+
+  D.CITY_GROUND = {
+    capital: 1, kaifeng: 1, pingjiang: 1, xiliang: 1, quanzhou: 1, zhedong: 1,
+    taiping: 1, wild: 1, shennong: 1, boyang: 1, xinghua: 1, annan: 1, desert: 1, tumu: 1
+  };
+
+  D.CAPITAL_LAND = {
+    chefu: [110, 84],
+    shuibing: [124, 64],
+    shilian: [124, 60],
+    yabiao: [111, 37],
+    muying: [124, 56],
+    limengyang: [136, 101],
+    bagong: [119, 101],
+    wild: [85, 118],
+    boyang: [134, 63],
+    pingjiang: [134, 101],
+    xiliang: [5, 64],
+    border: [5, 69],
+    center: [110, 83]
+  };
+
+  D.NPC_TILES = {
+    /* 太平村 11000 */
+    chefu: [72, 54],
+    chenyuanyuan: [7, 57],
+    lujianping: [22, 22],
+    yaopu: [14, 38],
+    shanshan: [55, 107],
+    tp_xiaoba: [37, 21],
+    zhangsanfeng: [62, 64],
+    cunzheng: [50, 68],
+    xiaoliu: [49, 92],
+    xunyang: [67, 47],
+    tp_jiaotou: [62, 98],
+    tiesmith: [40, 24],
+    qianzhuang: [58, 104],
+    /* 横涧山 11001 */
+    liubowen: [55, 13],
+    hengjian_zhi: [65, 40],
+    tanghe: [48, 65],
+    wild_xuda: [62, 56],
+    wild_chun: [75, 69],
+    zhaopusheng: [80, 56],
+    kangmaocai_w: [101, 51],
+    wild_xujiang: [82, 38],
+    wild_guard: [86, 29],
+    /* 神农架 10210 */
+    xunshou: [100, 118],
+    shennong_che: [101, 116],
+    /* 鄱阳湖 11101 */
+    boyang_guard: [40, 39],
+    zhuwenzheng: [33, 29],
+    boyang_zhi: [43, 32],
+    dengyu: [56, 54],
+    /* 平江 11102 */
+    ping_beggar: [43, 2],
+    pingzhi: [58, 50],
+    qianjiang: [63, 50],
+    ping_heishi: [107, 87],
+    ping_heishang: [50, 17],
+    xiadaren: [69, 42],
+    /* 杏花岭 11103 */
+    xinghua_zhi: [47, 50],
+    xh_feng: [85, 63],
+    xh_zhang: [87, 83],
+    xh_fu: [75, 45],
+    xh_xu: [49, 54],
+    xh_fengsheng: [31, 86],
+    /* 西凉 11104 */
+    wangyangming: [84, 36],
+    xiliang_zhi: [68, 22],
+    /* 边城 11105 */
+    lanyu: [2, 71],
+    border_muying: [74, 73],
+    border_heishi: [70, 58],
+    sunjiang: [79, 57],
+    /* 开封 10200 */
+    kf_che: [92, 85],
+    zhusu: [24, 70],
+    wangqingqiao: [85, 48],
+    zhangfu_kf: [107, 108],
+    liruosong: [62, 51],
+    xuguangqi: [38, 46],
+    yuqian: [120, 47],
+    lidaren: [75, 112],
+    songyingxing_kf: [150, 107],
+    zhangxiaoxiao: [73, 79],
+    huangdi: [75, 79],
+    jinyi: [79, 79],
+    daming_jiang: [75, 88],
+    guanming: [80, 88],
+    tieta: [108, 24],
+    yuanjiang: [81, 69],
+    /* 泉州 10204 */
+    zhenghe: [98, 70],
+    xuxiake_qz: [39, 94],
+    chuanyuan: [102, 71],
+    /* 浙东 10205（无 type4，按刷怪点落位） */
+    yudayou: [104, 112],
+    qijiguang: [70, 91],
+    huzongxian: [44, 119],
+    xuwei: [13, 88],
+    qiguan: [62, 51],
+    /* 安南 10201 */
+    liusheng: [95, 92],
+    /* 大漠 10203 */
+    desert_bing: [35, 29],
+    /* 京城 13100/11100 */
+    jingche: [110, 83],
+    xuda: [112, 65],
+    yabiao: [111, 36],
+    changyuchun: [124, 71],
+    xiaoyuanji: [119, 36],
+    fengsheng: [112, 56],
+    fuyoude: [124, 67],
+    jiexie: [79, 84],
+    zhangjuzheng: [1, 64],
+    wugonggong: [35, 83],
+    wanjianying: [85, 120],
+    lishizhen: [68, 53],
+    xiaoqi: [113, 116],
+    jingtie: [121, 101],
+    wangziqiao: [111, 96],
+    jineng: [113, 122],
+    shenwansan: [111, 100],
+    yiyi: [113, 110],
+    zongzu_adm: [129, 101],
+    limengyang: [137, 101],
+    xiaoba: [113, 119],
+    aimeili: [111, 93],
+    dongxiaowan: [113, 125],
+    jinwei: [1, 69],
+    tangbohu: [46, 20],
+    jingzhishi: [107, 65],
+    shikefa: [115, 36],
+    baoku_man: [126, 51],
+    shitu_song: [133, 101],
+    jing_xunshou: [113, 113],
+    shilian: [124, 59],
+    shuibing: [124, 63],
+    muying: [124, 55],
+    taofa: [112, 52],
+    beifa: [112, 48],
+    yuelao: [63, 21],
+    hongniang: [64, 15],
+    bagong: [119, 101],
+    shichang: [111, 77],
+    yushi: [109, 67],
+    tanwei: [68, 55],
+    nanguan: [85, 118],
+    xiguan: [3, 64],
+    gaoming: [115, 124],
+    weibin_a: [1, 66],
+    jing_beidou: [111, 40],
+    jing_tianming: [112, 60],
+    jing_yiji: [126, 46],
+    jing_chunjie: [114, 76],
+    jing_sairace: [107, 42],
+    jing_qisheng: [101, 42]
+  };
+
+  var EXTRA = [
+    { id: 'chenyuanyuan', name: '陈圆圆', title: '活动专员', map: 'taiping', lines: ['常来做活动，收获一定多。'] },
+    { id: 'lujianping', name: '路剑平', title: '货殖', map: 'taiping', lines: ['最后三天，清仓大处理了啊。'] },
+    { id: 'tp_xiaoba', name: '小八', title: '防具店伙计', map: 'taiping', shop: 'smith', lines: ['小店货物齐全，童叟无欺。'] },
+    { id: 'tp_jiaotou', name: '功夫教头', title: '教头', map: 'taiping', lines: ['村里练功，进京再访技能大师。'] },
+    { id: 'hengjian_zhi', name: '横涧山知事', title: '横涧山', map: 'wild', lines: ['北通神农架，西去应天。'] },
+    { id: 'tanghe', name: '汤和', title: '将军', map: 'wild', lines: ['加入我们的起义军吧。'] },
+    { id: 'wild_xuda', name: '徐将军', title: '先锋', map: 'wild', lines: ['大军所到之处，皆不可扰民。建功立业进京找徐达。'] },
+    { id: 'wild_chun', name: '常遇春', title: '将军', map: 'wild', lines: ['给我十万大军，我便能横行天下。'] },
+    { id: 'zhaopusheng', name: '赵普胜', title: '山寨', map: 'wild', lines: ['横涧山不平，过路的小心。'] },
+    { id: 'kangmaocai_w', name: '康茂才', title: '将军', map: 'wild', lines: ['粮草先行。'] },
+    { id: 'wild_xujiang', name: '徐将军', title: '卫所', map: 'wild', lines: ['东去可通神农架。'] },
+    { id: 'wild_guard', name: '卫兵', title: '横涧山', map: 'wild', lines: ['山路不平。'] },
+    { id: 'shennong_che', name: '车夫', title: '神农架', map: 'shennong', travel: 'wild:55:16', lines: ['要回横涧山，我送你一程。'] },
+    { id: 'boyang_guard', name: '守卫', title: '鄱阳', map: 'boyang', lines: ['跟着朱将军，死守洪都城。'] },
+    { id: 'boyang_zhi', name: '鄱阳湖知事', title: '鄱阳湖', map: 'boyang', lines: ['陈友谅盘踞湖上。大战报名找京城明军水兵。'] },
+    { id: 'dengyu', name: '邓愈', title: '将军', map: 'boyang', lines: ['严守要冲，三月不解甲。'] },
+    { id: 'ping_beggar', name: '乞丐', title: '平江', map: 'pingjiang', lines: ['好心的大哥大姐，行行好。'] },
+    { id: 'qianjiang', name: '钱将军', title: '平江', map: 'pingjiang', lines: ['交镖的找我。国战哨塔本学习服未开。'] },
+    { id: 'ping_heishi', name: '黑市商人', title: '平江', map: 'pingjiang', lines: ['低买高卖，无奸不商。学习服未开黑市。'] },
+    { id: 'ping_heishang', name: '黑商', title: '平江', map: 'pingjiang', lines: ['夜里才出货。'] },
+    { id: 'xiadaren', name: '夏大人', title: '户部', map: 'pingjiang', lines: ['为国尽忠，不在乎职位高低。'] },
+    { id: 'xinghua_zhi', name: '杏花岭知事', title: '杏花岭', map: 'xinghua', lines: ['岭上元兵出没。'] },
+    { id: 'xh_feng', name: '冯将军', title: '杏花岭', map: 'xinghua', lines: ['兵马未动，粮草先行。'] },
+    { id: 'xh_zhang', name: '张将军', title: '杏花岭', map: 'xinghua', lines: ['守住岭口。'] },
+    { id: 'xh_fu', name: '傅将军', title: '杏花岭', map: 'xinghua', lines: ['金戈铁马，谁人可阻。'] },
+    { id: 'xh_xu', name: '徐将军', title: '杏花岭', map: 'xinghua', lines: ['西回平江。'] },
+    { id: 'xh_fengsheng', name: '冯胜', title: '将军', map: 'xinghua', lines: ['战略上藐视元军。'] },
+    { id: 'xiliang_zhi', name: '西凉知事', title: '西凉', map: 'xiliang', lines: ['瓦剌头目在大漠，不在西凉。'] },
+    { id: 'border_muying', name: '沐英', title: '西平侯', map: 'border', lines: ['最近边城颇不安宁。捕鱼儿海、宝藏仍去京城接引人处报名。'] },
+    { id: 'border_heishi', name: '黑市商人', title: '边城', map: 'border', lines: ['边关货少。'] },
+    { id: 'sunjiang', name: '孙将军', title: '边城', map: 'border', lines: ['交镖的找我。开封往西。'] },
+    { id: 'kf_che', name: '车夫', title: '开封车夫', map: 'kaifeng', travel: 'border:6:71', lines: ['要回边城，我送你一程。'] },
+    { id: 'wangqingqiao', name: '王青翘', title: '开封', map: 'kaifeng', lines: ['宁愿在茅屋低檐下微笑。'] },
+    { id: 'zhangfu_kf', name: '张辅', title: '将军', map: 'kaifeng', lines: ['两军交战，攻心为上。'] },
+    { id: 'liruosong', name: '李如松', title: '将军', map: 'kaifeng', lines: ['日寇凶猛，愿身先士卒。'] },
+    { id: 'xuguangqi', name: '徐光启', title: '农学', map: 'kaifeng', lines: ['采用新技术，百姓少受苦。'] },
+    { id: 'yuqian', name: '于谦', title: '少保', map: 'kaifeng', lines: ['不战胜则战死。'] },
+    { id: 'lidaren', name: '李大人', title: '言官', map: 'kaifeng', lines: ['骂人有理，找茬无罪。'] },
+    { id: 'songyingxing_kf', name: '宋应星', title: '天工', map: 'kaifeng', lines: ['看到百姓收成丰盈，我就心满意足了。'] },
+    { id: 'huangdi', name: '黄迪', title: '步步惊心', map: 'kaifeng', lines: ['过关后来我这儿领奖。奖励在张笑笑处结算。'] },
+    { id: 'daming_jiang', name: '大明将军', title: '开封', map: 'kaifeng', lines: ['名将都是从剑与火的历练中走出来的。'] },
+    { id: 'guanming', name: '关宁军伍长', title: '开封', map: 'kaifeng', lines: ['沿海倭寇另去浙东。'] },
+    { id: 'yuanjiang', name: '远征军将领', title: '开封', map: 'kaifeng', lines: ['土木堡被围，往大漠方向。'] },
+    { id: 'zhenghe', name: '郑和', title: '泉州', map: 'quanzhou', lines: ['虽身在茫茫海上，我却并不孤单。'] },
+    { id: 'xuxiake_qz', name: '徐霞客', title: '旅行家', map: 'quanzhou', lines: ['大明的山山水水，总能给我不断探索的激情。'] },
+    { id: 'chuanyuan', name: '船员', title: '泉州', map: 'quanzhou', lines: ['大海啊，全是水。'] },
+    { id: 'yudayou', name: '俞大猷', title: '浙东', map: 'zhedong', lines: ['抗倭在此。'] },
+    { id: 'qijiguang', name: '戚继光', title: '浙东', map: 'zhedong', lines: ['鸳鸯阵一出，谁与争锋。'] },
+    { id: 'huzongxian', name: '胡宗宪', title: '浙东', map: 'zhedong', lines: ['倭寇要打，关系要拉。'] },
+    { id: 'xuwei', name: '徐渭', title: '浙东', map: 'zhedong', lines: ['吾书第一，诗二，文三，画四。'] },
+    { id: 'qiguan', name: '戚管严', title: '浙东', map: 'zhedong', lines: ['要打仗，我问问我媳妇先。'] },
+    { id: 'liusheng', name: '柳升', title: '安南', map: 'annan', lines: ['有了神机营在手，对阵强敌也不忧。'] },
+    { id: 'desert_bing', name: '士兵', title: '大漠', map: 'desert', lines: ['我总是梦见自己回了家。'] },
+    { id: 'xiaoyuanji', name: '夏原吉', title: '户部', map: 'capital', lines: ['商贸、国运本学习服从简。'] },
+    { id: 'fengsheng', name: '冯胜', title: '将军', map: 'capital', lines: ['战略上藐视元军。'] },
+    { id: 'fuyoude', name: '傅友德', title: '将军', map: 'capital', lines: ['七战七胜。'] },
+    { id: 'jiexie', name: '解缙', title: '翰林学士', map: 'capital', lines: ['永乐大典之后，再无能出其右者。'] },
+    { id: 'zhangjuzheng', name: '张居正', title: '禁卫', map: 'capital', lines: ['吾非相，乃摄政也。国战未开。'] },
+    { id: 'wugonggong', name: '吴公公', title: '司礼', map: 'capital', lines: ['学习服未开变性。'] },
+    { id: 'wanjianying', name: '万民英', title: '命理宗师', map: 'capital', lines: ['我掐指一算，便知你最近要交好运了。'] },
+    { id: 'wangziqiao', name: '王紫翘', title: '杂货', map: 'capital', lines: ['金创药去李时珍处。'] },
+    { id: 'zongzu_adm', name: '宗族管理员', title: '宗族', map: 'capital', lines: ['你可以什么都没有，但不能没有宗族。学习服宗族从简。'] },
+    { id: 'aimeili', name: '艾美丽', title: '美容师', map: 'capital', lines: ['学习服未开美容。'] },
+    { id: 'dongxiaowan', name: '董小宛', title: '活动专员', map: 'capital', lines: ['常来做活动，收获一定多。日常在 U。'] },
+    { id: 'shikefa', name: '史可法', title: '总督', map: 'capital', lines: ['族长拉镖本学习服从简。'] },
+    { id: 'baoku_man', name: '大明宝藏传送人', title: '宝藏', map: 'capital', lines: ['宝藏报名也可找沐英。'] },
+    { id: 'shitu_song', name: '师徒副本传送人', title: '师徒', map: 'capital', lines: ['师徒找李梦阳。'] },
+    { id: 'jing_xunshou', name: '宠物驯养师', title: '京城', map: 'capital', lines: ['幼兽去神农架。'] },
+    { id: 'taofa', name: '讨伐敌营传送人', title: '敌营', map: 'capital', lines: ['讨伐敌营本学习服未开。'] },
+    { id: 'hongniang', name: '红娘', title: '月下', map: 'capital', lines: ['婚宴大典本学习服未开。点好友送花找月老。'] },
+    { id: 'jing_beidou', name: '北斗阵传送人', title: '北斗', map: 'capital', lines: ['北斗阵本学习服未开。'] },
+    { id: 'jing_tianming', name: '天命漩涡', title: '跨服', map: 'capital', lines: ['跨服战场本学习服未开。'] },
+    { id: 'jing_yiji', name: '遗迹向导', title: '遗迹', map: 'capital', lines: ['前朝遗迹本学习服未开。'] },
+    { id: 'jing_chunjie', name: '春节传送人', title: '岁时', map: 'capital', lines: ['节日副本本学习服未开。'] },
+    { id: 'jing_sairace', name: '趣味赛马传送人', title: '赛马', map: 'capital', lines: ['赛马本学习服未开。'] },
+    { id: 'jing_qisheng', name: '大明棋圣传送人', title: '棋圣', map: 'capital', lines: ['棋圣副本本学习服未开。'] }
+  ];
+
+  EXTRA.forEach(function (n) {
+    if (!D.NPCS[n.id]) {
+      D.NPCS[n.id] = {
+        id: n.id, name: n.name, title: n.title, map: n.map, lines: n.lines
+      };
+      if (n.shop) D.NPCS[n.id].shop = n.shop;
+      if (n.travel) D.NPCS[n.id].travel = n.travel;
+    }
+  });
+  if (typeof module !== 'undefined' && module.exports) module.exports = D;
+})(typeof window !== 'undefined' ? window : global);
+

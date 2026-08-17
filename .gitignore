@@ -6,6 +6,14 @@ yarn-debug.log*
 yarn-error.log*
 package-lock.json
 tests/**/coverage/
+hongwu-legend/data/
+hongwu-legend/__pycache__/
+hongwu-legend/tools/__pycache__/
+
+# Original Flash binaries stay on the analyst's machine
+*.swf
+*.mcm
+*.har
 
 # Editor directories and files
 .idea
