@@ -33,7 +33,10 @@
         floats: G.floats,
         path: G.path,
         questNpcId: H.currentQuestNpcId(),
-        time: G.time
+        time: G.time,
+        projectiles: G.projectiles || [],
+        particles: G.particles || [],
+        mapId: G.mapId
       });
       H.drawMinimap();
       H.drawHud();
@@ -58,7 +61,7 @@
         var t = G.grid[ty][tx];
         var sx = tx * TILE - G.cam.x, sy = ty * TILE - G.cam.y;
         if (window.Art && Art.ready) {
-          Art.drawTile(ctx, t, sx, sy, TILE, G.time, tx, ty);
+          Art.drawTile(ctx, t, sx, sy, TILE, G.time, tx, ty, G.grid, G.mapId);
         } else {
           var col = TILE_COLOR[t] || '#333';
           ctx.fillStyle = t === 'water' ? H.shade(col, Math.sin(G.time * 2 + tx) * 8) : H.shade(col, ((tx * 13 + ty * 7) % 9) - 4);

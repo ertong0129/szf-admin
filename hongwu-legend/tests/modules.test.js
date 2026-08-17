@@ -23,6 +23,9 @@ for (var i = 1; i < order.length; i++) {
 }
 
 assert.ok(play.indexOf('src="js/game.js"') < 0, 'play.html 不应再加载已拆分的 game.js');
+assert.ok(play.indexOf('src="js/ground.js"') >= 0, 'play.html 应加载程序地面');
+assert.ok(play.indexOf('src="js/ground.js"') < play.indexOf('src="js/world3d.js"'), 'ground.js 应在 world3d.js 之前');
+assert.ok(play.indexOf('src="js/art.js"') < play.indexOf('src="js/world3d.js"'), 'art.js 应在 world3d.js 之前');
 assert.ok(play.indexOf('大明传说') >= 0, 'play.html 标题应为大明传说');
 assert.ok(play.indexOf('明朝传奇') < 0, 'play.html 玩家可见文案不应再写明朝传奇');
 assert.ok(play.indexOf('洪武风云') < 0, 'play.html 不应再写洪武风云');

@@ -1,6 +1,6 @@
 /**
  * 大明传说 — 局内贴图
- * 立绘 / 半身像 / 头像 / 地砖取自用户指出的 MingGame.swf 同目录公开资源。
+ * 立绘 / 半身像 / 头像取自公开资源。地面为程序绘制，不再把世界地图切图当砖贴。
  */
 (function (root) {
   var A = {
@@ -215,43 +215,74 @@
     return A.imgs[key];
   };
 
-  A.drawTile = function (ctx, type, sx, sy, size, time, tx, ty) {
-    var img = A.tileImg(type);
-    if (img) {
-      var sw = img.width || 256, sh = img.height || 256;
-      var ox = ((tx * 47) % Math.max(1, sw - size));
-      var oy = ((ty * 31) % Math.max(1, sh - size));
-      if (type === 'water') {
-        ox = (ox + Math.sin(time * 1.4 + tx) * 8 + sw) % Math.max(1, sw - size);
-        oy = (oy + Math.cos(time * 1.1 + ty) * 6 + sh) % Math.max(1, sh - size);
-      }
-      try {
-        ctx.drawImage(img, ox, oy, size, size, sx, sy, size + 1, size + 1);
-      } catch (e) {
-        ctx.drawImage(img, sx, sy, size + 1, size + 1);
+  A.drawTile = function (ctx, type, sx, sy, size, time, tx, ty, grid, mapId) {
+    var Gnd = root.GroundPaint;
+    var step = Math.max(2, Math.floor(size / 10));
+    var px, py, wx, wy, c;
+    if (Gnd) {
+      for (py = 0; py < size + 1; py += step) {
+        for (px = 0; px < size + 1; px += step) {
+          wx = tx + (px + 0.5) / size;
+          wy = ty + (py + 0.5) / size;
+          if (grid) c = Gnd.sample(grid, wx, wy, mapId);
+          else c = Gnd.sample([[type]], (px + 0.5) / size, (py + 0.5) / size, mapId);
+          ctx.fillStyle = Gnd.css(c);
+          ctx.fillRect(sx + px, sy + py, step + 1, step + 1);
+        }
       }
     } else {
-      ctx.fillStyle = '#3d6a32';
+      ctx.fillStyle = type === 'water' ? '#2a5a7a' : type === 'stone' ? '#8a8680' : '#4d7a3e';
       ctx.fillRect(sx, sy, size + 1, size + 1);
     }
+    if (type === 'water' && time != null) {
+      ctx.strokeStyle = 'rgba(190,230,240,' + (0.18 + Math.sin(time * 2 + tx) * 0.08) + ')';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(sx, sy + size * 0.4 + Math.sin(time * 1.6 + ty) * 3);
+      ctx.lineTo(sx + size, sy + size * 0.55 + Math.cos(time * 1.2 + tx) * 3);
+      ctx.stroke();
+    }
     if (type === 'wall' || type === 'rock') {
-      ctx.fillStyle = 'rgba(20,16,12,0.35)';
+      ctx.fillStyle = 'rgba(20,16,12,0.28)';
       ctx.fillRect(sx, sy, size + 1, size + 1);
     }
   };
 
   A.drawProp = function (ctx, type, sx, sy, size) {
-    if (type === 'tree' && A.imgs.tree) {
-      ctx.drawImage(A.imgs.tree, sx - size * 0.35, sy - size * 0.85, size * 1.7, size * 1.85);
-    } else if ((type === 'house' || type === 'roof') && A.imgs.house) {
-      if (type === 'house') ctx.drawImage(A.imgs.house, sx - 6, sy - size * 0.7, size + 12, size * 1.7);
+    if (type === 'tree') {
+      ctx.fillStyle = '#4a2c14';
+      ctx.fillRect(sx + size * 0.42, sy + size * 0.35, size * 0.16, size * 0.55);
+      ctx.fillStyle = '#2f6b38';
+      ctx.beginPath();
+      ctx.arc(sx + size * 0.5, sy + size * 0.28, size * 0.38, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#3d8548';
+      ctx.beginPath();
+      ctx.arc(sx + size * 0.38, sy + size * 0.18, size * 0.26, 0, Math.PI * 2);
+      ctx.fill();
+      return;
+    }
+    if (type === 'house' || type === 'roof') {
+      if (type === 'roof') return;
+      ctx.fillStyle = '#8b3a32';
+      ctx.fillRect(sx + 4, sy + size * 0.28, size - 8, size * 0.7);
+      ctx.fillStyle = '#c45c48';
+      ctx.beginPath();
+      ctx.moveTo(sx + size * 0.08, sy + size * 0.32);
+      ctx.lineTo(sx + size * 0.5, sy - size * 0.18);
+      ctx.lineTo(sx + size * 0.92, sy + size * 0.32);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#d4af37';
+      ctx.fillRect(sx + size * 0.46, sy - size * 0.16, 3, size * 0.48);
     }
   };
 
-  function billboard(ctx, img, x, y, w, h, flip, bob) {
+  function billboard(ctx, img, x, y, w, h, flip, bob, lean) {
     if (!img) return false;
     ctx.save();
     ctx.translate(x, y + (bob || 0));
+    ctx.rotate(lean || 0);
     if (flip) ctx.scale(-1, 1);
     ctx.drawImage(img, -w / 2, -h, w, h);
     ctx.restore();
@@ -285,9 +316,12 @@
   A.drawHero = function (ctx, p, screen, time) {
     var img = A.imgs[A.classKey(p.cls)];
     var flip = Math.cos(p.facing) < 0;
-    var bob = Math.sin(time * 8) * (p._moving ? 2 : 0.4);
-    A.drawAura(ctx, screen.x, screen.y, 'rgba(255,200,80,0.55)', time, 1);
-    if (!billboard(ctx, img, screen.x, screen.y + 10, 48, 96, flip, bob)) {
+    var moving = !!p._moving;
+    var bob = Math.sin(time * (moving ? 11 : 2.2)) * (moving ? 3.2 : 0.7);
+    var lean = moving ? Math.sin(time * 11) * 0.08 : 0;
+    var ride = p.mount && p.mount.riding;
+    A.drawAura(ctx, screen.x, screen.y, ride ? 'rgba(255,170,70,0.62)' : 'rgba(90,210,255,0.5)', time, ride ? 1.15 : 1);
+    if (!billboard(ctx, img, screen.x, screen.y + (ride ? 4 : 10), 48, 96, flip, bob - (ride ? 8 : 0), lean)) {
       return false;
     }
     return true;
@@ -296,7 +330,7 @@
   A.drawNpc = function (ctx, n, screen, time) {
     A.drawAura(ctx, screen.x, screen.y, 'rgba(255,210,80,0.4)', time, 0.85);
     var img = A.imgs[A.npcKey(n.id)] || A.imgs.officer;
-    billboard(ctx, img, screen.x, screen.y + 8, 48, 96, false, Math.sin(time * 2) * 0.6);
+    billboard(ctx, img, screen.x, screen.y + 8, 48, 96, false, Math.sin(time * 2) * 0.6, 0);
     if (n.questMark) {
       ctx.fillStyle = n.questMark === '?' ? '#6fdf7a' : '#ffd36a';
       ctx.font = 'bold 16px serif';
@@ -313,14 +347,14 @@
     var w = (key === 'tiger' || key === 'fox' ? 56 : 48) * scale;
     var h = (key === 'tiger' ? 88 : 96) * scale;
     A.drawAura(ctx, screen.x, screen.y, e.boss ? 'rgba(255,80,40,0.45)' : 'rgba(80,20,20,0.3)', time, scale);
-    billboard(ctx, img, screen.x, screen.y + 8, w, h, false, Math.sin(time * 6 + e.x) * 1.2);
+    billboard(ctx, img, screen.x, screen.y + 8, w, h, Math.cos(e.facing || 0) < 0, Math.sin(time * 6 + e.x) * 1.2, 0);
     return !!img;
   };
 
   A.drawPet = function (ctx, pet, screen, time) {
     var img = A.imgs[A.petKey(pet.id)] || A.imgs.tiger;
     A.drawAura(ctx, screen.x, screen.y, 'rgba(160,200,255,0.35)', time, 0.7);
-    billboard(ctx, img, screen.x, screen.y + 6, 40, 56, false, Math.sin(time * 7) * 1);
+    billboard(ctx, img, screen.x, screen.y + 6, 40, 56, false, Math.sin(time * 7) * 1, 0);
     A.drawNameplate(ctx, screen.x, screen.y + 14, '', pet.name, '#c8e6ff');
   };
 

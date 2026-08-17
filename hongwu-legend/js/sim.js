@@ -125,6 +125,7 @@
     G.entities.forEach(function (e) {
       if (e.stun > 0) { e.stun -= dt; return; }
       e.atkCd = Math.max(0, e.atkCd - dt);
+      e._moving = false;
       if (e.debuff) { e.debuff.t -= dt; if (e.debuff.t <= 0) e.debuff = null; }
       var d = H.dist(e, p);
       var sight = e.boss ? 260 : (e.ranged ? 240 : 170);
@@ -147,7 +148,10 @@
         } else if (d > want) {
           var a = H.ang(e, p);
           H.tryMove(e, Math.cos(a) * spd * dt, Math.sin(a) * spd * dt);
+          e.facing = a;
+          e._moving = true;
         } else if (e.atkCd <= 0) {
+          e.facing = H.ang(e, p);
           var def = e.magic ? st.mdef : st.pdef;
           var dmg = F.calcDamage(e.atk, def, 1, false, H.rand(-0.05, 0.05));
           H.hurtPlayer(dmg);
