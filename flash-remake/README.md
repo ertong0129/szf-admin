@@ -9,14 +9,30 @@
 
 学习用复刻客户端在 `game/`，分析工具在 `tools/`。SWF 整包不入库。
 
-## 怎么玩
+## Windows 下载（v20260817d）
+
+解压后双击 `启动游戏.bat` 或 `start.bat`。登录页应显示 **v20260817d**。没有这个版本号就是旧包，请删掉解压目录后重新下载。
+
+GitHub 直链：
+
+https://github.com/ertong0129/szf-admin/raw/cursor/flash-remake-pipeline-d4e1/daming-windows.zip
+
+国内备用：
+
+https://cdn.jsdelivr.net/gh/ertong0129/szf-admin@cursor/flash-remake-pipeline-d4e1/daming-windows.zip
+
+https://gh-proxy.com/https://github.com/ertong0129/szf-admin/raw/cursor/flash-remake-pipeline-d4e1/daming-windows.zip
+
+没有 Node 时会自动改用 Python 或 Windows 自带的 PowerShell。黑色窗口不要关。
+
+## 怎么玩（本机源码）
 
 ```bash
 cd flash-remake/game
 node server.js
 ```
 
-浏览器打开 http://127.0.0.1:8088/ 。登录页应显示 **v20260817c**。账号随意（默认 `demo`）。
+浏览器打开 http://127.0.0.1:8088/ 。登录页应显示 **v20260817d**。账号随意（默认 `demo`）。
 
 - 左键点地行走，点 NPC 对话，点怪攻击
 - **1–6** 技能，**Z** 挂机，**Q/R** 吃药，**F** 拾取

@@ -1,6 +1,6 @@
 @echo off
 setlocal EnableExtensions
-cd /d "%~dp0game"
+cd /d "%~dp0"
 title DaMing Legend
 echo.
 echo  DaMing Legend - local server

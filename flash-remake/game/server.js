@@ -1,9 +1,11 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const { exec } = require('child_process');
 
 const ROOT = __dirname;
 const PORT = process.env.PORT || 8088;
+const VERSION = '20260817d';
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
@@ -14,18 +16,15 @@ const TYPES = {
   '.jpeg': 'image/jpeg',
   '.gif': 'image/gif',
   '.svg': 'image/svg+xml',
-  '.ico': 'image/x-icon'
+  '.ico': 'image/x-icon',
+  '.txt': 'text/plain; charset=utf-8'
 };
 
 const server = http.createServer((req, res) => {
   const url = decodeURIComponent((req.url || '/').split('?')[0]);
-  let rel = url === '/' ? '/index.html' : url;
-  if (rel === '/catalog.json') {
-    rel = '/../catalog/catalog.json';
-  }
+  const rel = url === '/' ? '/index.html' : url;
   const file = path.normalize(path.join(ROOT, rel.replace(/^\/+/, '')));
-  const allowed = file.startsWith(ROOT) || file.startsWith(path.join(ROOT, '..', 'catalog'));
-  if (!allowed) {
+  if (!file.startsWith(ROOT)) {
     res.writeHead(403);
     res.end('forbidden');
     return;
@@ -41,6 +40,16 @@ const server = http.createServer((req, res) => {
   });
 });
 
-server.listen(PORT, '0.0.0.0', () => {
-  console.log('大明传说  http://127.0.0.1:' + PORT + '/');
+server.listen(PORT, '127.0.0.1', () => {
+  const url = 'http://127.0.0.1:' + PORT + '/';
+  console.log('DaMing Legend v' + VERSION);
+  console.log(url);
+  if (process.env.OPEN_BROWSER !== '0') {
+    const cmd = process.platform === 'win32'
+      ? 'cmd /c start "" "' + url + '"'
+      : process.platform === 'darwin'
+        ? 'open "' + url + '"'
+        : 'xdg-open "' + url + '"';
+    exec(cmd);
+  }
 });
