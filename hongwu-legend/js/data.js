@@ -427,22 +427,22 @@
   /* 三朝共用城拷，本学习服取洪武。国家地图场景对照原作万历截图，只换朝代前缀。 */
   D.ERA = '洪武';
   D.NATION_NODES = [
-    { id: 'border', name: '边城', left: '14%', top: '10%', tx: 6, ty: 71 },
-    { id: 'xiliang', name: '西凉', left: '16%', top: '40%', tx: 84, ty: 36 },
-    { id: 'taiping', name: '太平村', left: '18%', top: '78%', tx: 50, ty: 68 },
-    { id: 'pingjiang', name: '平江', left: '34%', top: '46%', tx: 58, ty: 52 },
-    { id: 'safe', name: '安全地图', left: '48%', top: '8%', locked: true },
-    { id: 'wild', name: '横涧山', left: '48%', top: '42%', tx: 55, ty: 16 },
-    { id: 'xinghua', name: '杏花岭', left: '78%', top: '12%', tx: 47, ty: 52 },
-    { id: 'capital', name: '京城', left: '70%', top: '40%', tx: 110, ty: 84 },
-    { id: 'boyang', name: '鄱阳湖', left: '78%', top: '76%', tx: 33, ty: 31 }
+    { id: 'border', name: '边城', left: '16%', top: '14%', tx: 6, ty: 71 },
+    { id: 'xiliang', name: '西凉', left: '14%', top: '42%', tx: 84, ty: 36 },
+    { id: 'taiping', name: '太平村', left: '26%', top: '30%', tx: 50, ty: 68 },
+    { id: 'pingjiang', name: '平江', left: '40%', top: '44%', tx: 58, ty: 52 },
+    { id: 'safe', name: '安全地图', left: '56%', top: '36%', locked: true },
+    { id: 'wild', name: '横涧山', left: '30%', top: '66%', tx: 55, ty: 16 },
+    { id: 'xinghua', name: '杏花岭', left: '46%', top: '70%', tx: 47, ty: 52 },
+    { id: 'capital', name: '京城', left: '62%', top: '58%', tx: 110, ty: 84 },
+    { id: 'boyang', name: '鄱阳湖', left: '82%', top: '62%', tx: 33, ty: 31 }
   ];
   D.WORLD_REGIONS = [
-    { id: 'neutral', name: '中立区', left: '22%', top: '18%', go: 'kaifeng' },
-    { id: 'yongle', name: '永乐', left: '72%', top: '18%', locked: true },
-    { id: 'wanli', name: '万历', left: '26%', top: '72%', locked: true },
-    { id: 'hongwu', name: '洪武', left: '70%', top: '70%', tab: 'nation' },
-    { id: 'kaifeng', name: '开封', left: '50%', top: '46%', go: 'kaifeng' }
+    { id: 'neutral', name: '中立区', left: '22%', top: '20%', go: 'kaifeng' },
+    { id: 'yongle', name: '永乐', left: '68%', top: '20%', locked: true },
+    { id: 'wanli', name: '万历', left: '28%', top: '70%', locked: true },
+    { id: 'hongwu', name: '洪武', left: '70%', top: '68%', tab: 'nation' },
+    { id: 'kaifeng', name: '开封', left: '50%', top: '74%', go: 'kaifeng' }
   ];
   D.INSTANCE_WARPS = [
     { id: 'poyang', name: '鄱阳湖大战', tx: 4, ty: 18 },

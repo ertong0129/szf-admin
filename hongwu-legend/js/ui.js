@@ -91,6 +91,8 @@
   H.paintRegionMap = function () {
     var c = document.getElementById('region-canvas');
     if (!c) return;
+    if (c.width !== 446) c.width = 446;
+    if (c.height !== 315) c.height = 315;
     var ctx2 = c.getContext('2d');
     H.paintRadar(ctx2, c.width, c.height, true);
     var cx = document.getElementById('map-cx');
@@ -163,25 +165,11 @@
       }).join('');
     }
     if (list) {
-      var html = nodes.map(function (n) {
+      list.innerHTML = nodes.map(function (n) {
         var cls = 'nation-row' + (G.mapId === n.id ? ' here' : '') + (n.locked ? ' locked' : '');
         return '<button type="button" class="' + cls + '" data-nation-go="' + n.id + '">' +
           era + '-' + n.name + '</button>';
       }).join('');
-      var seen = {};
-      nodes.forEach(function (n) { seen[n.id] = 1; });
-      html += '<h5>其它场景</h5>';
-      (D.WORLD_NODES || []).forEach(function (n) {
-        if (seen[n.id]) return;
-        html += '<button type="button" class="nation-row' + (G.mapId === n.id ? ' here' : '') +
-          '" data-nation-go="' + n.id + '">' + n.name + '</button>';
-      });
-      html += '<h5>副本</h5>';
-      (D.INSTANCE_WARPS || []).forEach(function (n) {
-        html += '<button type="button" class="nation-row' + (G.mapId === n.id ? ' here' : '') +
-          '" data-nation-go="' + n.id + '">' + n.name + '</button>';
-      });
-      list.innerHTML = html;
     }
   }
 
@@ -197,7 +185,12 @@
     }
     var list = document.getElementById('world-list');
     if (list) {
-      var html = '';
+      var html = '<h5>地图</h5>';
+      (D.WORLD_REGIONS || []).forEach(function (n) {
+        var cls = 'nation-row' + (n.locked ? ' locked' : '');
+        html += '<button type="button" class="' + cls + '" data-world-go="' + n.id + '">' + n.name + '</button>';
+      });
+      html += '<h5>全部场景</h5>';
       (D.WORLD_NODES || []).forEach(function (n) {
         html += '<button type="button" class="nation-row' + (G.mapId === n.id ? ' here' : '') +
           '" data-nation-go="' + n.id + '">' + n.name + '</button>';

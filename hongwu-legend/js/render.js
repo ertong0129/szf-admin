@@ -320,21 +320,23 @@
     var radar = window.Art && Art.radarFor ? Art.radarFor(G.mapId) : (window.Art && Art.imgs && Art.imgs.radar);
     var city = !!(radar && Art.imgs && radar !== Art.imgs.radar);
     if (radar) {
-      ctx.globalAlpha = labeled ? (city ? 0.82 : 0.28) : (city ? 0.92 : 0.4);
+      ctx.globalAlpha = labeled ? 1 : (city ? 0.92 : 0.4);
       ctx.drawImage(radar, 0, 0, w, h);
       ctx.globalAlpha = 1;
     }
     if (!G.grid) return;
     var gw = G.grid[0].length, gh = G.grid.length;
     var sx = w / gw, sy = h / gh;
-    for (var y = 0; y < gh; y++) {
-      for (var x = 0; x < gw; x++) {
-        var t = G.grid[y][x];
-        if (t === 'water') ctx.fillStyle = radar ? 'rgba(42,110,150,0.22)' : 'rgba(42,110,150,0.55)';
-        else if (t === 'wall' || t === 'rock' || t === 'house' || t === 'roof') ctx.fillStyle = radar ? 'rgba(20,16,12,0.18)' : 'rgba(20,16,12,0.55)';
-        else if (t === 'tree') ctx.fillStyle = radar ? 'rgba(30,70,40,0.12)' : 'rgba(30,70,40,0.35)';
-        else ctx.fillStyle = radar ? 'rgba(46,90,70,0.06)' : 'rgba(46,90,70,0.22)';
-        ctx.fillRect(x * sx, y * sy, sx + 0.4, sy + 0.4);
+    if (!labeled || !city) {
+      for (var y = 0; y < gh; y++) {
+        for (var x = 0; x < gw; x++) {
+          var t = G.grid[y][x];
+          if (t === 'water') ctx.fillStyle = radar ? 'rgba(42,110,150,0.22)' : 'rgba(42,110,150,0.55)';
+          else if (t === 'wall' || t === 'rock' || t === 'house' || t === 'roof') ctx.fillStyle = radar ? 'rgba(20,16,12,0.18)' : 'rgba(20,16,12,0.55)';
+          else if (t === 'tree') ctx.fillStyle = radar ? 'rgba(30,70,40,0.12)' : 'rgba(30,70,40,0.35)';
+          else ctx.fillStyle = radar ? 'rgba(46,90,70,0.06)' : 'rgba(46,90,70,0.22)';
+          ctx.fillRect(x * sx, y * sy, sx + 0.4, sy + 0.4);
+        }
       }
     }
     if (G.path && G.path.length) {
@@ -349,10 +351,14 @@
       ctx.arc((pt.x + 0.5) * sx, (pt.y + 0.5) * sy, labeled ? 4 : 2, 0, Math.PI * 2);
       ctx.fill();
       if (labeled) {
-        ctx.fillStyle = '#8ad4d6';
-        ctx.font = '11px "Microsoft YaHei",sans-serif';
+        ctx.fillStyle = '#4aa8ff';
+        ctx.font = 'bold 11px "Microsoft YaHei",sans-serif';
         ctx.textAlign = 'left';
-        ctx.fillText(pt.label || ('往' + (pt.to || '传送')), (pt.x + 0.5) * sx + 5, (pt.y + 0.5) * sy);
+        ctx.strokeStyle = '#041014';
+        ctx.lineWidth = 3;
+        var lab = pt.label || ('往' + (pt.to || '传送'));
+        ctx.strokeText(lab, (pt.x + 0.5) * sx + 5, (pt.y + 0.5) * sy);
+        ctx.fillText(lab, (pt.x + 0.5) * sx + 5, (pt.y + 0.5) * sy);
       }
     });
     G.npcs.forEach(function (n) {
@@ -362,8 +368,11 @@
         var mark = (D.MAP_MARK && D.MAP_MARK[n.id]) || '';
         if (mark) {
           ctx.fillStyle = '#ffe7a0';
-          ctx.font = '11px "Microsoft YaHei",sans-serif';
+          ctx.font = 'bold 11px "Microsoft YaHei",sans-serif';
           ctx.textAlign = 'left';
+          ctx.strokeStyle = '#041014';
+          ctx.lineWidth = 3;
+          ctx.strokeText(mark, n.x / TILE * sx + 5, n.y / TILE * sy);
           ctx.fillText(mark, n.x / TILE * sx + 5, n.y / TILE * sy);
         }
       }

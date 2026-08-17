@@ -115,7 +115,7 @@ assert.ok(art.indexOf('A.npcArt') >= 0, 'NPC 贴图应按 npc_data 对照，不�
 });
 
 var serverJs = fs.readFileSync(path.join(root, 'server.js'), 'utf8');
-assert.ok(serverJs.indexOf("VERSION = '20260817a'") >= 0, 'server.js 版本应为 20260817a');
+assert.ok(serverJs.indexOf("VERSION = '20260817b'") >= 0, 'server.js 版本应为 20260817b');
 assert.ok(serverJs.indexOf("require('./js/store.js')") >= 0, 'server.js 应使用本机数据库');
 assert.ok(core.indexOf('localStorage.setItem(SAVE_KEY') < 0, '角色存档不应再写入 localStorage');
 assert.ok(fs.readFileSync(path.join(root, 'js/api.js'), 'utf8').indexOf('localStorage.setItem(TOKEN_KEY') < 0, '登录令牌不应再写入 localStorage');
@@ -145,10 +145,19 @@ assert.ok(play.indexOf('id="play-fit"') >= 0, '局内应有等比适配舞台');
 assert.ok(core.indexOf('H.STAGE_W = 1280') < 0, '不应再用 1280×800 的 transform 缩放');
 assert.ok(core.indexOf('H.fitStage') < 0, '不应再用 transform scale 拉舞台');
 assert.ok(core.indexOf('H.sizeCanvas') >= 0, '画布宽高应与显示尺寸一致，避免拉伸');
-assert.ok(css.indexOf('calc(100vh * 16 / 9)') >= 0, '舞台应按 16:9 真实尺寸适配');
+assert.ok(core.indexOf('68 / 1000') >= 0, '底栏高度应按 skillbar 原比例随舞台宽度');
+assert.ok(core.indexOf('barH + 36') < 0, '底栏不应再加高第二行');
+assert.ok(css.indexOf('calc(100vh * 5 / 3)') >= 0, '舞台应按原作 5:3 真实尺寸适配');
 var playFitCss = css.slice(css.indexOf('.play-fit'), css.indexOf('.stage-frame'));
 assert.ok(playFitCss.indexOf('transform') < 0, 'play-fit 不应 transform scale');
 assert.ok(css.indexOf('left top / 100% 72px') < 0, '底栏切图不应只拉宽度');
-assert.ok(css.indexOf('background-size: 100% auto') >= 0, '底栏切图应保持原比例');
+assert.ok(css.indexOf('background-size: 100% 100%') >= 0, '底栏切图应铺满 68px 比例条');
+assert.ok(css.indexOf('aspect-ratio: 446 / 315') >= 0, '国家/当前地图应按 446×315 原图比例');
+assert.ok(css.indexOf('aspect-ratio: 540 / 315') >= 0, '世界地图应按 540×315 原图比例');
+var worldBgCss = css.slice(css.indexOf('.world-bg img'), css.indexOf('#nation-bg'));
+assert.ok(worldBgCss.indexOf('object-fit: cover') < 0, '地图切图不应 cover 裁切');
+assert.ok(ui.indexOf('其它场景') < 0, '国家地图右侧不应堆其它场景');
+assert.ok(play.indexOf('hud-wallet') >= 0 && play.indexOf('hidden') >= 0, '主界面不应展示元宝银两栏');
+assert.ok(play.indexOf('<span>藏宝阁</span>') < 0, '顶栏活动图标上不要字');
 
 console.log('modules.test.js ok');

@@ -54,9 +54,9 @@
                 <div class="bar hp pet-hp"><i id="pet-hp-fill"></i><span id="pet-hp-text"></span></div>
               </div>
             </div>
+            <button type="button" id="pk-mode" class="pk-mode" title="切换 PK 模式">和平</button>
             <div class="hud-buffs" id="hud-buffs"></div>
-            <div class="hud-wallet">
-              <button type="button" id="pk-mode" class="pk-mode" title="切换 PK 模式">和平</button>
+            <div class="hud-wallet" hidden>
               <span id="energy-line">精力 4000/4000</span>
               <span id="gold-line">元宝 0</span>
               <span id="silver-line">银两 0</span>
@@ -64,15 +64,15 @@
             </div>
           </div>
           <div class="hud-acts" id="hud-acts">
-            <button type="button" data-panel="shop" title="藏宝阁"><img src="assets/ingame/viewui/act-box.png" alt="" /><span>藏宝阁</span></button>
-            <button type="button" data-panel="help" title="天星罗盘"><img src="assets/ingame/viewui/compass-start.jpg" alt="" /><span>罗盘</span></button>
-            <button type="button" data-panel="quest" title="运镖"><img src="assets/ingame/viewui/act-biao.png" alt="" /><span>运镖</span></button>
-            <button type="button" data-panel="daily" title="缤纷活动"><img src="assets/ingame/viewui/act-gift.png" alt="" /><span>活动</span></button>
-            <button type="button" data-panel="vip" title="每日累充"><img src="assets/ingame/viewui/act-recharge.png" alt="" /><span>累充</span></button>
-            <button type="button" data-panel="achieve" title="传奇图鉴"><img src="assets/ingame/title/goal.png" alt="" /><span>图鉴</span></button>
-            <button type="button" data-panel="rank" title="封神台"><img src="assets/ingame/title/rank.png" alt="" /><span>封神</span></button>
-            <button type="button" data-act="pagoda" title="开封铁塔"><img src="assets/ingame/viewui/act-chest.png" alt="" /><span>铁塔</span></button>
-            <button type="button" data-act="tower" title="天下英雄"><img src="assets/ingame/viewui/act-biao-gold.png" alt="" /><span>英雄</span></button>
+            <button type="button" data-panel="shop" title="藏宝阁"><img src="assets/ingame/viewui/act-box.png" alt="" /></button>
+            <button type="button" data-panel="help" title="天星罗盘"><img src="assets/ingame/viewui/compass-start.jpg" alt="" /></button>
+            <button type="button" data-panel="quest" title="运镖"><img src="assets/ingame/viewui/act-biao.png" alt="" /></button>
+            <button type="button" data-panel="daily" title="缤纷活动"><img src="assets/ingame/viewui/act-gift.png" alt="" /></button>
+            <button type="button" data-panel="vip" title="每日累充"><img src="assets/ingame/viewui/act-recharge.png" alt="" /></button>
+            <button type="button" data-panel="achieve" title="传奇图鉴"><img src="assets/ingame/title/goal.png" alt="" /></button>
+            <button type="button" data-panel="rank" title="封神台"><img src="assets/ingame/title/rank.png" alt="" /></button>
+            <button type="button" data-act="pagoda" title="开封铁塔"><img src="assets/ingame/viewui/act-chest.png" alt="" /></button>
+            <button type="button" data-act="tower" title="天下英雄"><img src="assets/ingame/viewui/act-biao-gold.png" alt="" /></button>
           </div>
           <div id="auto-banner" hidden title="自动打怪中"></div>
           <div id="target-frame" hidden>
@@ -211,7 +211,7 @@
           </div>
           <div id="map-current" class="map-pane">
             <div class="map-view">
-              <canvas id="region-canvas" width="640" height="420"></canvas>
+              <canvas id="region-canvas" width="446" height="315"></canvas>
               <div id="map-cursor">[0,0]</div>
             </div>
             <div class="map-side">
@@ -247,7 +247,6 @@
               <div id="world-pins"></div>
             </div>
             <div class="map-side">
-              <h5>全部场景</h5>
               <div id="world-list"></div>
             </div>
           </div>

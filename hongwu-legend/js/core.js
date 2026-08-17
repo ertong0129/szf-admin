@@ -130,16 +130,13 @@
     var fit = document.getElementById('play-fit');
     var dock = fit && fit.querySelector('.dock');
     if (fit && dock) {
-      var barH = Math.round(68 * fit.clientWidth / 978);
-      dock.style.height = Math.max(104, barH + 36) + 'px';
-      var shop = dock.querySelector('.shop-btn');
-      if (shop) shop.style.height = barH + 'px';
+      dock.style.height = Math.max(52, Math.round(fit.clientWidth * 68 / 1000)) + 'px';
     }
     var host = canvas.parentElement || canvas;
     var w = host.clientWidth | 0;
     var h = host.clientHeight | 0;
-    if (w < 2) w = 960;
-    if (h < 2) h = 540;
+    if (w < 2) w = 1000;
+    if (h < 2) h = 532;
     H.sizeCanvas(canvas, w, h);
     H.sizeCanvas(canvas3d, w, h);
     if (window.World3D) World3D.resize();

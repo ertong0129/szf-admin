@@ -56,6 +56,8 @@ D.INSTANCE_WARPS.forEach(function (n) {
   assert.ok(D.MAP_META[n.id], 'INSTANCE_WARPS 应对应已有地图 ' + n.id);
 });
 assert.strictEqual(D.ERA, '洪武');
+assert.strictEqual(D.NATION_NODES.length, 9);
+assert.ok(D.NATION_NODES.every(function (n) { return n.name !== '神农架'; }), '神农架不是国家图九城');
 assert.ok(D.NATION_NODES.some(function (n) { return n.id === 'capital' && n.name === '京城'; }));
 assert.ok(D.NATION_NODES.some(function (n) { return n.id === 'safe' && n.locked; }));
 assert.ok(D.WORLD_REGIONS.some(function (n) { return n.name === '开封'; }));
