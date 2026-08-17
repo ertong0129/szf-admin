@@ -27,6 +27,7 @@ html, body {
   color: var(--text);
   font-family: "Songti SC", "STSong", "Noto Serif SC", "Source Han Serif SC", "SimSun", serif;
   user-select: none;
+  cursor: url('../assets/ingame/ui/cursor-hand.png') 4 2, default;
 }
 
 #app { width: 100%; height: 100%; position: relative; }
@@ -767,6 +768,11 @@ html, body {
   display: block;
   filter: drop-shadow(0 1px 2px #000);
 }
+.dock-menu img[src*="title/"] {
+  height: 20px;
+  max-width: 58px;
+  margin-top: 14px;
+}
 .dock-menu button, .dock-menu a {
   padding: 0 2px;
   min-width: 0;
@@ -795,6 +801,16 @@ html, body {
   font-family: inherit;
   font-size: 12px;
   cursor: pointer;
+  padding: 0;
+  overflow: hidden;
+}
+.dock-quick img {
+  height: 18px;
+  width: auto;
+  max-width: 26px;
+  display: block;
+  margin: 0 auto;
+  object-fit: contain;
 }
 .dock-quick button:hover { filter: brightness(1.2); }
 .dock-utils {
@@ -832,6 +848,15 @@ html, body {
   box-shadow: 0 0 16px rgba(200, 48, 40, 0.55);
 }
 .hud-frame .bar { height: 10px; margin-bottom: 4px; border-radius: 4px; }
+.skill-slot .skill-ico, .util-slot .skill-ico {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  display: block;
+  margin: 10px auto 0;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
 .skill-slot .name, .util-slot .name {
   position: absolute;
   bottom: 2px;
@@ -861,6 +886,9 @@ html, body {
 }
 .skill-slot.locked { opacity: 0.35; }
 .auto-on { box-shadow: 0 0 0 2px #6fdf7a; }
+.dock-menu button.unread img {
+  filter: drop-shadow(0 0 4px #ffd36a) brightness(1.25);
+}
 
 .panel {
   position: absolute;
@@ -895,7 +923,8 @@ html, body {
 }
 #panel-forge.open {
   background:
-    linear-gradient(180deg, rgba(8, 22, 24, 0.82), rgba(8, 16, 18, 0.92)),
+    linear-gradient(180deg, rgba(8, 22, 24, 0.78), rgba(8, 16, 18, 0.9)),
+    url('../assets/ingame/ui/tiangong.jpg') center/cover,
     url('../assets/ingame/ui/forge.jpg') center/cover;
 }
 .panel h3 {
@@ -926,7 +955,8 @@ html, body {
   min-height: 160px;
   padding: 10px 8px;
   background:
-    linear-gradient(180deg, rgba(8, 16, 18, 0.72), rgba(8, 16, 18, 0.88)),
+    linear-gradient(180deg, rgba(8, 16, 18, 0.62), rgba(8, 16, 18, 0.88)),
+    url('../assets/ingame/petui/rongheBg.png') right 8px top 8px / 220px auto no-repeat,
     url('../assets/ingame/petui/cw_di.jpg') center / cover;
 }
 .pet-wuxing {
@@ -934,6 +964,18 @@ html, body {
   width: 88px;
   height: auto;
   margin: 8px 0;
+}
+.pet-heti {
+  height: 28px;
+  width: auto;
+  margin: 0 8px 8px 0;
+  vertical-align: middle;
+}
+.forge-tag {
+  height: 16px;
+  width: auto;
+  vertical-align: middle;
+  margin-right: 6px;
 }
 .poyang-diff {
   display: inline-flex;
@@ -987,7 +1029,7 @@ html, body {
   width: 52px;
   height: 52px;
   border: 1px solid rgba(212, 175, 55, 0.25);
-  background: #16100b;
+  background: #16100b url('../assets/ingame/ui/pack-item-bg.png') center / 44px 44px no-repeat;
   padding: 2px;
   font-size: 11px;
   cursor: pointer;

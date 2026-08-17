@@ -235,6 +235,7 @@
           '　训练星 ' + (p.pet.star || 0) + '　技能 ' + (p.pet.skills || 0) + '</p>' +
           '<p style="color:#b8a57a;margin:8px 0">出战随行。洗灵重掷资质，提悟提升生命倍率，训练牌升星。</p>' +
           '<img class="pet-wuxing" src="assets/ingame/petui/wu_xing.png" alt="五行" />' +
+          '<img class="pet-heti" src="assets/ingame/petui/heti.png" alt="" />' +
           '<button class="btn" id="btn-feed">喂食口粮</button> ' +
           '<button class="btn ghost" data-pet-wash="1">洗灵</button> ' +
           '<button class="btn ghost" data-pet-insight="1">提悟</button> ' +
@@ -243,7 +244,7 @@
         : '<p>尚未结缘。前往神农谷击败山魈，有机会收服灵宠。</p>');
     } else if (id === 'forge') {
       document.getElementById('panel-forge').innerHTML = H.header('百工炉', 'forge') +
-        '<p style="color:#b8a57a;margin-bottom:8px">强化石 ' + H.countItem(p, 'stone') +
+        '<p style="color:#b8a57a;margin-bottom:8px"><img class="forge-tag" src="assets/ingame/ui/qianghua.png" alt="强化" /> 强化石 ' + H.countItem(p, 'stone') +
         '　开孔符 ' + H.countItem(p, 'socket') + '　银两 ' + (p.silver || 0) +
         ' / 绑定 ' + (p.bindSilver || 0) + '</p>' +
         '<div class="equip-list">' + D.SLOTS.map(function (s) {

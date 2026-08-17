@@ -42,6 +42,17 @@
       quanZhou: 'assets/ingame/map/quan_zhou.jpg',
       zheDong: 'assets/ingame/map/zhe_dong.jpg',
       xiLiang: 'assets/ingame/map/xi_liang.jpg',
+      taiPing: 'assets/ingame/map/xin_shou_cun.png',
+      hengJian: 'assets/ingame/map/heng_jian_shan.png',
+      shenNong: 'assets/ingame/map/shen_nong_jia.png',
+      poYang: 'assets/ingame/map/po_yang_hu.png',
+      xingHua: 'assets/ingame/map/xing_hua_ling.png',
+      anNan: 'assets/ingame/map/an_nan.png',
+      daMo: 'assets/ingame/map/da_mo.png',
+      tuMu: 'assets/ingame/map/tu_mu_bao.png',
+      jingJi: 'assets/ingame/map/jing_ji_chang.png',
+      bottle: 'assets/ingame/ui/bottle.png',
+      incense: 'assets/ingame/sprites/incense.png',
       dmgRed: 'assets/ingame/viewui/dmg-red.png',
       dmgGold: 'assets/ingame/viewui/dmg-gold.png',
       roleBg: 'assets/ingame/ui/rolebg.png',
@@ -100,6 +111,9 @@
     Object.keys(items).forEach(function (id) {
       var stem = items[id];
       if (stem) add('item_' + stem, 'assets/ingame/items/' + stem + '.png');
+    });
+    ['dao', 'gong', 'shan', 'zhan', 'hongyao', 'lanyao', 'baoguo', 'lingzhi'].forEach(function (stem) {
+      add('item_' + stem, 'assets/ingame/items/' + stem + '.png');
     });
   })();
 
@@ -247,13 +261,33 @@
     return k && A.src[k] ? A.src[k] : A.src.iconCun;
   };
 
+  var WEAPON_STEM = { warrior: 'dao', archer: 'gong', wanderer: 'shan', healer: 'zhan' };
+
+  A.weaponClass = function (it) {
+    if (!it) return '';
+    if (it.cls && WEAPON_STEM[it.cls]) return it.cls;
+    var D = root.GameData;
+    var names = D && D.EQUIP_NAMES && D.EQUIP_NAMES.weapon;
+    if (!names || !it.name) return '';
+    var cls, arr;
+    for (cls in names) {
+      if (!Object.prototype.hasOwnProperty.call(names, cls)) continue;
+      arr = names[cls];
+      if (arr && arr.indexOf(it.name) >= 0) return cls;
+    }
+    return '';
+  };
+
   A.itemStem = function (it) {
     if (!it) return '';
     var D = root.GameData;
     var art = (D && D.ITEM_ART) || {};
     if (it.id && art[it.id]) return art[it.id];
+    if (it.type === 'equip' && it.slot === 'weapon') {
+      return WEAPON_STEM[A.weaponClass(it)] || art.slot_weapon || 'dao';
+    }
     if (it.type === 'equip' && it.slot && art['slot_' + it.slot]) return art['slot_' + it.slot];
-    if (it.type === 'gem') return art.gem || 'putidan';
+    if (it.type === 'gem') return art.gem || 'lingshi';
     if (it.type === 'mount') return art.mount_token || 'zuoqitisupai';
     return '';
   };
@@ -294,7 +328,17 @@
     pingjiang: 'pingJiang',
     quanzhou: 'quanZhou',
     zhedong: 'zheDong',
-    xiliang: 'xiLiang'
+    xiliang: 'xiLiang',
+    taiping: 'taiPing',
+    wild: 'hengJian',
+    shennong: 'shenNong',
+    boyang: 'poYang',
+    poyang: 'poYang',
+    xinghua: 'xingHua',
+    annan: 'anNan',
+    desert: 'daMo',
+    tumu: 'tuMu',
+    arena: 'jingJi'
   };
 
   A.radarFor = function (mapId) {

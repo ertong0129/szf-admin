@@ -23,7 +23,10 @@
     capital: { w: 140, h: 130 }
   };
 
-  D.CITY_GROUND = { capital: 1, kaifeng: 1, pingjiang: 1, xiliang: 1, quanzhou: 1, zhedong: 1 };
+  D.CITY_GROUND = {
+    capital: 1, kaifeng: 1, pingjiang: 1, xiliang: 1, quanzhou: 1, zhedong: 1,
+    taiping: 1, wild: 1, shennong: 1, boyang: 1, xinghua: 1, annan: 1, desert: 1, tumu: 1
+  };
 
   D.CAPITAL_LAND = {
     chefu: [108, 84],

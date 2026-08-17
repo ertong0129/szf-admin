@@ -383,10 +383,10 @@
       fogCol = 0x4a6e88; fogD = 0.02;
     } else if (mapId === 'tower') {
       fogCol = 0x2a1838; fogD = 0.028;
-    } else if (cityFog[mapId]) {
-      fogCol = 0xa8bcc0; fogD = mapId === 'capital' ? 0.006 : 0.011;
     } else if (mapId === 'desert' || mapId === 'tumu' || mapId === 'xiliang') {
       fogCol = 0xc4a070; fogD = 0.016;
+    } else if (cityFog[mapId]) {
+      fogCol = 0xa8bcc0; fogD = mapId === 'capital' ? 0.006 : 0.011;
     }
     scene.background = new THREE.Color(fogCol);
     scene.fog = new THREE.FogExp2(fogCol, fogD);

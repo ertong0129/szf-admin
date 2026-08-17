@@ -287,7 +287,7 @@
     if (slot === 'weapon' && cls === 'healer') { st.matk = Math.floor(st.matk * 1.1); st.patk = Math.floor(st.patk * 0.4); }
     return {
       uid: H.uid(), type: 'equip', slot: slot, name: nm, rarity: rarity, level: level,
-      stars: 0, sockets: 0, gems: [], stats: st, bind: false
+      stars: 0, sockets: 0, gems: [], stats: st, bind: false, cls: slot === 'weapon' ? cls : undefined
     };
   }
 

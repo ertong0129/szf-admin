@@ -60,12 +60,14 @@ assert.ok(play.indexOf('class="hud-frame"') >= 0, 'play.html 应有原作人物�
 assert.ok(play.indexOf('id="hud-lv"') >= 0, '人物框应显示等级');
 assert.ok(play.indexOf('id="hud-pet"') >= 0, '左上应有宠物条');
 assert.ok(play.indexOf('class="hud-acts"') >= 0, '顶栏应有活动图标');
-assert.ok(play.indexOf('class="dock-menu') >= 0, '底栏应有系统菜单');
+assert.ok(play.indexOf('assets/ingame/title/letter.png') >= 0, '底栏信件应使用原作金标');
+assert.ok(play.indexOf('assets/ingame/title/skill.png') >= 0, '底栏技能应使用原作金标');
 assert.ok(play.indexOf('class="minimap-ring"') >= 0, '小地图应有原作圆框层');
 assert.ok(css.indexOf('border-radius: 50%') >= 0, '小地图应为圆形');
 
 var art = fs.readFileSync(path.join(root, 'js/art.js'), 'utf8');
-assert.ok(art.indexOf("jingCheng: 'assets/ingame/map/jing_cheng.jpg'") >= 0);
+assert.ok(art.indexOf("taiPing: 'assets/ingame/map/xin_shou_cun.png'") >= 0, '太平村应铺原作新手村俯视图');
+assert.ok(art.indexOf('WEAPON_STEM') >= 0 || art.indexOf("warrior: 'dao'") >= 0, '武器图标应按职业用原作掉落图');
 assert.ok(art.indexOf('A.radarFor') >= 0, '小地图应按场景换原作俯视图');
 assert.ok(art.indexOf('A.cityRadar') >= 0, '城镇地面应能叠公开小地图');
 assert.ok(art.indexOf('A.drawDamage') >= 0, '伤害飘字应使用原作数字切图');
@@ -84,6 +86,9 @@ assert.ok(art.indexOf('A.npcArt') >= 0, 'NPC 贴图应按 npc_data 对照，不�
   'assets/ingame/viewui/shop-lady.png',
   'assets/ingame/map/jing_cheng.jpg',
   'assets/ingame/map/kai_feng.jpg',
+  'assets/ingame/map/xin_shou_cun.png',
+  'assets/ingame/map/heng_jian_shan.png',
+  'assets/ingame/map/po_yang_hu.png',
   'assets/ingame/ui/jiaosebg.png',
   'assets/ingame/npc-stand/job_21.png',
   'assets/ingame/npc-stand/job_71.png',
@@ -91,13 +96,16 @@ assert.ok(art.indexOf('A.npcArt') >= 0, 'NPC 贴图应按 npc_data 对照，不�
   'assets/ingame/portrait/che_fu.png',
   'assets/ingame/items/hongyao2.png',
   'assets/ingame/items/huichengjuan.png',
+  'assets/ingame/items/dao.png',
+  'assets/ingame/items/lingzhi.png',
+  'assets/ingame/title/letter.png',
   'js/npc-art.js'
 ].forEach(function (f) {
   assert.ok(fs.existsSync(path.join(root, f)), 'missing ' + f);
 });
 
 var serverJs = fs.readFileSync(path.join(root, 'server.js'), 'utf8');
-assert.ok(serverJs.indexOf("VERSION = '20260816u'") >= 0, 'server.js 版本应为 20260816u');
+assert.ok(serverJs.indexOf("VERSION = '20260816v'") >= 0, 'server.js 版本应为 20260816v');
 
 function assertWinBat(rel) {
   var buf = fs.readFileSync(path.join(root, rel));

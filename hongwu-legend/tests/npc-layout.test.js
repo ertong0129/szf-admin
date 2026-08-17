@@ -5,6 +5,8 @@ assert.ok(D.MAP_SIZE.taiping.w >= 80 && D.MAP_SIZE.taiping.h >= 115);
 assert.ok(D.MAP_SIZE.wild.w >= 110 && D.MAP_SIZE.shennong.h >= 150);
 assert.ok(D.MAP_SIZE.kaifeng.w >= 160 && D.MAP_SIZE.capital.w >= 140);
 assert.ok(D.CITY_GROUND.capital && D.CITY_GROUND.kaifeng && D.CITY_GROUND.pingjiang);
+assert.ok(D.CITY_GROUND.taiping && D.CITY_GROUND.wild && D.CITY_GROUND.shennong);
+assert.ok(D.CITY_GROUND.boyang && D.CITY_GROUND.desert && D.CITY_GROUND.tumu);
 
 assert.deepStrictEqual(D.NPC_TILES.chefu, [72, 54]);
 assert.deepStrictEqual(D.NPC_TILES.cunzheng, [50, 68]);
@@ -27,6 +29,8 @@ assert.ok(D.NPC_ART.chefu.icon === 'che_fu' && D.NPC_ART.chefu.job === 71);
 assert.ok(D.NPC_ART.cunzheng.icon === 'xs_tai_ping_cun_zhi_shi');
 assert.ok(D.ITEM_ART && D.ITEM_ART.hp1 === 'hongyao2');
 assert.ok(D.ITEM_ART.scroll === 'huichengjuan');
+assert.ok(D.ITEM_ART.slot_weapon === 'dao' && D.ITEM_ART.slot_helm === 'toukui');
+assert.ok(D.ITEM_ART.herb_san === 'lingzhi' && D.ITEM_ART.gem === 'lingshi');
 
 Object.keys(D.NPCS).forEach(function (id) {
   var n = D.NPCS[id];

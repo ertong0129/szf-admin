@@ -88,7 +88,7 @@
       var s = H.worldToScreen(hb.x, hb.y);
       var himg = window.Art && Art.itemImage && Art.itemImage({ id: hb.id });
       if (himg) {
-        ctx.drawImage(himg, s.x - 10, s.y - 18, 20, 20);
+        ctx.drawImage(himg, s.x - 16, s.y - 28, 32, 26);
       } else {
         ctx.fillStyle = '#7dff9a';
         ctx.beginPath(); ctx.arc(s.x, s.y, 4, 0, Math.PI * 2); ctx.fill();
@@ -479,7 +479,8 @@
     var mailBtn = document.querySelector('[data-panel="mail"]');
     if (mailBtn && p.mail) {
       var unread = p.mail.filter(function (m) { return m.unread; }).length;
-      mailBtn.textContent = unread ? '信件(' + unread + ')' : '信件';
+      mailBtn.title = unread ? '信件(' + unread + ')' : '信件';
+      mailBtn.classList.toggle('unread', !!unread);
     }
     var tf = document.getElementById('target-frame');
     if (tf) {
@@ -514,10 +515,10 @@
         '<div class="name">' + sk.name + '</div>' +
         '<div class="cd" hidden></div></div>';
     }).join('');
-    html += '<div class="util-slot" id="slot-hp"><div class="key">7</div><div class="name">金创</div></div>';
-    html += '<div class="util-slot" id="slot-mp"><div class="key">8</div><div class="name">内力</div></div>';
+    html += '<div class="util-slot" id="slot-hp"><img class="skill-ico" src="assets/ingame/items/hongyao2.png" alt="金创" /><div class="key">7</div></div>';
+    html += '<div class="util-slot" id="slot-mp"><img class="skill-ico" src="assets/ingame/ui/bottle.png" alt="内力" /><div class="key">8</div></div>';
     html += '<div class="util-slot" id="slot-auto"><div class="key">Z</div><div class="name">挂机</div></div>';
-    html += '<div class="util-slot" id="slot-pick"><div class="key">空格</div><div class="name">拾取</div></div>';
+    html += '<div class="util-slot" id="slot-pick"><img class="skill-ico" src="assets/ingame/items/baoguo.png" alt="拾取" /><div class="key">空格</div></div>';
     box.innerHTML = html;
   }
 

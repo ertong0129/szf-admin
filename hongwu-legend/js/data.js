@@ -717,7 +717,7 @@
     '世界 BOSS：每日出现在浙东或泉州。U 日常可看位置、伤害榜。第一刀/最后一刀/排名 1·2·3·5·8·11·15·19 可领奖；最后一刀所在阵营为归属国。',
     'L 信件，Y 传奇目标，O 排行，U 日常，I 明朝贵族。除恶令、天降异宝、活跃度在日常面板。宠物可洗灵/提悟/训练。',
     '元宝、银两、道具均分不绑定与绑定。优先消耗绑定银两与绑定道具。商店购得绑定；任务/日常奖绑定银两与绑定道具；打怪掉落不绑定。绑定物不能交易、摆摊。穿装备与坐骑装备后绑定。钱庄兑元宝用不绑定银两。',
-    '各图 NPC 格子对照公开 pos.txt / npc_data（洪武 11xxx、开封 10200）。京城明军水兵 [124,63]、车夫 [110,83]；太平村车夫 [72,54]、村长 [50,68]；边城蓝玉 [2,71]；开封朱橚 [24,70]。城图铺公开俯视图，不摆假房子。',
+    '各图 NPC 格子对照公开 pos.txt / npc_data（洪武 11xxx、开封 10200）。京城明军水兵 [124,63]、车夫 [110,83]；太平村车夫 [72,54]、村长 [50,68]；边城蓝玉 [2,71]；开封朱橚 [24,70]。城野铺公开俯视图：太平村、横涧山、神农架、鄱阳湖、杏花岭、安南、大漠、土木堡与六座城图。',
     '太平村与京城篝火旁打坐饮酒加经验。野外死亡可回村或原地健康复活（耗银）。资料对照 MingGame.swf 与 91wan。'
   ];
 
@@ -725,7 +725,7 @@
     char: 'title/role.png', bag: 'title/package.png', skills: 'title/skill.png',
     pet: 'title/pet.png', forge: 'title/tglp.png', quest: 'title/goal.png',
     social: 'title/family.png', help: 'title/setting.png', shop: 'title/market.png',
-    mail: 'title/setting.png', achieve: 'title/goal.png', rank: 'title/rank.png',
+    mail: 'title/letter.png', achieve: 'title/goal.png', rank: 'title/rank.png',
     daily: 'title/Activity.png', warehouse: 'title/package.png',
     vip: 'title/DailyRecharge.png'
   };
