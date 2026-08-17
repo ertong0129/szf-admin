@@ -1,72 +1,27 @@
 /**
  * 大明传说本地服务端（无需 npm 依赖）
- * 提供静态资源、账号、选服存档、附近聊天。
+ * 提供静态资源、账号、选服存档（本机 SQLite，以后可换 MySQL）、附近聊天。
  */
 var http = require('http');
 var fs = require('fs');
 var path = require('path');
 var url = require('url');
 var os = require('os');
-var crypto = require('crypto');
 var { exec } = require('child_process');
 
 var ROOT = path.resolve(__dirname);
-var DATA = path.join(ROOT, 'data');
 var PORT = parseInt(process.env.PORT || '8088', 10);
-var STORE = path.join(DATA, 'store.json');
-var VERSION = '20260816v';
+var VERSION = '20260816w';
 var WorldHub = require('./js/worldhub.js');
 var GameData = require('./js/data.js');
 var Formulas = require('./js/formulas.js');
 var BossLogic = require('./js/bosses.js');
+var Store = require('./js/store.js');
 var HOST = process.env.HOST || '0.0.0.0';
+var store = Store.open();
 
 function hash(s) {
-  return crypto.createHash('sha256').update(String(s)).digest('hex');
-}
-
-function defaultStore() {
-  return {
-    users: {
-      demo: { pass: hash('123456'), roles: {}, created: Date.now() }
-    },
-    tokens: {},
-    chat: [{ who: '系统', text: '欢迎来到大明传说。测试号 demo / 123456', t: Date.now() }],
-    social: { friends: {}, clans: {}, clanOf: {} },
-    bosses: { field: {}, world: null }
-  };
-}
-
-function ensure() {
-  try {
-    if (!fs.existsSync(DATA)) fs.mkdirSync(DATA, { recursive: true });
-    if (!fs.existsSync(STORE)) fs.writeFileSync(STORE, JSON.stringify(defaultStore(), null, 2));
-  } catch (e) {
-    DATA = path.join(os.tmpdir(), 'hongwu-legend-data');
-    STORE = path.join(DATA, 'store.json');
-    if (!fs.existsSync(DATA)) fs.mkdirSync(DATA, { recursive: true });
-    if (!fs.existsSync(STORE)) fs.writeFileSync(STORE, JSON.stringify(defaultStore(), null, 2));
-    console.log('存档改写到临时目录 ' + DATA);
-  }
-}
-
-function load() {
-  ensure();
-  try {
-    return JSON.parse(fs.readFileSync(STORE, 'utf8'));
-  } catch (e) {
-    var db = defaultStore();
-    save(db);
-    return db;
-  }
-}
-
-function save(db) {
-  try {
-    fs.writeFileSync(STORE, JSON.stringify(db, null, 2));
-  } catch (e) {
-    console.error('存档失败：', e && e.message ? e.message : e);
-  }
+  return Store.hash(s);
 }
 
 function isPipeErr(err) {
@@ -103,11 +58,8 @@ function readBody(req, cb) {
   });
 }
 
-function userOf(req, db) {
-  var token = req.headers['x-token'] || '';
-  var name = db.tokens[token];
-  if (!name || !db.users[name]) return null;
-  return name;
+function userOf(req) {
+  return store.userByToken(req.headers['x-token'] || '');
 }
 
 var MIME = {
@@ -186,15 +138,12 @@ function serveStatic(req, res, pathname) {
 
 var hub = WorldHub.create({
   persist: function (social) {
-    var db = load();
-    db.social = social;
-    save(db);
+    store.setKv('social', social || {});
   }
 });
 (function bootSocial() {
   try {
-    var db = load();
-    hub.loadSocial(db.social || {});
+    hub.loadSocial(store.getKv('social') || {});
   } catch (e) { /* ignore */ }
 })();
 
@@ -240,7 +189,7 @@ function handleRequest(req, res) {
   var p = u.pathname || '/';
 
   if (p === '/api/ping') {
-    return json(res, 200, { ok: true, v: VERSION, lan: true, ips: lanIps() });
+    return json(res, 200, { ok: true, v: VERSION, lan: true, ips: lanIps(), store: store.driver });
   }
 
   if (p === '/api/register' && req.method === 'POST') {
@@ -250,13 +199,9 @@ function handleRequest(req, res) {
         var pass = String(b.pass || '');
         if (!/^[A-Za-z0-9_\u4e00-\u9fa5]{2,16}$/.test(user)) return json(res, 400, { error: '账号需 2-16 位' });
         if (pass.length < 4) return json(res, 400, { error: '密码至少 4 位' });
-        var db = load();
-        if (db.users[user]) return json(res, 400, { error: '账号已存在' });
-        db.users[user] = { pass: hash(pass), roles: {}, created: Date.now() };
-        var token = crypto.randomBytes(16).toString('hex');
-        db.tokens[token] = user;
-        save(db);
-        json(res, 200, { token: token, user: user });
+        if (store.getUser(user)) return json(res, 400, { error: '账号已存在' });
+        store.createUser(user, hash(pass));
+        json(res, 200, { token: store.issueToken(user), user: user });
       } catch (e) {
         console.error('注册失败：', e && e.stack ? e.stack : e);
         json(res, 500, { error: '服务器内部错误' });
@@ -267,14 +212,10 @@ function handleRequest(req, res) {
   if (p === '/api/login' && req.method === 'POST') {
     return readBody(req, function (b) {
       try {
-        var db = load();
         var user = String(b.user || '').trim();
-        var rec = db.users[user];
+        var rec = store.getUser(user);
         if (!rec || rec.pass !== hash(String(b.pass || ''))) return json(res, 400, { error: '账号或密码错误' });
-        var token = crypto.randomBytes(16).toString('hex');
-        db.tokens[token] = user;
-        save(db);
-        json(res, 200, { token: token, user: user });
+        json(res, 200, { token: store.issueToken(user), user: user });
       } catch (e) {
         console.error('登录失败：', e && e.stack ? e.stack : e);
         json(res, 500, { error: '服务器内部错误' });
@@ -285,23 +226,19 @@ function handleRequest(req, res) {
   if (p === '/api/servers') return json(res, 200, { servers: SERVERS });
 
   if (p === '/api/role' && req.method === 'GET') {
-    var db = load();
-    var name = userOf(req, db);
+    var name = userOf(req);
     if (!name) return json(res, 401, { error: '请先登录' });
     var sid = String(u.query.server || 's1');
-    return json(res, 200, { role: db.users[name].roles[sid] || null });
+    return json(res, 200, { role: store.getRole(name, sid) || null });
   }
 
   if (p === '/api/role' && req.method === 'POST') {
     return readBody(req, function (b) {
       try {
-        var db = load();
-        var name = userOf(req, db);
+        var name = userOf(req);
         if (!name) return json(res, 401, { error: '请先登录' });
         var sid = String(b.server || 's1');
-        if (!db.users[name].roles) db.users[name].roles = {};
-        db.users[name].roles[sid] = b.payload || null;
-        save(db);
+        store.setRole(name, sid, b.payload || null);
         json(res, 200, { ok: true });
       } catch (e) {
         console.error('存档失败：', e && e.stack ? e.stack : e);
@@ -311,46 +248,39 @@ function handleRequest(req, res) {
   }
 
   if (p === '/api/chat' && req.method === 'GET') {
-    var dbc = load();
-    return json(res, 200, { lines: (dbc.chat || []).slice(-40) });
+    return json(res, 200, { lines: store.listChat(40) });
   }
 
   if (p === '/api/chat' && req.method === 'POST') {
     return readBody(req, function (b) {
-      var db = load();
-      var name = userOf(req, db) || '过客';
+      var name = userOf(req) || '过客';
       var text = String(b.text || '').slice(0, 80);
       if (!text) return json(res, 400, { error: '空消息' });
-      db.chat = db.chat || [];
-      db.chat.push({ who: name, text: text, t: Date.now() });
-      if (db.chat.length > 80) db.chat = db.chat.slice(-80);
-      save(db);
+      store.addChat(name, text);
       json(res, 200, { ok: true });
     });
   }
 
   if (p === '/api/bosses' && req.method === 'GET') {
-    var dbb = load();
-    dbb.bosses = BossLogic.ensureWorld(dbb.bosses || { field: {}, world: null }, GameData, Formulas);
-    save(dbb);
-    return json(res, 200, { bosses: dbb.bosses });
+    var bosses = BossLogic.ensureWorld(store.getKv('bosses') || { field: {}, world: null }, GameData, Formulas);
+    store.setKv('bosses', bosses);
+    return json(res, 200, { bosses: bosses });
   }
 
   if (p === '/api/bosses' && req.method === 'POST') {
     return readBody(req, function (b) {
-      var db = load();
-      var name = userOf(req, db) || String(b.name || '').trim();
-      db.bosses = BossLogic.ensureWorld(db.bosses || { field: {}, world: null }, GameData, Formulas);
+      var name = userOf(req) || String(b.name || '').trim();
+      var bosses = BossLogic.ensureWorld(store.getKv('bosses') || { field: {}, world: null }, GameData, Formulas);
       var op = String(b.op || '');
       if (op === 'field_kill' && b.id) {
-        BossLogic.markFieldDead(db.bosses, String(b.id));
-        save(db);
-        return json(res, 200, { ok: true, bosses: db.bosses });
+        BossLogic.markFieldDead(bosses, String(b.id));
+        store.setKv('bosses', bosses);
+        return json(res, 200, { ok: true, bosses: bosses });
       }
       if (op === 'world_hit') {
-        var hit = BossLogic.hitWorld(db.bosses, name || '过客', b.dmg, b.nation || 'ming');
-        save(db);
-        return json(res, 200, { ok: hit.ok, world: db.bosses.world, killed: hit.killed });
+        var hit = BossLogic.hitWorld(bosses, name || '过客', b.dmg, b.nation || 'ming');
+        store.setKv('bosses', bosses);
+        return json(res, 200, { ok: hit.ok, world: bosses.world, killed: hit.killed });
       }
       return json(res, 400, { error: '未知操作' });
     });
@@ -358,8 +288,7 @@ function handleRequest(req, res) {
 
   if (p === '/api/world' && req.method === 'POST') {
     return readBody(req, function (b) {
-      var db = load();
-      var name = userOf(req, db);
+      var name = userOf(req);
       if (!name) return json(res, 401, { error: '请先登录' });
       var sid = sidOf(req, u, b);
       json(res, 200, hub.upsert(sid, name, b || {}));
@@ -367,16 +296,14 @@ function handleRequest(req, res) {
   }
 
   if (p === '/api/world' && req.method === 'GET') {
-    var dbw = load();
-    var nw = userOf(req, dbw);
+    var nw = userOf(req);
     if (!nw) return json(res, 401, { error: '请先登录' });
     return json(res, 200, hub.snapshot(sidOf(req, u, null), nw));
   }
 
   if (p === '/api/social' && req.method === 'POST') {
     return readBody(req, function (b) {
-      var db = load();
-      var name = userOf(req, db);
+      var name = userOf(req);
       if (!name) return json(res, 401, { error: '请先登录' });
       var sid = sidOf(req, u, b);
       var out = hub.social(sid, name, String(b.op || ''), b);
@@ -437,6 +364,7 @@ function tryListen(port, last) {
     });
     console.log('朋友用同一局域网地址，各自注册账号后选同一服务器。');
     console.log('版本 ' + VERSION);
+    console.log('本机数据库 ' + store.driver + '  ' + store.file);
     console.log('测试账号 demo / 123456');
     console.log('关闭本窗口即停止服务。');
     setTimeout(function () { openBrowser(href); }, 200);
@@ -447,7 +375,7 @@ function tryListen(port, last) {
 }
 
 if (typeof module !== 'undefined') {
-  module.exports = { safeFile: safeFile, ROOT: ROOT, VERSION: VERSION, hub: hub };
+  module.exports = { safeFile: safeFile, ROOT: ROOT, VERSION: VERSION, hub: hub, store: store };
 }
 
 if (require.main === module) {
@@ -460,6 +388,5 @@ if (require.main === module) {
     if (isPipeErr(err)) return;
     console.error('未处理 Promise（服务继续运行）：', err && err.stack ? err.stack : err);
   });
-  ensure();
   tryListen(PORT);
 }

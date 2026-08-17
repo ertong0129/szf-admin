@@ -14,12 +14,7 @@ have_node() {
   command -v node >/dev/null 2>&1 && node -p "process.versions.node" >/dev/null 2>&1
 }
 
-run_once() {
-  if have_node; then
-    echo "  使用 Node.js $(node -p "process.versions.node")"
-    node server.js
-    return $?
-  fi
+run_py() {
   if command -v python3 >/dev/null 2>&1; then
     echo "  使用 python3"
     python3 -u server.py
@@ -30,11 +25,28 @@ run_once() {
     python -u server.py
     return $?
   fi
-  echo "  没找到 Node.js 或 Python，改为直接打开页面。"
-  echo "  建议先装 Node.js：https://nodejs.org"
-  open "index.html"
-  read -r -p "按回车关闭…"
-  return 0
+  return 2
+}
+
+run_once() {
+  if have_node; then
+    echo "  使用 Node.js $(node -p "process.versions.node")"
+    node server.js
+    code=$?
+    if [ "$code" -eq 0 ]; then
+      return 0
+    fi
+    echo "  Node 未能持久化（需要 22+ 内置 SQLite），改用 Python…"
+  fi
+  run_py
+  py=$?
+  if [ "$py" -eq 2 ]; then
+    echo "  没找到 Node.js 或 Python。"
+    echo "  存档在本机数据库，必须先装 Node.js：https://nodejs.org"
+    read -r -p "按回车关闭…"
+    return 1
+  fi
+  return "$py"
 }
 
 trap 'echo; echo "  已停止服务。"; exit 0' INT TERM

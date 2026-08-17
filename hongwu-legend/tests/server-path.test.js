@@ -1,5 +1,9 @@
 var assert = require('assert');
+var fs = require('fs');
+var os = require('os');
 var path = require('path');
+process.env.HONGWU_DATA = fs.mkdtempSync(path.join(os.tmpdir(), 'hongwu-path-'));
+process.env.OPEN_BROWSER = '0';
 var S = require('../server.js');
 
 var index = S.safeFile('/index.html');

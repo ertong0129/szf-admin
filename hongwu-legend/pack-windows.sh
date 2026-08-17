@@ -7,7 +7,7 @@ ROOT="$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)"
 cd "$ROOT/hongwu-legend"
 
 FILES="
-  index.html play.html server.js server.py package.json
+  index.html play.html server.js server.py store_db.py package.json
   start.bat start.command
   启动游戏.bat 启动游戏.command
   使用说明.txt README.md

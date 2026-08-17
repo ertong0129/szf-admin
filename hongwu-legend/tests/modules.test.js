@@ -99,13 +99,19 @@ assert.ok(art.indexOf('A.npcArt') >= 0, 'NPC 贴图应按 npc_data 对照，不�
   'assets/ingame/items/dao.png',
   'assets/ingame/items/lingzhi.png',
   'assets/ingame/title/letter.png',
-  'js/npc-art.js'
+  'js/npc-art.js',
+  'js/store.js',
+  'js/store-mysql.js',
+  'store_db.py'
 ].forEach(function (f) {
   assert.ok(fs.existsSync(path.join(root, f)), 'missing ' + f);
 });
 
 var serverJs = fs.readFileSync(path.join(root, 'server.js'), 'utf8');
-assert.ok(serverJs.indexOf("VERSION = '20260816v'") >= 0, 'server.js 版本应为 20260816v');
+assert.ok(serverJs.indexOf("VERSION = '20260816w'") >= 0, 'server.js 版本应为 20260816w');
+assert.ok(serverJs.indexOf("require('./js/store.js')") >= 0, 'server.js 应使用本机数据库');
+assert.ok(core.indexOf('localStorage.setItem(SAVE_KEY') < 0, '角色存档不应再写入 localStorage');
+assert.ok(fs.readFileSync(path.join(root, 'js/api.js'), 'utf8').indexOf('localStorage.setItem(TOKEN_KEY') < 0, '登录令牌不应再写入 localStorage');
 
 function assertWinBat(rel) {
   var buf = fs.readFileSync(path.join(root, rel));
@@ -118,5 +124,6 @@ function assertWinBat(rel) {
 assertWinBat('start.bat');
 assertWinBat('启动游戏.bat');
 assert.ok(fs.readFileSync(path.join(root, 'start.bat'), 'utf8').indexOf('node server.js') >= 0);
+assert.ok(fs.readFileSync(path.join(root, 'pack-windows.sh'), 'utf8').indexOf('store_db.py') >= 0, 'Windows 包应带上 Python 数据库模块');
 
 console.log('modules.test.js ok');

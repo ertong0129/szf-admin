@@ -24,7 +24,7 @@
       return '<button class="server-row" data-sid="' + s.id + '"><b>' + s.name +
         '</b><span>' + (s.status || '火爆') + '</span></button>';
     }).join('');
-    return (rows || '<ul><li>没有服务器列表，将使用浏览器存档</li></ul>') +
+    return (rows || '<ul><li>没有服务器列表</li></ul>') +
       (state.err ? '<div class="err">' + state.err + '</div>' : '');
   }
 
@@ -56,10 +56,6 @@
       paint();
     }).catch(function (e) {
       state.err = e.message || String(e);
-      if (!reg) {
-        location.href = 'play.html?server=s1';
-        return;
-      }
       paint();
     });
   }
@@ -77,6 +73,6 @@
 
   paint();
   API.probe().then(function (ok) {
-    note(ok ? ('已连接本地服务端 ' + (API.ver ? 'v' + API.ver + '　' : '') + '测试号 demo / 123456') : '未检测到服务端，登录后走浏览器存档');
+    note(ok ? ('已连接本地服务端 v' + (API.ver || '') + (API.store ? '　库 ' + API.store : '') + '　测试号 demo / 123456') : '未检测到服务端，请先双击启动游戏。存档在本机数据库，不写浏览器');
   });
 })();

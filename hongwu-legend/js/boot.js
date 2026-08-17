@@ -97,7 +97,6 @@
   H.boot = function () {
     if (!document.getElementById('play-screen')) return;
     if (D.GAME_TITLE) document.title = D.GAME_TITLE;
-    localStorage.setItem('hongwu-server', H.currentServer());
     var nationBox = document.getElementById('nation-pick');
     if (nationBox) {
       nationBox.addEventListener('click', function (ev) {
@@ -156,21 +155,22 @@
     }
     requestAnimationFrame(H.loop);
 
-    function goSavedOrCreate() {
-      if (H.loadSave()) H.enterPlay(true);
-      else H.startCreate();
+    function needServer(msg) {
+      H.toast(msg || '请从登录页进入，存档在本机数据库');
+      setTimeout(function () { location.href = 'index.html'; }, 900);
     }
 
     if (window.GameAPI) {
       GameAPI.probe().then(function (ok) {
-        if (!ok || !GameAPI.token) { goSavedOrCreate(); return; }
+        if (!ok) { needServer('请先启动本地服务端'); return; }
+        if (!GameAPI.token) { needServer('请先登录'); return; }
         return GameAPI.loadRole(H.currentServer()).then(function (j) {
           if (j.role && H.applySave(j.role)) H.enterPlay(true);
-          else goSavedOrCreate();
+          else H.startCreate();
         });
-      }).catch(goSavedOrCreate);
+      }).catch(function () { needServer('请先启动本地服务端'); });
     } else {
-      goSavedOrCreate();
+      needServer('请先启动本地服务端');
     }
   }
 

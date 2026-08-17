@@ -42,16 +42,12 @@
   H.ensureBossState = function () {
     var B = window.BossLogic;
     if (!B) return null;
-    if (!G.bossState) {
-      try { G.bossState = JSON.parse(localStorage.getItem('hongwu-boss-state') || 'null'); } catch (err) { G.bossState = null; }
-    }
+    if (!G.bossState) G.bossState = { field: {}, world: null };
     G.bossState = B.ensureWorld(G.bossState || { field: {}, world: null }, D, F);
     return G.bossState;
   };
 
-  H.persistBossState = function () {
-    try { localStorage.setItem('hongwu-boss-state', JSON.stringify(G.bossState || {})); } catch (err) { /* ignore */ }
-  };
+  H.persistBossState = function () {};
 
   H.pullBossState = function (done) {
     H.ensureBossState();

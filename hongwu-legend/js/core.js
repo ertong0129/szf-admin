@@ -133,7 +133,7 @@
 
   H.currentServer = function () {
     var q = new URLSearchParams(location.search);
-    return q.get('server') || localStorage.getItem('hongwu-server') || 's1';
+    return q.get('server') || 's1';
   }
 
   H.serialize = function () {
@@ -143,17 +143,17 @@
   }
 
   H.saveSilent = function () {
-    var data = H.serialize();
-    try { localStorage.setItem(SAVE_KEY + ':' + H.currentServer(), JSON.stringify(data)); } catch (e) { /* ignore */ }
-    try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch (e) { /* ignore */ }
-    if (window.GameAPI && GameAPI.online && GameAPI.token) {
-      GameAPI.saveRole(H.currentServer(), data).catch(function () {});
-    }
+    if (!window.GameAPI || !GameAPI.online || !GameAPI.token || !G.player) return;
+    GameAPI.saveRole(H.currentServer(), H.serialize()).catch(function () {});
   }
 
   H.saveNow = function () {
+    if (!window.GameAPI || !GameAPI.online || !GameAPI.token) {
+      H.toast('请先启动本地服务端，存档在本机数据库');
+      return;
+    }
     H.saveSilent();
-    H.toast('进度已记入本机');
+    H.toast('进度已写入本机数据库');
   }
 
   H.applySave = function (data) {
@@ -188,17 +188,11 @@
   }
 
   H.hasSave = function () {
-    try { return !!(localStorage.getItem(SAVE_KEY + ':' + H.currentServer()) || localStorage.getItem(SAVE_KEY)); } catch (e) { return false; }
+    return false;
   }
 
   H.loadSave = function () {
-    try {
-      var raw = localStorage.getItem(SAVE_KEY + ':' + H.currentServer()) || localStorage.getItem(SAVE_KEY);
-      if (!raw) return false;
-      return H.applySave(JSON.parse(raw));
-    } catch (e) {
-      return false;
-    }
+    return false;
   }
 
   window.addEventListener('resize', function () { H.resize(); });

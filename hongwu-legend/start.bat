@@ -44,10 +44,9 @@ if not errorlevel 1 goto done
 :nofound
 echo.
 echo  Node.js / Python not found.
-echo  Opening index.html without server save.
+echo  The game needs a local server to save into the database.
 echo  Install Node.js: https://nodejs.org
 echo.
-start "" "%~dp0index.html"
 pause
 exit /b 1
 

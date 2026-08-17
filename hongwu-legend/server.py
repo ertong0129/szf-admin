@@ -19,16 +19,18 @@ except ImportError:
     from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer as ThreadingHTTPServer
 
 ROOT = os.path.abspath(os.path.dirname(__file__))
-DATA = os.path.join(ROOT, "data")
-STORE = os.path.join(DATA, "store.json")
 PORT = int(os.environ.get("PORT") or "8088")
-VERSION = "20260816v"
+VERSION = "20260816w"
 HOST = os.environ.get("HOST") or "0.0.0.0"
 WORLD = {}
 CHAT = {}
 EVENTS = {}
 PARTY_OF = {}
 PARTIES = {}
+
+import store_db
+store = store_db.open_store()
+hash_pass = store_db.hash_pass
 
 
 def lan_ips():
@@ -44,9 +46,9 @@ def lan_ips():
     return ips
 
 
-def _user_of(handler, db):
+def _user_of(handler):
     token = handler.headers.get("X-Token") or ""
-    return db.get("tokens", {}).get(token)
+    return store.user_by_token(token)
 
 
 def world_upsert(server, user, body):
@@ -98,19 +100,6 @@ def world_snap(server, user):
     }
 
 
-def hash_pass(s):
-    return hashlib.sha256(str(s).encode("utf-8")).hexdigest()
-
-
-def default_store():
-    return {
-        "users": {"demo": {"pass": hash_pass("123456"), "roles": {}, "created": int(time.time() * 1000)}},
-        "tokens": {},
-        "chat": [{"who": "系统", "text": "欢迎来到大明传说。测试号 demo / 123456", "t": int(time.time() * 1000)}],
-        "bosses": {"field": {}, "world": None},
-    }
-
-
 def day_key():
     t = time.localtime()
     return "%d-%d-%d" % (t.tm_year, t.tm_mon, t.tm_mday)
@@ -120,8 +109,8 @@ def world_hp(lv=60):
     return int((40 + lv * 28 + (lv ** 1.25) * 6) * 8)
 
 
-def ensure_bosses(db):
-    b = db.get("bosses") or {"field": {}, "world": None}
+def ensure_bosses():
+    b = store.get_kv("bosses") or {"field": {}, "world": None}
     b.setdefault("field", {})
     day = day_key()
     w = b.get("world")
@@ -141,46 +130,8 @@ def ensure_bosses(db):
             "dead": False,
             "name": "异邦武士",
         }
-    db["bosses"] = b
+    store.set_kv("bosses", b)
     return b
-
-
-def ensure():
-    global DATA, STORE
-    try:
-        if not os.path.isdir(DATA):
-            os.makedirs(DATA)
-        if not os.path.isfile(STORE):
-            with open(STORE, "w", encoding="utf-8") as f:
-                json.dump(default_store(), f, ensure_ascii=False, indent=2)
-    except OSError:
-        DATA = os.path.join(tempfile.gettempdir(), "hongwu-legend-data")
-        STORE = os.path.join(DATA, "store.json")
-        if not os.path.isdir(DATA):
-            os.makedirs(DATA)
-        if not os.path.isfile(STORE):
-            with open(STORE, "w", encoding="utf-8") as f:
-                json.dump(default_store(), f, ensure_ascii=False, indent=2)
-        print("存档改写到临时目录 " + DATA)
-
-
-def load():
-    ensure()
-    try:
-        with open(STORE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except Exception:
-        db = default_store()
-        save(db)
-        return db
-
-
-def save(db):
-    try:
-        with open(STORE, "w", encoding="utf-8") as f:
-            json.dump(db, f, ensure_ascii=False, indent=2)
-    except OSError as e:
-        print("存档失败：" + str(e))
 
 
 MIME = {
@@ -255,12 +206,9 @@ class Handler(BaseHTTPRequestHandler):
         except Exception:
             return {}
 
-    def _user(self, db):
+    def _user(self):
         token = self.headers.get("X-Token") or ""
-        name = db.get("tokens", {}).get(token)
-        if not name or name not in db.get("users", {}):
-            return None
-        return name
+        return store.user_by_token(token)
 
     def do_OPTIONS(self):
         self.send_response(204)
@@ -298,7 +246,7 @@ class Handler(BaseHTTPRequestHandler):
         q = parse_qs(u.query)
 
         if p == "/api/ping":
-            return self._json(200, {"ok": True, "v": VERSION, "lan": True, "ips": lan_ips()})
+            return self._json(200, {"ok": True, "v": VERSION, "lan": True, "ips": lan_ips(), "store": store.driver})
         if p == "/api/servers":
             return self._json(200, {"servers": SERVERS})
         if p == "/api/register" and method == "POST":
@@ -309,72 +257,54 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(400, {"error": "账号需 2-16 位"})
             if len(pw) < 4:
                 return self._json(400, {"error": "密码至少 4 位"})
-            db = load()
-            if user in db["users"]:
+            if store.get_user(user):
                 return self._json(400, {"error": "账号已存在"})
-            token = "%032x" % random.getrandbits(128)
-            db["users"][user] = {"pass": hash_pass(pw), "roles": {}, "created": int(time.time() * 1000)}
-            db["tokens"][token] = user
-            save(db)
-            return self._json(200, {"token": token, "user": user})
+            store.create_user(user, hash_pass(pw))
+            return self._json(200, {"token": store.issue_token(user), "user": user})
         if p == "/api/login" and method == "POST":
             b = self._body()
-            db = load()
             user = str(b.get("user") or "").strip()
-            rec = db["users"].get(user)
+            rec = store.get_user(user)
             if not rec or rec.get("pass") != hash_pass(b.get("pass") or ""):
                 return self._json(400, {"error": "账号或密码错误"})
-            token = "%032x" % random.getrandbits(128)
-            db["tokens"][token] = user
-            save(db)
-            return self._json(200, {"token": token, "user": user})
+            return self._json(200, {"token": store.issue_token(user), "user": user})
         if p == "/api/role" and method == "GET":
-            db = load()
-            name = self._user(db)
+            name = self._user()
             if not name:
                 return self._json(401, {"error": "请先登录"})
             sid = (q.get("server") or ["s1"])[0]
-            return self._json(200, {"role": db["users"][name].get("roles", {}).get(sid)})
+            return self._json(200, {"role": store.get_role(name, sid)})
         if p == "/api/role" and method == "POST":
             b = self._body()
-            db = load()
-            name = self._user(db)
+            name = self._user()
             if not name:
                 return self._json(401, {"error": "请先登录"})
             sid = str(b.get("server") or "s1")
-            db["users"][name].setdefault("roles", {})[sid] = b.get("payload")
-            save(db)
+            store.set_role(name, sid, b.get("payload"))
             return self._json(200, {"ok": True})
         if p == "/api/chat" and method == "GET":
-            db = load()
-            return self._json(200, {"lines": (db.get("chat") or [])[-40:]})
+            return self._json(200, {"lines": store.list_chat(40)})
         if p == "/api/chat" and method == "POST":
             b = self._body()
-            db = load()
-            name = self._user(db) or "过客"
+            name = self._user() or "过客"
             text = str(b.get("text") or "")[:80]
             if not text:
                 return self._json(400, {"error": "空消息"})
-            db.setdefault("chat", []).append({"who": name, "text": text, "t": int(time.time() * 1000)})
-            db["chat"] = db["chat"][-80:]
-            save(db)
+            store.add_chat(name, text)
             return self._json(200, {"ok": True})
         if p == "/api/bosses" and method == "GET":
-            db = load()
-            bosses = ensure_bosses(db)
-            save(db)
+            bosses = ensure_bosses()
             return self._json(200, {"bosses": bosses})
         if p == "/api/bosses" and method == "POST":
             b = self._body()
-            db = load()
-            bosses = ensure_bosses(db)
+            bosses = ensure_bosses()
             op = str(b.get("op") or "")
             if op == "field_kill" and b.get("id"):
                 bosses.setdefault("field", {})[str(b.get("id"))] = {"deadAt": int(time.time() * 1000)}
-                save(db)
+                store.set_kv("bosses", bosses)
                 return self._json(200, {"ok": True, "bosses": bosses})
             if op == "world_hit":
-                name = self._user(db) or str(b.get("name") or "过客")
+                name = self._user() or str(b.get("name") or "过客")
                 w = bosses.get("world") or {}
                 if w.get("dead"):
                     return self._json(200, {"ok": False, "world": w, "killed": False})
@@ -391,29 +321,26 @@ class Handler(BaseHTTPRequestHandler):
                     w["nation"] = str(b.get("nation") or "ming")
                     killed = True
                 bosses["world"] = w
-                save(db)
+                store.set_kv("bosses", bosses)
                 return self._json(200, {"ok": True, "world": w, "killed": killed})
             return self._json(400, {"error": "未知操作"})
 
         if p == "/api/world" and method == "POST":
             b = self._body()
-            db = load()
-            name = self._user(db)
+            name = self._user()
             if not name:
                 return self._json(401, {"error": "请先登录"})
             sid = str(b.get("server") or "s1")
             return self._json(200, world_upsert(sid, name, b or {}))
         if p == "/api/world" and method == "GET":
-            db = load()
-            name = self._user(db)
+            name = self._user()
             if not name:
                 return self._json(401, {"error": "请先登录"})
             sid = (q.get("server") or ["s1"])[0]
             return self._json(200, world_snap(sid, name))
         if p == "/api/social" and method == "POST":
             b = self._body()
-            db = load()
-            name = self._user(db)
+            name = self._user()
             if not name:
                 return self._json(401, {"error": "请先登录"})
             sid = str(b.get("server") or "s1")
@@ -495,7 +422,6 @@ def main():
         signal.signal(signal.SIGPIPE, signal.SIG_IGN)
     except Exception:
         pass
-    ensure()
     httpd, port = serve(PORT)
     href = "http://127.0.0.1:%s/" % port
     print("大明传说服务端 " + href)
@@ -503,6 +429,7 @@ def main():
         print("局域网请打开 http://%s:%s/" % (ip, port))
     print("朋友用同一局域网地址，各自注册账号后选同一服务器。")
     print("版本 " + VERSION)
+    print("本机数据库 %s  %s" % (store.driver, store.file))
     print("测试账号 demo / 123456")
     print("关闭本窗口即停止服务。")
     if os.environ.get("OPEN_BROWSER") != "0":

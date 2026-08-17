@@ -1,10 +1,44 @@
 /**
- * 客户端 API：有服务端则走 HTTP，否则退回 localStorage。
+ * 客户端 API：账号与存档一律走本机服务端数据库，浏览器不落盘。
+ * 登录令牌只放在当前标签页的 sessionStorage，关掉标签即失效。
  */
 (function (root) {
   var TOKEN_KEY = 'hongwu-token';
   var USER_KEY = 'hongwu-user';
-  var API = { online: false, user: localStorage.getItem(USER_KEY) || '', token: localStorage.getItem(TOKEN_KEY) || '' };
+  var mem = { token: '', user: '' };
+
+  function sessionGet(k) {
+    try { return sessionStorage.getItem(k) || ''; } catch (e) { return ''; }
+  }
+  function sessionSet(k, v) {
+    try { sessionStorage.setItem(k, v); } catch (e) { /* ignore */ }
+  }
+  function wipeLocalSaves() {
+    try {
+      var keys = [];
+      var i;
+      for (i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (k && (k.indexOf('hongwu-legend-save') === 0 || k === 'hongwu-boss-state' ||
+            k === 'hongwu-token' || k === 'hongwu-user' || k === 'hongwu-server')) {
+          keys.push(k);
+        }
+      }
+      keys.forEach(function (k) { localStorage.removeItem(k); });
+    } catch (e) { /* ignore */ }
+  }
+  wipeLocalSaves();
+  mem.token = sessionGet(TOKEN_KEY);
+  mem.user = sessionGet(USER_KEY);
+
+  var API = { online: false, user: mem.user, token: mem.token, store: '' };
+
+  function remember(user, token) {
+    API.token = token;
+    API.user = user;
+    sessionSet(TOKEN_KEY, token);
+    sessionSet(USER_KEY, user);
+  }
 
   function req(method, url, body) {
     return fetch(url, {
@@ -26,6 +60,7 @@
     return fetch('/api/ping').then(function (r) { return r.json(); }).then(function (j) {
       API.online = true;
       API.ver = (j && j.v) || '';
+      API.store = (j && j.store) || '';
       return true;
     }).catch(function () {
       API.online = false;
@@ -35,46 +70,35 @@
 
   API.register = function (user, pass) {
     return req('POST', '/api/register', { user: user, pass: pass }).then(function (j) {
-      API.token = j.token; API.user = user;
-      localStorage.setItem(TOKEN_KEY, j.token);
-      localStorage.setItem(USER_KEY, user);
+      remember(user, j.token);
       return j;
     });
   };
 
   API.login = function (user, pass) {
     return req('POST', '/api/login', { user: user, pass: pass }).then(function (j) {
-      API.token = j.token; API.user = user;
-      localStorage.setItem(TOKEN_KEY, j.token);
-      localStorage.setItem(USER_KEY, user);
+      remember(user, j.token);
       return j;
     });
   };
 
   API.servers = function () {
-    if (!API.online) {
-      return Promise.resolve({
-        servers: [
-          { id: 's1', name: '双线1服 · 大明传说', status: '火爆' },
-          { id: 's2', name: '双线2服 · 永乐新章', status: '畅通' }
-        ]
-      });
-    }
+    if (!API.online) return Promise.reject(new Error('请先启动本地服务端'));
     return req('GET', '/api/servers');
   };
 
   API.loadRole = function (server) {
-    if (!API.online) return Promise.resolve({ role: null });
+    if (!API.online) return Promise.reject(new Error('请先启动本地服务端'));
     return req('GET', '/api/role?server=' + encodeURIComponent(server));
   };
 
   API.saveRole = function (server, payload) {
-    if (!API.online) return Promise.resolve({ ok: true, local: true });
+    if (!API.online) return Promise.reject(new Error('请先启动本地服务端'));
     return req('POST', '/api/role', { server: server, payload: payload });
   };
 
   API.chatSend = function (text) {
-    if (!API.online) return Promise.resolve({ ok: true });
+    if (!API.online) return Promise.reject(new Error('请先启动本地服务端'));
     return req('POST', '/api/chat', { text: text });
   };
 
@@ -95,7 +119,7 @@
   };
 
   API.bosses = function () {
-    if (!API.online) return Promise.resolve({ bosses: null, local: true });
+    if (!API.online) return Promise.reject(new Error('请先启动本地服务端'));
     return req('GET', '/api/bosses');
   };
 

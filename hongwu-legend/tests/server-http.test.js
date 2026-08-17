@@ -4,8 +4,14 @@ var path = require('path');
 var { spawn } = require('child_process');
 
 var PORT = 18091;
+var dataDir = require('fs').mkdtempSync(require('path').join(require('os').tmpdir(), 'hongwu-http-'));
 var child = spawn(process.execPath, [path.join(__dirname, '..', 'server.js')], {
-  env: Object.assign({}, process.env, { PORT: String(PORT), OPEN_BROWSER: '0' }),
+  env: Object.assign({}, process.env, {
+    PORT: String(PORT),
+    OPEN_BROWSER: '0',
+    HONGWU_DATA: dataDir,
+    DB_DRIVER: 'sqlite'
+  }),
   stdio: ['ignore', 'pipe', 'pipe']
 });
 
@@ -76,6 +82,7 @@ waitUp(40, function (err) {
     var ping = JSON.parse(body);
     assert.strictEqual(ping.ok, true);
     assert.ok(ping.v, 'ping should include version');
+    assert.strictEqual(ping.store, 'sqlite', 'ping should report sqlite store');
     get('/api/chat', {}, function (errC, codeC, bodyC) {
       assert.ifError(errC);
       assert.strictEqual(codeC, 200, 'chat should be 200 not 404 after headers');

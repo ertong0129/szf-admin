@@ -6,7 +6,7 @@
 
 Windows 解压后双击 `start.bat`。Mac 解压后双击 `大明传说.app`，或右键打开 `启动游戏.command`。
 
-启动器会先起本地服，**等服务就绪再打开浏览器**（测试号 `demo` / `123456`）。登录页应显示 **v20260816v**，没有这个版本号就是旧包。没有 Node 时自动改用 Python。两者都没有才直接打开 `index.html`。终端窗口不要关。
+启动器会先起本地服，**等服务就绪再打开浏览器**（测试号 `demo` / `123456`）。登录页应显示 **v20260816w**，没有这个版本号就是旧包。没有 Node 时自动改用 Python。账号、角色、聊天、BOSS 都写在本机 `data/hongwu.db`（SQLite，表结构按 MySQL，以后可换库）。终端窗口不要关。
 
 ```bash
 cd hongwu-legend
@@ -60,7 +60,7 @@ https://gh-proxy.com/https://github.com/ertong0129/szf-admin/raw/cursor/hongwu-o
 | 灵宠 | 神农谷收服或向驯兽师请一只，随行攻击 |
 | 功业 | 11 条主线。开封有步步惊心、深宫谍影、开封铁塔 |
 | 货币 | 银两/元宝/道具均分绑定与不绑定。商店购得绑定；打怪掉落不绑定 |
-| 存档 | 本机 `localStorage`，标题页可续关 |
+| 存档 | 本机 `data/hongwu.db`（SQLite）。浏览器不存档。以后可把 `DB_DRIVER` 改成 mysql |
 
 未做：真实支付网关、开箱子、跨服战场、国战。元宝与明朝贵族为局内银两兑换，局域网不接充值平台。
 
@@ -76,6 +76,7 @@ https://gh-proxy.com/https://github.com/ertong0129/szf-admin/raw/cursor/hongwu-o
 ## 测试
 
 ```bash
+node hongwu-legend/tests/store.test.js
 node hongwu-legend/tests/formulas.test.js
 node hongwu-legend/tests/path.test.js
 node hongwu-legend/tests/server-http.test.js
