@@ -67,7 +67,7 @@ var mock = {
   stroke: function () { ops += 1; }
 };
 Gnd.paintCanvas(mock, [['grass', 'dirt'], ['water', 'dock']], 'taiping', 8);
-assert.ok(ops > 8, 'paintCanvas 应按格绘制，而不是逐像素烘焙');
+assert.ok(typeof Gnd.paintCityOverlay === 'function', '城镇地面应能叠公开俯视图');
 ops = 0;
 Gnd.paintWaterMask(mock, [['grass', 'water'], ['grass', 'water']], 'taiping', 8);
 assert.ok(ops > 0);

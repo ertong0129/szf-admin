@@ -9,8 +9,8 @@
     grass: { base: [92, 126, 68], v: 16, style: 'grass' },
     moss: { base: [68, 112, 82], v: 14, style: 'grass' },
     dirt: { base: [142, 112, 74], v: 14, style: 'dirt' },
-    stone: { base: [156, 152, 146], v: 9, style: 'brick' },
-    arena: { base: [164, 154, 146], v: 8, style: 'brick' },
+    stone: { base: [176, 170, 160], v: 8, style: 'brick' },
+    arena: { base: [168, 158, 148], v: 8, style: 'brick' },
     dock: { base: [138, 104, 68], v: 11, style: 'plank' },
     water: { base: [42, 102, 128], v: 12, style: 'water' },
     wall: { base: [96, 90, 84], v: 7, style: 'rock' },
@@ -71,8 +71,8 @@
   function applyBrick(c, wx, wy, mapId) {
     var iso = wx + wy;
     var iso2 = wx - wy;
-    var bw = 0.78;
-    var bh = 0.39;
+    var bw = (mapId === 'capital' || mapId === 'kaifeng') ? 1.12 : 0.78;
+    var bh = (mapId === 'capital' || mapId === 'kaifeng') ? 0.56 : 0.39;
     var gx = wrap01(iso / bw);
     var gy = wrap01(iso2 / bh);
     var brickId = Math.floor(iso / bw) * 13 + Math.floor(iso2 / bh) * 7;
@@ -92,9 +92,9 @@
       c[2] += hl * 0.82;
     }
     if (mapId === 'capital' || mapId === 'kaifeng') {
-      c[0] = Gnd.lerp(c[0], 186, 0.2);
-      c[1] = Gnd.lerp(c[1], 182, 0.2);
-      c[2] = Gnd.lerp(c[2], 172, 0.2);
+      c[0] = Gnd.lerp(c[0], 198, 0.28);
+      c[1] = Gnd.lerp(c[1], 192, 0.28);
+      c[2] = Gnd.lerp(c[2], 178, 0.28);
       var cx = 25;
       var cy = 18;
       var d = Math.abs(wx - cx) + Math.abs(wy - cy);
@@ -391,6 +391,23 @@
       }
     }
     ctx.globalAlpha = 1;
+    Gnd.paintCityOverlay(ctx, grid, mapId, cell);
+  };
+
+  Gnd.paintCityOverlay = function (ctx, grid, mapId, cell) {
+    if (!ctx || typeof ctx.drawImage !== 'function') return;
+    var Art = (typeof window !== 'undefined' && window.Art) ? window.Art
+      : (typeof root !== 'undefined' && root.Art) ? root.Art : null;
+    if (!Art || !Art.cityRadar) return;
+    var img = Art.cityRadar(mapId);
+    if (!img || !img.width) return;
+    var gw = grid[0].length;
+    var gh = grid.length;
+    ctx.save();
+    ctx.globalAlpha = 0.58;
+    if (ctx.globalCompositeOperation) ctx.globalCompositeOperation = 'overlay';
+    ctx.drawImage(img, 0, 0, gw * cell, gh * cell);
+    ctx.restore();
   };
 
   Gnd.paintWaterMask = function (ctx, grid, mapId, cell) {

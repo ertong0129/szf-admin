@@ -190,10 +190,12 @@
     G.floats.forEach(function (f) {
       var s = H.worldToScreen(f.x, f.y);
       ctx.globalAlpha = H.clamp(f.t * 1.4, 0, 1);
-      ctx.fillStyle = f.color;
-      ctx.font = 'bold 14px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(f.text, s.x, s.y);
+      if (!(window.Art && Art.drawDamage && Art.drawDamage(ctx, f.text, s.x, s.y, /暴|#ffd/.test(String(f.text) + (f.color || ''))))) {
+        ctx.fillStyle = f.color;
+        ctx.font = 'bold 14px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(f.text, s.x, s.y);
+      }
       ctx.globalAlpha = 1;
     });
 
@@ -442,6 +444,8 @@
     if (sitBtn) sitBtn.classList.toggle('on', !!p.sit);
     var auto2 = document.getElementById('btn-auto-2');
     if (auto2) auto2.classList.toggle('on', !!p.auto);
+    var banner = document.getElementById('auto-banner');
+    if (banner) banner.hidden = !p.auto;
     var m2 = document.getElementById('btn-mount-2');
     if (m2) m2.classList.toggle('on', !!(p.mount && p.mount.riding));
     H.refreshPkMode();

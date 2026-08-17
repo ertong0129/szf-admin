@@ -32,8 +32,8 @@
       scene.background = new THREE.Color(0x6e96aa);
       scene.fog = new THREE.FogExp2(0x6e96aa, 0.018);
 
-      camera = new THREE.PerspectiveCamera(36, 1, 0.1, 180);
-      camera.position.set(12, 12.5, 12);
+      camera = new THREE.PerspectiveCamera(30, 1, 0.1, 180);
+      camera.position.set(14.4, 14.2, 14.4);
 
       renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
@@ -229,17 +229,17 @@
   function addHouse(x, z, w, d, style) {
     var ww = w || 1.7;
     var dd = d || 1.45;
-    var wall = 0x8a4034;
-    var roofCol = 0xc9a227;
-    var ridgeCol = 0xe2c36a;
+    var wall = 0x8b3a32;
+    var roofCol = 0xd4b43a;
+    var ridgeCol = 0xe8d078;
     var trimCol = 0xd4af37;
-    var baseCol = 0x6a5850;
+    var baseCol = 0xc8c0b4;
     if (style === 'town') {
-      wall = 0xc4bba8;
-      roofCol = 0x2a5864;
-      ridgeCol = 0x1a3038;
+      wall = 0xb8a090;
+      roofCol = 0x1e4c54;
+      ridgeCol = 0xd8d0c4;
       trimCol = 0x8a7a58;
-      baseCol = 0x6a6860;
+      baseCol = 0x9a9890;
     } else if (style === 'village') {
       wall = 0x8a6a4e;
       roofCol = 0x3a3834;
@@ -248,35 +248,35 @@
       baseCol = 0x5a4a3c;
     }
     var base = new THREE.Mesh(
-      new THREE.BoxGeometry(ww * 1.08, 0.12, dd * 1.08),
+      new THREE.BoxGeometry(ww * 1.12, 0.1, dd * 1.12),
       new THREE.MeshStandardMaterial({ color: baseCol, roughness: 0.92 })
     );
-    base.position.set(x, 0.06, z);
+    base.position.set(x, 0.05, z);
     base.receiveShadow = true;
     var body = new THREE.Mesh(
-      new THREE.BoxGeometry(ww, 1.05, dd),
+      new THREE.BoxGeometry(ww, style === 'palace' ? 1.18 : 0.98, dd),
       new THREE.MeshStandardMaterial({ color: wall, roughness: 0.82 })
     );
-    body.position.set(x, 0.62, z);
+    body.position.set(x, style === 'palace' ? 0.7 : 0.58, z);
     body.castShadow = true;
     body.receiveShadow = true;
-    var trim = new THREE.Mesh(
-      new THREE.BoxGeometry(ww * 1.02, 0.08, dd * 1.02),
-      new THREE.MeshStandardMaterial({ color: trimCol, roughness: 0.45, metalness: 0.18 })
+    var eave = new THREE.Mesh(
+      new THREE.BoxGeometry(ww * 1.32, 0.07, dd * 1.32),
+      new THREE.MeshStandardMaterial({ color: roofCol, roughness: 0.5 })
     );
-    trim.position.set(x, 1.14, z);
+    eave.position.set(x, style === 'palace' ? 1.26 : 1.08, z);
     var roof = new THREE.Mesh(
-      new THREE.ConeGeometry(Math.max(ww, dd) * 0.92, 0.78, 4),
+      new THREE.ConeGeometry(Math.max(ww, dd) * 0.98, 0.42, 4),
       new THREE.MeshStandardMaterial({ color: roofCol, roughness: 0.52, metalness: 0.06 })
     );
-    roof.position.set(x, 1.55, z);
+    roof.position.set(x, style === 'palace' ? 1.52 : 1.32, z);
     roof.rotation.y = Math.PI / 4;
     roof.castShadow = true;
     var ridge = new THREE.Mesh(
-      new THREE.BoxGeometry(0.07, 0.07, Math.max(ww, dd) * 1.08),
+      new THREE.BoxGeometry(Math.max(ww, dd) * 1.05, 0.05, 0.07),
       new THREE.MeshStandardMaterial({ color: ridgeCol, roughness: 0.35, metalness: 0.3 })
     );
-    ridge.position.set(x, 1.94, z);
+    ridge.position.set(x, style === 'palace' ? 1.74 : 1.52, z);
     var door = new THREE.Mesh(
       new THREE.BoxGeometry(0.28, 0.48, 0.04),
       new THREE.MeshStandardMaterial({ color: 0x3a2418, roughness: 0.9 })
@@ -284,10 +284,19 @@
     door.position.set(x, 0.38, z + dd * 0.5);
     propGroup.add(base);
     propGroup.add(body);
-    propGroup.add(trim);
+    propGroup.add(eave);
     propGroup.add(roof);
     propGroup.add(ridge);
     propGroup.add(door);
+    if (style === 'palace') {
+      var roof2 = new THREE.Mesh(
+        new THREE.ConeGeometry(Math.max(ww, dd) * 0.62, 0.28, 4),
+        new THREE.MeshStandardMaterial({ color: roofCol, roughness: 0.5 })
+      );
+      roof2.position.set(x, 1.86, z);
+      roof2.rotation.y = Math.PI / 4;
+      propGroup.add(roof2);
+    }
   }
 
   function addTree(x, z, blossom) {
@@ -300,15 +309,18 @@
     var leafMat = new THREE.MeshStandardMaterial({ color: blossom ? 0xd48aa0 : 0x2f6b38, roughness: 0.78 });
     var leafMat2 = new THREE.MeshStandardMaterial({ color: blossom ? 0xe8b4c4 : 0x3d8544, roughness: 0.8 });
     var a = new THREE.Mesh(new THREE.SphereGeometry(0.48, 8, 6), leafMat);
-    a.position.set(x, 1.05, z);
-    var b = new THREE.Mesh(new THREE.SphereGeometry(0.36, 8, 6), leafMat2);
-    b.position.set(x + 0.22, 1.18, z - 0.08);
-    var c = new THREE.Mesh(new THREE.SphereGeometry(0.3, 7, 5), leafMat);
-    c.position.set(x - 0.18, 1.22, z + 0.12);
+    a.position.set(x, 1.12, z);
+    var b = new THREE.Mesh(new THREE.SphereGeometry(0.42, 8, 6), leafMat2);
+    b.position.set(x + 0.26, 1.28, z - 0.1);
+    var c = new THREE.Mesh(new THREE.SphereGeometry(0.36, 7, 5), leafMat);
+    c.position.set(x - 0.22, 1.32, z + 0.14);
+    var d = new THREE.Mesh(new THREE.SphereGeometry(0.28, 7, 5), leafMat2);
+    d.position.set(x + 0.04, 1.48, z + 0.08);
     propGroup.add(trunk);
     propGroup.add(a);
     propGroup.add(b);
     propGroup.add(c);
+    propGroup.add(d);
   }
 
   function addBlock(x, z, h, color) {
@@ -357,8 +369,8 @@
       fogCol = 0x4a6e88; fogD = 0.02;
     } else if (mapId === 'tower') {
       fogCol = 0x2a1838; fogD = 0.028;
-    } else if (mapId === 'capital' || mapId === 'kaifeng') {
-      fogCol = 0x8aa4ac; fogD = 0.015;
+      } else if (mapId === 'capital' || mapId === 'kaifeng') {
+      fogCol = 0xa8bcc0; fogD = 0.011;
     } else if (mapId === 'desert' || mapId === 'tumu' || mapId === 'xiliang') {
       fogCol = 0xc4a070; fogD = 0.016;
     }
@@ -640,6 +652,10 @@
       spr.visible = true;
       spr.material.map = textTex('f:' + f.text + ':' + f.color, function (x, c) {
         x.clearRect(0, 0, c.width, c.height);
+        var art = root.Art;
+        if (art && art.drawDamage && art.drawDamage(x, f.text, 128, 48, /暴|#ffd/.test(String(f.text) + (f.color || '')))) {
+          return;
+        }
         x.font = 'bold 28px "Microsoft YaHei",sans-serif';
         x.textAlign = 'center';
         x.strokeStyle = 'rgba(0,0,0,0.7)';
@@ -672,9 +688,9 @@
     var px0 = px(p.x), pz0 = px(p.y);
     follow.x += (px0 - follow.x) * 0.14;
     follow.z += (pz0 - follow.z) * 0.14;
-    var dist = 13.2;
-    camera.position.set(follow.x + dist, 11.6, follow.z + dist);
-    camera.lookAt(follow.x, 0.42, follow.z);
+    var dist = 14.4;
+    camera.position.set(follow.x + dist, 14.2, follow.z + dist);
+    camera.lookAt(follow.x, 0.55, follow.z);
 
     waterTime = state.time || 0;
     if (waterMat && waterMat.map && waterMat.map.offset) {

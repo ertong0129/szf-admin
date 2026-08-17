@@ -185,11 +185,11 @@ html, body {
 #world3d { display: none; }
 .dock {
   position: relative;
-  height: 118px;
-  flex: 0 0 118px;
+  height: 104px;
+  flex: 0 0 104px;
   background:
-    linear-gradient(180deg, #0c2428 0%, #081618 55%, #120a0a 100%);
-  border-top: 1px solid #2ec4c8;
+    #071214 url('../assets/ingame/viewui/skillbar.jpg') left top / 100% 72px no-repeat;
+  border-top: 0;
   overflow: hidden;
 }
 .chat-box {
@@ -280,38 +280,38 @@ html, body {
 }
 .hud-frame {
   position: relative;
-  width: 248px;
-  height: 122px;
-  flex: 0 0 248px;
-  background: url('../assets/ingame/viewui/hud-frame.png') center / 100% 100% no-repeat;
+  width: 174px;
+  height: 86px;
+  flex: 0 0 174px;
+  background: url('../assets/ingame/viewui/hud-frame.png') center / 174px 86px no-repeat;
   pointer-events: auto;
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.45));
 }
 .portrait {
   position: absolute;
-  left: 10px;
-  top: 16px;
-  width: 76px;
-  height: 76px;
+  left: 8px;
+  top: 12px;
+  width: 58px;
+  height: 58px;
   border: 0;
   border-radius: 50%;
   background: #071214 center/cover no-repeat;
   display: grid;
   place-items: center;
-  font-size: 22px;
+  font-size: 18px;
   overflow: hidden;
   z-index: 0;
 }
 .hud-lv {
   position: absolute;
-  left: 72px;
-  top: 82px;
-  width: 24px;
-  height: 24px;
+  left: 52px;
+  top: 58px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   display: grid;
   place-items: center;
-  font-size: 11px;
+  font-size: 10px;
   color: #e8f6c8;
   text-shadow: 0 1px 2px #041014;
   z-index: 2;
@@ -319,10 +319,10 @@ html, body {
 }
 .hud-frame .who {
   position: absolute;
-  left: 92px;
-  top: 10px;
-  width: 148px;
-  font-size: 13px;
+  left: 72px;
+  top: 6px;
+  width: 96px;
+  font-size: 12px;
   letter-spacing: 1px;
   color: #ffe7a0;
   white-space: nowrap;
@@ -333,16 +333,16 @@ html, body {
 }
 .hud-bars {
   position: absolute;
-  left: 94px;
-  top: 32px;
-  width: 142px;
+  left: 72px;
+  top: 24px;
+  width: 94px;
   z-index: 1;
 }
 .hud-pet {
   position: relative;
-  width: 168px;
-  height: 78px;
-  background: url('../assets/ingame/viewui/hud-frame-plain.png') left center / auto 100% no-repeat;
+  width: 174px;
+  height: 86px;
+  background: url('../assets/ingame/viewui/hud-frame-plain.png') left center / 174px 86px no-repeat;
   pointer-events: auto;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
 }
@@ -435,16 +435,16 @@ html, body {
 }
 .hud-acts {
   position: absolute;
-  top: 6px;
+  top: 4px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 6px;
+  gap: 2px;
   z-index: 5;
   pointer-events: auto;
 }
 .hud-acts button {
-  width: 54px;
+  width: 48px;
   background: transparent;
   border: 0;
   color: #e8f6c8;
@@ -455,15 +455,27 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  padding: 0;
 }
 .hud-acts img {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   object-fit: contain;
   filter: drop-shadow(0 2px 4px #000);
 }
-.hud-acts button:hover { color: #ffe7a0; }
+.hud-acts button:hover { filter: brightness(1.18); }
+#auto-banner {
+  position: absolute;
+  top: 54px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 190px;
+  height: 52px;
+  background: url('../assets/ingame/viewui/auto-farm.png') center / contain no-repeat;
+  z-index: 6;
+  pointer-events: none;
+}
+#auto-banner[hidden] { display: none !important; }
 
 .menu-left {
   position: absolute;
@@ -515,9 +527,9 @@ html, body {
 
 .side-right {
   position: absolute;
-  right: 10px;
-  top: 8px;
-  width: 188px;
+  right: 6px;
+  top: 4px;
+  width: 176px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -526,21 +538,30 @@ html, body {
 }
 .minimap-wrap {
   position: relative;
-  width: 168px;
-  height: 168px;
+  width: 162px;
+  height: 137px;
   margin: 0 auto;
 }
 #minimap {
-  width: 168px;
-  height: 168px;
-  border: 3px solid #2ec4c8;
+  position: absolute;
+  left: 22px;
+  top: 20px;
+  width: 108px;
+  height: 108px;
+  border: 0;
   border-radius: 50%;
   background: #071214;
-  box-shadow: 0 0 0 1px #0a1214, 0 0 14px rgba(46, 196, 200, 0.28);
+}
+.minimap-ring {
+  position: absolute;
+  inset: 0;
+  background: url('../assets/ingame/viewui/minimap-ring.png') center / 162px 137px no-repeat;
+  pointer-events: none;
+  z-index: 2;
 }
 .map-name {
   position: absolute;
-  left: 28px; right: 28px; bottom: 28px;
+  left: 28px; right: 28px; bottom: 22px;
   background: rgba(6, 12, 14, 0.72);
   color: #ffe7a0;
   font-size: 11px;
@@ -550,6 +571,7 @@ html, body {
   padding: 2px 8px;
   pointer-events: none;
   border-radius: 8px;
+  z-index: 3;
 }
 #map-coord { color: #8ad4d6; letter-spacing: 0; }
 .map-tools {
@@ -634,7 +656,7 @@ html, body {
 .char-tabs button.on { color: #ffe7a0; border-color: #ffe7a0; }
 .quest-box[hidden] { display: none !important; }
 .quest-box, .log-box {
-  margin-top: 22px;
+  margin-top: 8px;
   background:
     url('../assets/ingame/viewui/panel-round.png') center / 100% 100% no-repeat,
     rgba(8, 22, 24, 0.86);
@@ -696,21 +718,22 @@ html, body {
 
 .skill-bar {
   position: absolute;
-  left: 16px;
-  top: 8px;
+  left: 2.5%;
+  top: 12px;
   display: flex;
-  gap: 4px;
+  gap: 0.45%;
   align-items: center;
-  height: 46px;
+  height: 44px;
+  width: 39.2%;
 }
 .skill-slot, .util-slot {
-  width: 42px;
   height: 42px;
-  border: 1px solid rgba(46, 196, 200, 0.55);
-  background: rgba(6, 18, 20, 0.55);
+  border: 0;
+  background: transparent;
   position: relative;
   cursor: pointer;
-  flex: 0 0 42px;
+  flex: 1 1 0;
+  min-width: 0;
 }
 .skill-slot.empty {
   cursor: default;
@@ -718,82 +741,106 @@ html, body {
 }
 .dock-xp {
   position: absolute;
-  left: 16px;
-  right: 96px;
-  bottom: 4px;
+  left: 43.5%;
+  right: 10.5%;
+  top: 50px;
   height: 8px;
   margin: 0;
-  background: #1a120c;
-  border: 1px solid rgba(46, 196, 200, 0.35);
+  background: rgba(12, 8, 6, 0.55);
+  border: 1px solid rgba(46, 196, 200, 0.28);
 }
 .dock-menu {
   position: absolute;
-  left: 12px;
-  top: 58px;
-  right: 210px;
+  left: 43%;
+  top: 4px;
+  right: 9.5%;
+  height: 46px;
+  align-items: flex-end;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+.dock-menu img {
+  height: 42px;
+  width: auto;
+  max-width: 40px;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 1px 2px #000);
+}
+.dock-menu button, .dock-menu a {
+  padding: 0 2px;
+  min-width: 0;
+}
+.dock-menu .dock-txt {
+  font-size: 12px;
+  color: #ffe7a0;
+  text-shadow: 0 1px 2px #041014;
+  letter-spacing: 0;
+  padding: 2px 4px;
 }
 .dock-quick {
   position: absolute;
-  right: 96px;
-  top: 8px;
+  right: 9.2%;
+  top: 58px;
   display: flex;
-  gap: 6px;
+  gap: 4px;
 }
 .dock-quick button {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 1px solid #d4af37;
-  background: radial-gradient(circle at 30% 30%, #3a585c, #0c2428);
+  width: 28px;
+  height: 22px;
+  border-radius: 4px;
+  border: 1px solid #2ec4c8;
+  background: rgba(8, 28, 30, 0.72);
   color: #ffe7a0;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 12px;
   cursor: pointer;
 }
 .dock-quick button:hover { filter: brightness(1.2); }
 .dock-utils {
   position: absolute;
-  right: 96px;
-  top: 50px;
+  left: 43.5%;
+  top: 62px;
   display: flex;
   gap: 4px;
 }
 .dock-utils button {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
+  width: 24px;
+  height: 18px;
+  border-radius: 3px;
   border: 1px solid #2ec4c8;
-  background: #0c2428;
+  background: rgba(8, 28, 30, 0.72);
   color: #8ad4d6;
   font-family: inherit;
-  font-size: 12px;
+  font-size: 11px;
   cursor: pointer;
 }
 .dock-utils button.on { color: #ffe7a0; border-color: #ffe7a0; box-shadow: 0 0 8px rgba(46,196,200,0.45); }
 .shop-btn {
   position: absolute;
-  right: 8px;
-  top: 10px;
-  width: 78px;
-  height: 78px;
+  right: 0.6%;
+  top: 2px;
+  width: 7.6%;
+  height: 68px;
   border: 0;
   border-radius: 50%;
-  background: url('../assets/ingame/viewui/shop.png') center / contain no-repeat;
+  background: transparent;
   color: transparent;
   cursor: pointer;
 }
 .shop-btn:hover {
-  background-image: url('../assets/ingame/viewui/shop-on.png');
   box-shadow: 0 0 16px rgba(200, 48, 40, 0.55);
 }
+.hud-frame .bar { height: 10px; margin-bottom: 4px; border-radius: 4px; }
 .skill-slot .name, .util-slot .name {
   position: absolute;
   bottom: 2px;
   left: 0;
   right: 0;
   text-align: center;
-  font-size: 10px;
+  font-size: 9px;
   color: var(--paper);
+  text-shadow: 0 1px 2px #000;
 }
 .skill-slot .key, .util-slot .key {
   position: absolute;
@@ -823,21 +870,28 @@ html, body {
   width: min(720px, 92vw);
   max-height: 78vh;
   overflow: auto;
-  background:
-    linear-gradient(180deg, rgba(8, 28, 32, 0.78), rgba(6, 16, 18, 0.9)),
-    url('../assets/ingame/viewui/panel.png') center / 100% 100% no-repeat;
-  border: 1px solid #2ec4c8;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(46, 196, 200, 0.25);
+  background: rgba(6, 16, 18, 0.9);
+  border: 18px solid transparent;
+  border-image: url('../assets/ingame/viewui/panel.png') 28 fill;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
   display: none;
-  padding: 18px 22px 22px;
+  padding: 12px 16px 16px;
 }
 .panel.open { display: block; }
 #panel-char.open {
   background:
     linear-gradient(90deg, rgba(8, 28, 32, 0.28), rgba(6, 16, 18, 0.9) 46%),
     url('../assets/ingame/ui/jiaosebg.png') left 8px center / 220px auto no-repeat,
-    url('../assets/ingame/viewui/panel.png') center / 100% 100% no-repeat;
+    rgba(6, 16, 18, 0.9);
+  border-image: url('../assets/ingame/viewui/panel.png') 28 fill;
   padding-left: 230px;
+}
+#panel-shop.open {
+  background:
+    linear-gradient(90deg, rgba(8, 16, 18, 0.2), rgba(6, 16, 18, 0.92) 42%),
+    url('../assets/ingame/viewui/shop-lady.png') left 8px bottom / auto 92% no-repeat,
+    rgba(6, 16, 18, 0.9);
+  padding-left: 200px;
 }
 #panel-forge.open {
   background:
@@ -1081,17 +1135,17 @@ html, body {
 .portal-foot { text-align: center; color: #8a7350; font-size: 12px; padding: 16px; }
 
 @media (max-width: 1180px) {
-  .skill-slot, .util-slot { width: 36px; height: 36px; flex: 0 0 36px; }
-  .skill-bar { left: 10px; gap: 3px; top: 8px; }
-  .dock-xp { left: 10px; }
+  .skill-slot, .util-slot { height: 36px; }
+  .skill-bar { left: 2%; width: 40%; gap: 0.3%; top: 10px; }
+  .dock-xp { left: 43%; }
   .chat-box { width: min(280px, 34vw); height: 120px; }
-  .hud-frame { width: 220px; height: 108px; flex-basis: 220px; }
-  .portrait { left: 8px; top: 12px; width: 66px; height: 66px; }
-  .hud-lv { left: 62px; top: 70px; }
-  .hud-bars { left: 84px; top: 28px; width: 126px; }
-  .hud-acts { gap: 2px; }
-  .hud-acts button { width: 44px; font-size: 10px; }
-  .hud-acts img { width: 32px; height: 32px; }
+  .hud-frame { width: 174px; height: 86px; flex-basis: 174px; }
+  .portrait { left: 8px; top: 12px; width: 58px; height: 58px; }
+  .hud-lv { left: 52px; top: 58px; }
+  .hud-bars { left: 72px; top: 24px; width: 94px; }
+  .hud-acts { gap: 0; }
+  .hud-acts button { width: 40px; font-size: 10px; }
+  .hud-acts img { width: 36px; height: 36px; }
   .hud-acts span { display: none; }
 }
 

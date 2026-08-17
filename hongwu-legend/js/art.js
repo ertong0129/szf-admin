@@ -42,6 +42,8 @@
       quanZhou: 'assets/ingame/map/quan_zhou.jpg',
       zheDong: 'assets/ingame/map/zhe_dong.jpg',
       xiLiang: 'assets/ingame/map/xi_liang.jpg',
+      dmgRed: 'assets/ingame/viewui/dmg-red.png',
+      dmgGold: 'assets/ingame/viewui/dmg-gold.png',
       roleBg: 'assets/ingame/ui/rolebg.png',
       jiaoseBg: 'assets/ingame/ui/jiaosebg.png',
       forgeBg: 'assets/ingame/ui/forge.jpg',
@@ -226,6 +228,38 @@
     var key = RADAR_SRC[mapId];
     if (key && A.imgs[key]) return A.imgs[key];
     return A.imgs.radar || null;
+  };
+
+  A.cityRadar = function (mapId) {
+    var img = A.radarFor(mapId);
+    if (!img || img === A.imgs.radar) return null;
+    return img;
+  };
+
+  var DMG_GLYPHS = '-0123456789';
+
+  A.drawDamage = function (ctx, text, x, y, gold) {
+    var raw = String(text);
+    if (gold == null) gold = /暴/.test(raw);
+    var img = gold ? (A.imgs.dmgGold || A.imgs.dmgRed) : (A.imgs.dmgRed || A.imgs.dmgGold);
+    if (!img || !img.width) return false;
+    var str = raw.replace(/[^0-9+\-]/g, '');
+    var cw = img.width / 11;
+    var ch = img.height;
+    var i, idx, w = 0;
+    for (i = 0; i < str.length; i++) {
+      if (DMG_GLYPHS.indexOf(str[i]) >= 0) w += cw * 0.9;
+    }
+    if (!w) return false;
+    var sx = x - w / 2;
+    var sy = y - ch;
+    for (i = 0; i < str.length; i++) {
+      idx = DMG_GLYPHS.indexOf(str[i]);
+      if (idx < 0) continue;
+      ctx.drawImage(img, idx * cw, 0, cw, ch, sx, sy, cw, ch);
+      sx += cw * 0.9;
+    }
+    return true;
   };
 
   A.tileImg = function (type) {

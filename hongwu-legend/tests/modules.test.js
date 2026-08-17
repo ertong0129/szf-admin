@@ -49,23 +49,31 @@ assert.ok(netplay.indexOf('.then(applyNet)') < 0, 'netTick 应调用 H.applyNet�
 var css = fs.readFileSync(path.join(root, 'css/game.css'), 'utf8');
 assert.ok(css.indexOf('assets/ingame/viewui/hud-frame.png') >= 0, 'HUD 应使用原作人物框切图');
 assert.ok(css.indexOf('assets/ingame/viewui/panel.png') >= 0, '面板应使用青玉窗框');
-assert.ok(css.indexOf('assets/ingame/viewui/shop.png') >= 0, '商城钮应使用原作红底金字切图');
+assert.ok(css.indexOf('assets/ingame/viewui/skillbar.jpg') >= 0, '底栏应铺原作 skillbar 切图');
+assert.ok(css.indexOf('assets/ingame/viewui/minimap-ring.png') >= 0, '小地图应套原作青玉圆框');
 assert.ok(play.indexOf('class="hud-frame"') >= 0, 'play.html 应有原作人物框容器');
 assert.ok(play.indexOf('id="hud-lv"') >= 0, '人物框应显示等级');
 assert.ok(play.indexOf('id="hud-pet"') >= 0, '左上应有宠物条');
 assert.ok(play.indexOf('class="hud-acts"') >= 0, '顶栏应有活动图标');
 assert.ok(play.indexOf('class="dock-menu') >= 0, '底栏应有系统菜单');
+assert.ok(play.indexOf('class="minimap-ring"') >= 0, '小地图应有原作圆框层');
 assert.ok(css.indexOf('border-radius: 50%') >= 0, '小地图应为圆形');
 
 var art = fs.readFileSync(path.join(root, 'js/art.js'), 'utf8');
 assert.ok(art.indexOf("jingCheng: 'assets/ingame/map/jing_cheng.jpg'") >= 0);
 assert.ok(art.indexOf('A.radarFor') >= 0, '小地图应按场景换原作俯视图');
+assert.ok(art.indexOf('A.cityRadar') >= 0, '城镇地面应能叠公开小地图');
+assert.ok(art.indexOf('A.drawDamage') >= 0, '伤害飘字应使用原作数字切图');
 
 [
   'assets/ingame/viewui/hud-frame.png',
   'assets/ingame/viewui/panel.png',
   'assets/ingame/viewui/dialog-bar.png',
   'assets/ingame/viewui/shop.png',
+  'assets/ingame/viewui/skillbar.jpg',
+  'assets/ingame/viewui/minimap-ring.png',
+  'assets/ingame/viewui/menu-role.png',
+  'assets/ingame/viewui/shop-lady.png',
   'assets/ingame/map/jing_cheng.jpg',
   'assets/ingame/map/kai_feng.jpg',
   'assets/ingame/ui/jiaosebg.png'
@@ -74,7 +82,7 @@ assert.ok(art.indexOf('A.radarFor') >= 0, '小地图应按场景换原作俯视�
 });
 
 var serverJs = fs.readFileSync(path.join(root, 'server.js'), 'utf8');
-assert.ok(serverJs.indexOf("VERSION = '20260816q'") >= 0, 'server.js 版本应为 20260816q');
+assert.ok(serverJs.indexOf("VERSION = '20260816r'") >= 0, 'server.js 版本应为 20260816r');
 
 function assertWinBat(rel) {
   var buf = fs.readFileSync(path.join(root, rel));

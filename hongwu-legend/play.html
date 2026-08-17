@@ -60,16 +60,17 @@
             </div>
           </div>
           <div class="hud-acts" id="hud-acts">
-            <button type="button" data-panel="shop" title="藏宝阁"><img src="assets/ingame/title/market.png" alt="" /><span>藏宝阁</span></button>
-            <button type="button" data-panel="help" title="天星罗盘"><img src="assets/ingame/title/setting.png" alt="" /><span>罗盘</span></button>
-            <button type="button" data-panel="daily" title="种花得宝"><img src="assets/ingame/title/labiao.png" alt="" /><span>种花</span></button>
-            <button type="button" data-panel="daily" title="缤纷活动"><img src="assets/ingame/title/Activity.png" alt="" /><span>活动</span></button>
-            <button type="button" data-panel="vip" title="每日累充"><img src="assets/ingame/title/DailyRecharge.png" alt="" /><span>累充</span></button>
-            <button type="button" data-panel="achieve" title="传奇图鉴"><img src="assets/ingame/title/goal.png" alt="" /><span>图鉴</span></button>
-            <button type="button" data-panel="rank" title="封神台"><img src="assets/ingame/title/rank.png" alt="" /><span>封神</span></button>
-            <button type="button" data-act="pagoda" title="开封铁塔"><img src="assets/ingame/title/tglp.png" alt="" /><span>铁塔</span></button>
-            <button type="button" data-act="tower" title="天下英雄"><img src="assets/ingame/title/role.png" alt="" /><span>英雄</span></button>
+            <button type="button" data-panel="shop" title="藏宝阁"><img src="assets/ingame/viewui/act-box.png" alt="藏宝阁" /></button>
+            <button type="button" data-panel="help" title="天星罗盘"><img src="assets/ingame/viewui/compass-start.jpg" alt="罗盘" /></button>
+            <button type="button" data-panel="quest" title="运镖"><img src="assets/ingame/viewui/act-biao.png" alt="运镖" /></button>
+            <button type="button" data-panel="daily" title="缤纷活动"><img src="assets/ingame/viewui/act-gift.png" alt="活动" /></button>
+            <button type="button" data-panel="vip" title="每日累充"><img src="assets/ingame/viewui/act-recharge.png" alt="累充" /></button>
+            <button type="button" data-panel="achieve" title="传奇图鉴"><img src="assets/ingame/title/goal.png" alt="图鉴" /></button>
+            <button type="button" data-panel="rank" title="封神台"><img src="assets/ingame/title/rank.png" alt="封神" /></button>
+            <button type="button" data-act="pagoda" title="开封铁塔"><img src="assets/ingame/viewui/act-chest.png" alt="铁塔" /></button>
+            <button type="button" data-act="tower" title="天下英雄"><img src="assets/ingame/viewui/act-biao-gold.png" alt="英雄" /></button>
           </div>
+          <div id="auto-banner" hidden title="自动打怪中"></div>
           <div id="target-frame" hidden>
             <div id="target-name">—</div>
             <div class="bar hp target-hp"><i id="target-hp"></i><span id="target-hp-text"></span></div>
@@ -77,6 +78,7 @@
           <div class="side-right">
             <div class="minimap-wrap">
               <canvas id="minimap" width="168" height="168"></canvas>
+              <div class="minimap-ring"></div>
               <div class="map-name">
                 <span id="map-name">太平村</span>
                 <span id="map-coord">24,17</span>
@@ -148,20 +150,20 @@
             <button type="button" id="btn-mount-2" title="坐骑">骑</button>
           </div>
           <nav class="dock-menu sys-btns">
-            <button type="button" data-panel="char">角色</button>
-            <button type="button" data-panel="skills">技能</button>
-            <button type="button" data-panel="bag">背包</button>
-            <button type="button" data-panel="pet">宠物</button>
-            <button type="button" data-panel="char" data-char-open="mount">坐骑</button>
-            <button type="button" data-panel="social">好友</button>
-            <button type="button" data-panel="social">社会</button>
-            <button type="button" data-panel="forge">天工炉</button>
-            <button type="button" data-panel="shop">市场</button>
-            <button type="button" data-panel="mail">信件</button>
-            <button type="button" data-panel="quest">任务</button>
-            <button type="button" data-panel="help">系统</button>
-            <button type="button" id="btn-save">存档</button>
-            <a href="index.html">选服</a>
+            <button type="button" data-panel="char" title="角色"><img src="assets/ingame/viewui/menu-role.png" alt="角色" /></button>
+            <button type="button" data-panel="skills" title="技能" class="dock-txt">技能</button>
+            <button type="button" data-panel="bag" title="背包"><img src="assets/ingame/viewui/menu-bag.png" alt="背包" /></button>
+            <button type="button" data-panel="pet" title="宠物"><img src="assets/ingame/viewui/menu-pet.png" alt="宠物" /></button>
+            <button type="button" data-panel="char" data-char-open="mount" title="坐骑"><img src="assets/ingame/viewui/menu-mount.png" alt="坐骑" /></button>
+            <button type="button" data-panel="social" title="好友"><img src="assets/ingame/viewui/menu-friends.png" alt="好友" /></button>
+            <button type="button" data-panel="social" title="社会"><img src="assets/ingame/viewui/menu-social.png" alt="社会" /></button>
+            <button type="button" data-panel="forge" title="天工炉"><img src="assets/ingame/viewui/menu-forge.png" alt="天工炉" /></button>
+            <button type="button" data-panel="shop" title="市场"><img src="assets/ingame/viewui/menu-market.png" alt="市场" /></button>
+            <button type="button" data-panel="mail" title="信件" class="dock-txt">信件</button>
+            <button type="button" data-panel="quest" title="任务" class="dock-txt">任务</button>
+            <button type="button" data-panel="help" title="系统" class="dock-txt">系统</button>
+            <button type="button" id="btn-save" class="dock-txt">存档</button>
+            <a href="index.html" class="dock-txt">选服</a>
           </nav>
           <div class="dock-xp bar xp"><i id="xp-fill"></i><span id="xp-text"></span></div>
           <button type="button" id="btn-shop" class="shop-btn" title="商城">商</button>
