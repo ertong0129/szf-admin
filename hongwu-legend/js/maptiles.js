@@ -34,9 +34,12 @@
     _active: false,
     slices: {},
     sliceFail: {},
-    /* 原作舞台 1000 宽对 300px 切片为 1:1，约 3.3 块铺满宽度；HAR 京城游览一次预加载约 6×5 块（含四周缓冲）。 */
+    /* 原作舞台 GAME_WIDTH=1000、GAME_HEIGHT=545；切片 JPEG 300×300 1:1 铺在 mosaic 上。 */
     VIEW_NATIVE: 1000,
+    GAME_HEIGHT: 545,
+    CAMERA_OFFSET: 40,
     TILE_SRC: 300,
+    TILE_ISO: 44,
     CDN: 'http://mccq.static.mingchao.com/55598/com/maps'
   };
 
@@ -87,10 +90,29 @@
 
   T.iso = function (meta, mapId) {
     var walk = walkSize(mapId, meta);
-    var span = Math.max(1, walk.w + walk.h);
     var nativeW = meta.nativeW || meta.imgW;
     var nativeH = meta.nativeH || meta.imgH;
+    var mapW = meta.mapW || nativeW;
+    var mapH = meta.mapH || nativeH;
+    if (meta.isoTile) {
+      var tile = meta.isoTile || T.TILE_ISO;
+      return {
+        mode: 'swf',
+        walkW: walk.w,
+        walkH: walk.h,
+        tile: tile,
+        half: tile / 2,
+        ox: meta.offsetX || 0,
+        oy: meta.offsetY || 0,
+        nativeW: nativeW,
+        nativeH: nativeH,
+        mapW: mapW,
+        mapH: mapH
+      };
+    }
+    var span = Math.max(1, walk.w + walk.h);
     return {
+      mode: 'stretch',
       walkW: walk.w,
       walkH: walk.h,
       hw: nativeW / span,
@@ -99,12 +121,21 @@
       oy: (meta.originY || 0) * nativeH,
       originX: meta.originX || 0,
       nativeW: nativeW,
-      nativeH: nativeH
+      nativeH: nativeH,
+      mapW: mapW,
+      mapH: mapH
     };
   };
 
+  /* TileUitls.indexToFlat + getIsoIndexMidVertex：格子中心 (tx-ty)*44, (tx+ty)*22 + 22，再加 MCM offset。 */
   T.walkToImg = function (tx, ty, meta, mapId) {
     var iso = T.iso(meta, mapId);
+    if (iso.mode === 'swf') {
+      return {
+        x: (tx - ty) * iso.tile + iso.ox,
+        y: (tx + ty) * iso.half + iso.half + iso.oy
+      };
+    }
     return {
       x: iso.ox + (tx - ty + iso.originX) * iso.hw,
       y: iso.oy + (tx + ty) * iso.hh
@@ -113,9 +144,27 @@
 
   T.imgToWalk = function (ix, iy, meta, mapId) {
     var iso = T.iso(meta, mapId);
-    var u = (ix - iso.ox) / iso.hw - iso.originX;
-    var v = (iy - iso.oy) / iso.hh;
+    var u, v;
+    if (iso.mode === 'swf') {
+      u = (ix - iso.ox) / iso.tile;
+      v = (iy - iso.oy - iso.half) / iso.half;
+      return { tx: (u + v) / 2, ty: (v - u) / 2 };
+    }
+    u = (ix - iso.ox) / iso.hw - iso.originX;
+    v = (iy - iso.oy) / iso.hh;
     return { tx: (u + v) / 2, ty: (v - u) / 2 };
+  };
+
+  /* CurrentCityView.ptToSmallmap / onClickMap：小地图像素 ↔ mosaic ↔ 格子。 */
+  T.walkToRadar = function (tx, ty, w, h, meta, mapId) {
+    var img = T.walkToImg(tx, ty, meta, mapId);
+    var iso = T.iso(meta, mapId);
+    return { x: img.x / iso.mapW * w, y: img.y / iso.mapH * h };
+  };
+
+  T.radarToWalk = function (rx, ry, w, h, meta, mapId) {
+    var iso = T.iso(meta, mapId);
+    return T.imgToWalk(rx / w * iso.mapW, ry / h * iso.mapH, meta, mapId);
   };
 
   T.worldToScreen = function (x, y) {
@@ -158,10 +207,10 @@
     return (w || 1000) / T.VIEW_NATIVE;
   };
 
-  /* 人物与地图同比例：时装立绘约 80px，300px 地砖上约占 1/4 高，接近原作街上的人。 */
+  /* 时装格 104×132，TILE_SIZE=44，街上约 3 格高；与 mosaic 1:1，不再压成 64×82。 */
   T.spriteZoom = function () {
     var s = T.cam.scale || 1;
-    return Math.max(0.5, Math.min(1.12, s * 0.92));
+    return Math.max(0.7, Math.min(1.35, s));
   };
 
   T.sliceKey = function (folder, row, col) {
@@ -203,8 +252,8 @@
     T.cam.y = pos.y;
     T.cam.scale = scale;
     T.cam.cx = w / 2;
-    /* HAR 京城镜头一次预加载约 6×5 块：1000×600 视口居中再加一圈缓冲。 */
-    T.cam.cy = h * 0.5;
+    /* GameScene.centerCamera：Y 向再加 cameraOffset=40，角色略偏画面上方。 */
+    T.cam.cy = h * 0.5 + T.CAMERA_OFFSET * scale;
     setScene(true);
     return true;
   };

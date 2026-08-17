@@ -35,7 +35,7 @@ UA = "Mozilla/5.0"
 
 # folder -> in-game mapId / walk grid (js/npc-layout.js MAP_SIZE, plus buildMap overrides)
 MAPS = {
-    "jing_cheng": {"mapId": "capital", "walkW": 175, "walkH": 172, "originX": 51, "name": "京城"},
+    "jing_cheng": {"mapId": "capital", "walkW": 175, "walkH": 172, "isoTile": 44, "offsetX": 3520, "offsetY": -1232, "mapW": 7515, "mapH": 4640, "name": "京城"},
     "kai_feng": {"mapId": "kaifeng", "walkW": 160, "walkH": 120, "name": "开封"},
     "ping_jiang": {"mapId": "pingjiang", "walkW": 120, "walkH": 110, "name": "平江"},
     "quan_zhou": {"mapId": "quanzhou", "walkW": 135, "walkH": 135, "name": "泉州"},
@@ -242,7 +242,11 @@ def process_folder(folder: str, info: dict, workers: int, max_edge: int) -> dict
         "imgH": small.size[1],
         "walkW": info["walkW"],
         "walkH": info["walkH"],
-        "originX": int(info.get("originX") or 0),
+        "isoTile": int(info["isoTile"]) if info.get("isoTile") else None,
+        "offsetX": int(info["offsetX"]) if info.get("offsetX") is not None else None,
+        "offsetY": int(info["offsetY"]) if info.get("offsetY") is not None else None,
+        "mapW": int(info["mapW"]) if info.get("mapW") else None,
+        "mapH": int(info["mapH"]) if info.get("mapH") else None,
         "originY": 0,
         "viewNative": 1000,
         "tiles": len(files),

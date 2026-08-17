@@ -208,8 +208,17 @@
     var c = document.getElementById('region-canvas');
     if (!c || !G.grid || !G.player) return;
     var r = c.getBoundingClientRect();
-    var gx = Math.floor(((ev.clientX - r.left) / r.width) * G.grid[0].length);
-    var gy = Math.floor(((ev.clientY - r.top) / r.height) * G.grid.length);
+    var px = ev.clientX - r.left, py = ev.clientY - r.top;
+    var gx, gy;
+    if (window.MapTiles && MapTiles.has(G.mapId)) {
+      var meta = MapTiles.metaFor(G.mapId);
+      var wlk = MapTiles.radarToWalk(px / r.width * c.width, py / r.height * c.height, c.width, c.height, meta, G.mapId);
+      gx = Math.floor(wlk.tx);
+      gy = Math.floor(wlk.ty);
+    } else {
+      gx = Math.floor((px / r.width) * G.grid[0].length);
+      gy = Math.floor((py / r.height) * G.grid.length);
+    }
     var cx = document.getElementById('map-cx');
     var cy = document.getElementById('map-cy');
     if (cx) cx.value = String(gx);
@@ -222,8 +231,17 @@
     var el = document.getElementById('map-cursor');
     if (!c || !el || !G.grid) return;
     var r = c.getBoundingClientRect();
-    var gx = Math.floor(((ev.clientX - r.left) / r.width) * G.grid[0].length);
-    var gy = Math.floor(((ev.clientY - r.top) / r.height) * G.grid.length);
+    var px = ev.clientX - r.left, py = ev.clientY - r.top;
+    var gx, gy;
+    if (window.MapTiles && MapTiles.has(G.mapId)) {
+      var meta = MapTiles.metaFor(G.mapId);
+      var wlk = MapTiles.radarToWalk(px / r.width * c.width, py / r.height * c.height, c.width, c.height, meta, G.mapId);
+      gx = Math.floor(wlk.tx);
+      gy = Math.floor(wlk.ty);
+    } else {
+      gx = Math.floor((px / r.width) * G.grid[0].length);
+      gy = Math.floor((py / r.height) * G.grid.length);
+    }
     el.textContent = '[' + gx + ',' + gy + ']';
   }
 

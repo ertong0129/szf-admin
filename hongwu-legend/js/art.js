@@ -605,8 +605,8 @@
     var z = A.worldScale();
     A.drawAura(ctx, screen.x, screen.y, ride ? 'rgba(255,170,70,0.62)' : 'rgba(90,210,255,0.5)', time, (ride ? 1.15 : 1) * z);
     if (img && img.width) {
-      var dw = (ride ? 70 : 64) * z;
-      var dh = (ride ? 76 : 82) * z;
+      var dw = (ride ? 112 : 104) * z;
+      var dh = (ride ? 112 : 132) * z;
       ctx.save();
       ctx.translate(screen.x, screen.y + (ride ? 4 : 10) * z);
       if (fr.flip) ctx.scale(-1, 1);

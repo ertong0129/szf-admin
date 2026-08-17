@@ -208,10 +208,10 @@ html, body {
 }
 .chat-box {
   position: absolute;
-  left: 0.6cqw;
-  bottom: 0.5cqw;
-  width: 32cqw;
-  height: 14.5cqw;
+  left: 0.5cqw;
+  bottom: 0.35cqw;
+  width: 23.6cqw;
+  height: 9.8cqw;
   z-index: 4;
   background:
     url('../assets/official/ui/chat-bar.png') center / 100% 100% no-repeat,
@@ -219,7 +219,7 @@ html, body {
   border: 1px solid #2ec4c8;
   display: flex;
   flex-direction: column;
-  font-size: 1.1cqw;
+  font-size: 1cqw;
   pointer-events: auto;
 }
 .chat-tabs {
@@ -563,19 +563,19 @@ html, body {
   position: absolute;
   right: 0.2cqw;
   top: 0.2cqw;
-  width: 16.4cqw;
+  width: 16.2cqw;
   display: flex;
   flex-direction: column;
-  gap: 0.4cqw;
+  gap: 0.25cqw;
   z-index: 4;
   pointer-events: auto;
   overflow: visible;
 }
 .minimap-wrap {
   position: relative;
-  width: 15.2cqw;
-  height: 12.9cqw;
-  margin: 0 auto 0.2cqw;
+  width: 16.2cqw;
+  height: 13.7cqw;
+  margin: 0 auto 0.15cqw;
   overflow: visible;
   z-index: 5;
 }
@@ -744,15 +744,15 @@ html, body {
 .char-tabs button.on { color: #ffe7a0; border-color: #ffe7a0; }
 .quest-box[hidden] { display: none !important; }
 .quest-box, .log-box {
-  margin-top: 0.2cqw;
+  margin-top: 0.15cqw;
   background:
     url('../assets/ingame/viewui/panel-round.png') center / 100% 100% no-repeat,
     rgba(8, 22, 24, 0.86);
   border: 1px solid #2ec4c8;
-  padding: 8px 10px;
-  font-size: 12px;
-  line-height: 1.55;
-  max-height: 22cqw;
+  padding: 0.45cqw 0.7cqw 0.5cqw;
+  font-size: 1.05cqw;
+  line-height: 1.4;
+  max-height: 12.2cqw;
   overflow: auto;
 }
 .quest-tabs {
@@ -807,12 +807,13 @@ html, body {
 .skill-bar {
   position: absolute;
   left: 5.2%;
-  top: 14%;
+  top: 22%;
   display: flex;
-  gap: 0.35%;
+  gap: 0.28%;
   align-items: stretch;
-  height: 72%;
-  width: 36.6%;
+  height: 56%;
+  width: 36.1%;
+  background: url('../assets/ingame/viewui/skill-slots.png') left center / 100% 100% no-repeat;
 }
 .skill-slot, .util-slot {
   height: 100%;

@@ -335,6 +335,12 @@
     if (!G.grid) return;
     var gw = G.grid[0].length, gh = G.grid.length;
     var sx = w / gw, sy = h / gh;
+    var tiled = window.MapTiles && MapTiles.has && MapTiles.has(G.mapId);
+    var tileMeta = tiled ? MapTiles.metaFor(G.mapId) : null;
+    function radarPt(tx, ty) {
+      if (tiled && tileMeta) return MapTiles.walkToRadar(tx, ty, w, h, tileMeta, G.mapId);
+      return { x: tx * sx, y: ty * sy };
+    }
     if (!labeled || !city) {
       for (var y = 0; y < gh; y++) {
         for (var x = 0; x < gw; x++) {
@@ -350,13 +356,15 @@
     if (G.path && G.path.length) {
       ctx.fillStyle = '#ffd36a';
       G.path.forEach(function (wp) {
-        ctx.fillRect(wp.x * sx, wp.y * sy, Math.max(2, sx), Math.max(2, sy));
+        var rp = radarPt(wp.x, wp.y);
+        ctx.fillRect(rp.x, rp.y, Math.max(2, tiled ? 3 : sx), Math.max(2, tiled ? 3 : sy));
       });
     }
     G.portals.forEach(function (pt) {
+      var rp = radarPt(pt.x + 0.5, pt.y + 0.5);
       ctx.fillStyle = '#4aa8ff';
       ctx.beginPath();
-      ctx.arc((pt.x + 0.5) * sx, (pt.y + 0.5) * sy, labeled ? 4 : 2, 0, Math.PI * 2);
+      ctx.arc(rp.x, rp.y, labeled ? 4 : 2, 0, Math.PI * 2);
       ctx.fill();
       if (labeled) {
         ctx.fillStyle = '#4aa8ff';
@@ -365,13 +373,14 @@
         ctx.strokeStyle = '#041014';
         ctx.lineWidth = 3;
         var lab = pt.label || ('往' + (pt.to || '传送'));
-        ctx.strokeText(lab, (pt.x + 0.5) * sx + 5, (pt.y + 0.5) * sy);
-        ctx.fillText(lab, (pt.x + 0.5) * sx + 5, (pt.y + 0.5) * sy);
+        ctx.strokeText(lab, rp.x + 5, rp.y);
+        ctx.fillText(lab, rp.x + 5, rp.y);
       }
     });
     G.npcs.forEach(function (n) {
+      var rp = radarPt(n.x / TILE, n.y / TILE);
       ctx.fillStyle = '#ffd36a';
-      ctx.fillRect(n.x / TILE * sx - 2, n.y / TILE * sy - 2, 4, 4);
+      ctx.fillRect(rp.x - 2, rp.y - 2, 4, 4);
       if (labeled) {
         var mark = (D.MAP_MARK && D.MAP_MARK[n.id]) || '';
         if (mark) {
@@ -380,23 +389,26 @@
           ctx.textAlign = 'left';
           ctx.strokeStyle = '#041014';
           ctx.lineWidth = 3;
-          ctx.strokeText(mark, n.x / TILE * sx + 5, n.y / TILE * sy);
-          ctx.fillText(mark, n.x / TILE * sx + 5, n.y / TILE * sy);
+          ctx.strokeText(mark, rp.x + 5, rp.y);
+          ctx.fillText(mark, rp.x + 5, rp.y);
         }
       }
     });
     G.entities.forEach(function (e) {
+      var rp = radarPt(e.x / TILE, e.y / TILE);
       ctx.fillStyle = e.boss ? '#ffd36a' : '#c8312a';
-      ctx.fillRect(e.x / TILE * sx - 1, e.y / TILE * sy - 1, 3, 3);
+      ctx.fillRect(rp.x - 1, rp.y - 1, 3, 3);
     });
     (G.peers || []).forEach(function (o) {
       if (o.mapId && o.mapId !== G.mapId) return;
+      var rp = radarPt(o.x / TILE, o.y / TILE);
       ctx.fillStyle = o.red ? '#ff6a6a' : '#6fdf7a';
-      ctx.fillRect(o.x / TILE * sx - 2, o.y / TILE * sy - 2, 4, 4);
+      ctx.fillRect(rp.x - 2, rp.y - 2, 4, 4);
     });
     if (G.player) {
+      var me = radarPt(G.player.x / TILE, G.player.y / TILE);
       ctx.fillStyle = '#e24a3a';
-      ctx.fillRect(G.player.x / TILE * sx - 3, G.player.y / TILE * sy - 3, 6, 6);
+      ctx.fillRect(me.x - 3, me.y - 3, 6, 6);
     }
   }
 

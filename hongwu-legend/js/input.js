@@ -31,7 +31,7 @@
       for (var n = 0; n < G.npcs.length; n++) {
         var ns = MapTiles.worldToScreen(G.npcs[n].x, G.npcs[n].y);
         var z = (window.MapTiles && MapTiles.spriteZoom) ? MapTiles.spriteZoom() : 1;
-        if (Math.hypot(cx - ns.x, cy - (ns.y - 36 * z)) < 22 + 24 * z) { H.talkNpc(G.npcs[n]); return; }
+        if (Math.hypot(cx - ns.x, cy - (ns.y - 66 * z)) < 28 + 28 * z) { H.talkNpc(G.npcs[n]); return; }
       }
     }
     for (var i = 0; i < G.npcs.length; i++) {
