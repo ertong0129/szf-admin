@@ -579,16 +579,24 @@
     ctx.fillText(name, x, y);
   };
 
+  A.worldScale = function () {
+    if (root.MapTiles && MapTiles.active && MapTiles.active() && MapTiles.spriteZoom) {
+      return MapTiles.spriteZoom();
+    }
+    return 1;
+  };
+
   A.drawHero = function (ctx, p, screen, time) {
     var fr = A.heroFrame(p, time, false);
     var img = A.imgs[fr.key];
     var ride = fr.ride;
-    A.drawAura(ctx, screen.x, screen.y, ride ? 'rgba(255,170,70,0.62)' : 'rgba(90,210,255,0.5)', time, ride ? 1.15 : 1);
+    var z = A.worldScale();
+    A.drawAura(ctx, screen.x, screen.y, ride ? 'rgba(255,170,70,0.62)' : 'rgba(90,210,255,0.5)', time, (ride ? 1.15 : 1) * z);
     if (img && img.width) {
-      var dw = ride ? 70 : 64;
-      var dh = ride ? 76 : 82;
+      var dw = (ride ? 70 : 64) * z;
+      var dh = (ride ? 76 : 82) * z;
       ctx.save();
-      ctx.translate(screen.x, screen.y + (ride ? 4 : 10));
+      ctx.translate(screen.x, screen.y + (ride ? 4 : 10) * z);
       if (fr.flip) ctx.scale(-1, 1);
       ctx.drawImage(img, fr.col * fr.cellW, fr.row * fr.cellH, fr.cellW, fr.cellH, -dw / 2, -dh, dw, dh);
       ctx.restore();
@@ -597,54 +605,59 @@
     img = A.imgs[A.classKey(p.cls)];
     var flip = Math.cos(p.facing) < 0;
     var moving = !!p._moving;
-    var bob = Math.sin(time * (moving ? 11 : 2.2)) * (moving ? 3.2 : 0.7);
+    var bob = Math.sin(time * (moving ? 11 : 2.2)) * (moving ? 3.2 : 0.7) * z;
     var lean = moving ? Math.sin(time * 11) * 0.08 : 0;
-    if (!billboard(ctx, img, screen.x, screen.y + (ride ? 4 : 10), 48, 96, flip, bob - (ride ? 8 : 0), lean)) {
+    if (!billboard(ctx, img, screen.x, screen.y + (ride ? 4 : 10) * z, 48 * z, 96 * z, flip, bob - (ride ? 8 : 0) * z, lean)) {
       return false;
     }
     return true;
   };
 
   A.drawNpc = function (ctx, n, screen, time) {
-    A.drawAura(ctx, screen.x, screen.y, 'rgba(255,210,80,0.4)', time, 0.85);
+    var z = A.worldScale();
+    A.drawAura(ctx, screen.x, screen.y, 'rgba(255,210,80,0.4)', time, 0.85 * z);
     var key = A.npcKey(n.id);
     var img = A.imgs[key] || A.imgs.officer;
     var box = A.spriteBox(key, img);
-    billboard(ctx, img, screen.x, screen.y + 8, box.w, box.h, false, Math.sin(time * 2) * 0.6, 0);
+    var nw = box.w * z, nh = box.h * z;
+    billboard(ctx, img, screen.x, screen.y + 8 * z, nw, nh, false, Math.sin(time * 2) * 0.6 * z, 0);
     if (n.questMark) {
       ctx.fillStyle = n.questMark === '?' ? '#6fdf7a' : '#ffd36a';
-      ctx.font = 'bold 16px serif';
+      ctx.font = 'bold ' + Math.round(16 * Math.max(0.75, z)) + 'px serif';
       ctx.textAlign = 'center';
-      ctx.fillText(n.questMark === '?' ? '？' : '！', screen.x, screen.y - box.h + 18);
+      ctx.fillText(n.questMark === '?' ? '？' : '！', screen.x, screen.y - nh + 18 * z);
     }
-    A.drawNameplate(ctx, screen.x, screen.y + 18, n.title || '', n.name, '#7dff7a');
+    A.drawNameplate(ctx, screen.x, screen.y + 18 * z, n.title || '', n.name, '#7dff7a');
   };
 
   A.drawMob = function (ctx, e, screen, time) {
     var key = A.mobKey(e.kind);
     var img = A.imgs[key];
-    var scale = e.boss ? 1.35 : 1;
+    var z = A.worldScale();
+    var scale = (e.boss ? 1.35 : 1) * z;
     var w = (key === 'tiger' || key === 'fox' ? 56 : 48) * scale;
     var h = (key === 'tiger' ? 88 : 96) * scale;
     A.drawAura(ctx, screen.x, screen.y, e.boss ? 'rgba(255,80,40,0.45)' : 'rgba(80,20,20,0.3)', time, scale);
-    billboard(ctx, img, screen.x, screen.y + 8, w, h, Math.cos(e.facing || 0) < 0, Math.sin(time * 6 + e.x) * 1.2, 0);
+    billboard(ctx, img, screen.x, screen.y + 8 * z, w, h, Math.cos(e.facing || 0) < 0, Math.sin(time * 6 + e.x) * 1.2 * z, 0);
     return !!img;
   };
 
   A.drawPet = function (ctx, pet, screen, time) {
+    var z = A.worldScale();
     var img = A.imgs[A.petKey(pet.id)] || A.imgs.tiger;
-    A.drawAura(ctx, screen.x, screen.y, 'rgba(160,200,255,0.35)', time, 0.7);
-    billboard(ctx, img, screen.x, screen.y + 6, 40, 56, false, Math.sin(time * 7) * 1, 0);
-    A.drawNameplate(ctx, screen.x, screen.y + 14, '', pet.name, '#c8e6ff');
+    A.drawAura(ctx, screen.x, screen.y, 'rgba(160,200,255,0.35)', time, 0.7 * z);
+    billboard(ctx, img, screen.x, screen.y + 6 * z, 40 * z, 56 * z, false, Math.sin(time * 7) * z, 0);
+    A.drawNameplate(ctx, screen.x, screen.y + 14 * z, '', pet.name, '#c8e6ff');
   };
 
   A.drawCart = function (ctx, screen) {
+    var z = A.worldScale();
     if (A.imgs.cart) {
-      ctx.drawImage(A.imgs.cart, screen.x - 28, screen.y - 36, 56, 48);
+      ctx.drawImage(A.imgs.cart, screen.x - 28 * z, screen.y - 36 * z, 56 * z, 48 * z);
       return;
     }
     ctx.fillStyle = '#6a3a18';
-    ctx.fillRect(screen.x - 18, screen.y - 8, 36, 16);
+    ctx.fillRect(screen.x - 18 * z, screen.y - 8 * z, 36 * z, 16 * z);
   };
 
   root.Art = A;

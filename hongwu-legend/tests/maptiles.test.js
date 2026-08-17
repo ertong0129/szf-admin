@@ -60,4 +60,13 @@ var world = T.screenToWorld(500, 300);
 assert.ok(Math.abs(world.x - 110 * 40) < 0.01);
 assert.ok(Math.abs(world.y - 83 * 40) < 0.01);
 
+assert.strictEqual(T.VIEW_NATIVE, 1260);
+assert.ok(Math.abs(T.displayScale(1000) - 1000 / 1260) < 1e-9);
+T.cam.scale = T.displayScale(1000);
+assert.ok(T.spriteZoom() < T.displayScale(1000), '角色应比地图再略缩一点，避免在街上显得过大');
+assert.ok(T.spriteZoom() > 0.5, '角色缩完后仍应能看清');
+var tileOnScreen = 300 * T.displayScale(1000);
+var heroH = 82 * T.spriteZoom();
+assert.ok(heroH / tileOnScreen < 0.28, '人物相对 300px 地砖应明显更小，接近原作截图');
+
 console.log('maptiles.test.js ok');

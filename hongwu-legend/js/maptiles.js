@@ -31,7 +31,13 @@
     imgs: {},
     loading: {},
     cam: { x: 0, y: 0, scale: 1, mapId: '', cx: 0, cy: 0 },
-    _active: false
+    _active: false,
+    slices: {},
+    sliceFail: {},
+    /* 拼图后的显示比例：1000 宽舞台约看到 4.2 块 300px 切片（原作截图那种人小景细）。 */
+    VIEW_NATIVE: 1260,
+    TILE_SRC: 300,
+    CDN: 'http://mccq.static.mingchao.com/55598/com/maps'
   };
 
   function walkSize(mapId, meta) {
@@ -145,6 +151,36 @@
     }
   }
 
+  T.displayScale = function (w) {
+    return (w || 1000) / T.VIEW_NATIVE;
+  };
+
+  /* 角色随地图一起缩：原作立绘约一块地砖高度的 1/5，人走在宽街上才显得精致。 */
+  T.spriteZoom = function () {
+    var s = T.cam.scale || 1;
+    return Math.max(0.42, Math.min(1.05, s * 0.78));
+  };
+
+  T.sliceKey = function (folder, row, col) {
+    return folder + '/' + row + '_' + col;
+  };
+
+  T.ensureSlice = function (folder, row, col) {
+    var key = T.sliceKey(folder, row, col);
+    if (T.slices[key] || T.sliceFail[key]) return T.slices[key] || null;
+    if (typeof Image === 'undefined') return null;
+    T.sliceFail[key] = 1;
+    var img = new Image();
+    img.onload = function () {
+      T.slices[key] = img;
+      T.sliceFail[key] = 0;
+    };
+    img.onerror = function () { T.sliceFail[key] = 2; };
+    img.referrerPolicy = 'no-referrer';
+    img.src = T.CDN + '/' + folder + '/' + row + '_' + col + '.jpg';
+    return null;
+  };
+
   T.follow = function (mapId, player, w, h) {
     var meta = T.metaFor(mapId);
     if (!meta || !player) {
@@ -158,13 +194,13 @@
       return false;
     }
     var pos = T.walkToImg(player.x / T.TILE, player.y / T.TILE, meta, mapId);
-    var scale = w / Math.max(1, meta.viewNative || 960);
+    var scale = T.displayScale(w);
     T.cam.mapId = mapId;
     T.cam.x = pos.x;
     T.cam.y = pos.y;
     T.cam.scale = scale;
     T.cam.cx = w / 2;
-    T.cam.cy = h * 0.62;
+    T.cam.cy = h * 0.58;
     setScene(true);
     return true;
   };
@@ -175,13 +211,33 @@
     var img = T.image(mapId);
     if (!meta || !img) return;
     var s = T.cam.scale || 1;
-    var dw = meta.nativeW * s;
-    var dh = meta.nativeH * s;
+    var nativeW = meta.nativeW || meta.cols * T.TILE_SRC;
+    var nativeH = meta.nativeH || meta.rows * T.TILE_SRC;
+    var dw = nativeW * s;
+    var dh = nativeH * s;
     var dx = T.cam.cx - T.cam.x * s;
     var dy = T.cam.cy - T.cam.y * s;
+    var tile = meta.tileSize || T.TILE_SRC;
     ctx.fillStyle = '#0a1214';
     ctx.fillRect(0, 0, w, h);
+    if (ctx.imageSmoothingEnabled != null) ctx.imageSmoothingEnabled = true;
+    if (ctx.imageSmoothingQuality) ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(img, 0, 0, img.width, img.height, dx, dy, dw, dh);
+    var c0 = Math.max(0, Math.floor((T.cam.x - T.cam.cx / s) / tile) - 1);
+    var r0 = Math.max(0, Math.floor((T.cam.y - T.cam.cy / s) / tile) - 1);
+    var c1 = Math.min(meta.cols - 1, Math.ceil((T.cam.x + (w - T.cam.cx) / s) / tile) + 1);
+    var r1 = Math.min(meta.rows - 1, Math.ceil((T.cam.y + (h - T.cam.cy) / s) / tile) + 1);
+    var row, col, slice, sx, sy, ts;
+    ts = tile * s;
+    for (row = r0; row <= r1; row++) {
+      for (col = c0; col <= c1; col++) {
+        slice = T.ensureSlice(meta.folder, row, col);
+        if (!slice || !slice.width) continue;
+        sx = dx + col * ts;
+        sy = dy + row * ts;
+        ctx.drawImage(slice, 0, 0, slice.width, slice.height, sx, sy, ts, ts);
+      }
+    }
   };
 
   function loadImage(src, done) {

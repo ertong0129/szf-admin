@@ -17,7 +17,7 @@
       "walkW": 140,
       "walkH": 130,
       "originY": 0,
-      "viewNative": 960,
+      "viewNative": 1260,
       "tiles": 416,
       "file": "jing_cheng.jpg",
       "bytes": 848980
@@ -36,7 +36,7 @@
       "walkW": 160,
       "walkH": 120,
       "originY": 0,
-      "viewNative": 960,
+      "viewNative": 1260,
       "tiles": 416,
       "file": "kai_feng.jpg",
       "bytes": 856793
@@ -55,7 +55,7 @@
       "walkW": 120,
       "walkH": 110,
       "originY": 0,
-      "viewNative": 960,
+      "viewNative": 1260,
       "tiles": 238,
       "file": "ping_jiang.jpg",
       "bytes": 964311
@@ -74,7 +74,7 @@
       "walkW": 135,
       "walkH": 135,
       "originY": 0,
-      "viewNative": 960,
+      "viewNative": 1260,
       "tiles": 294,
       "file": "quan_zhou.jpg",
       "bytes": 706706
@@ -93,7 +93,7 @@
       "walkW": 120,
       "walkH": 130,
       "originY": 0,
-      "viewNative": 960,
+      "viewNative": 1260,
       "tiles": 336,
       "file": "zhe_dong.jpg",
       "bytes": 685804
@@ -112,7 +112,7 @@
       "walkW": 100,
       "walkH": 50,
       "originY": 0,
-      "viewNative": 960,
+      "viewNative": 1260,
       "tiles": 187,
       "file": "xi_liang.jpg",
       "bytes": 565188
@@ -131,7 +131,7 @@
       "walkW": 80,
       "walkH": 115,
       "originY": 0,
-      "viewNative": 960,
+      "viewNative": 1260,
       "tiles": 204,
       "file": "xin_shou_cun.jpg",
       "bytes": 782824
@@ -150,7 +150,7 @@
       "walkW": 110,
       "walkH": 80,
       "originY": 0,
-      "viewNative": 960,
+      "viewNative": 1260,
       "tiles": 286,
       "file": "heng_jian_shan.jpg",
       "bytes": 744750
@@ -169,7 +169,7 @@
       "walkW": 115,
       "walkH": 150,
       "originY": 0,
-      "viewNative": 960,
+      "viewNative": 1260,
       "tiles": 384,
       "file": "shen_nong_jia.jpg",
       "bytes": 844996
@@ -188,7 +188,7 @@
       "walkW": 115,
       "walkH": 115,
       "originY": 0,
-      "viewNative": 960,
+      "viewNative": 1260,
       "tiles": 252,
       "file": "xing_hua_ling.jpg",
       "bytes": 616581
@@ -207,7 +207,7 @@
       "walkW": 110,
       "walkH": 105,
       "originY": 0,
-      "viewNative": 960,
+      "viewNative": 1260,
       "tiles": 96,
       "file": "an_nan.jpg",
       "bytes": 951242
@@ -226,7 +226,7 @@
       "walkW": 90,
       "walkH": 100,
       "originY": 0,
-      "viewNative": 960,
+      "viewNative": 1260,
       "tiles": 204,
       "file": "da_mo.jpg",
       "bytes": 443432
@@ -245,7 +245,7 @@
       "walkW": 50,
       "walkH": 36,
       "originY": 0,
-      "viewNative": 960,
+      "viewNative": 1260,
       "tiles": 140,
       "file": "tu_mu_bao.jpg",
       "bytes": 622092
@@ -264,7 +264,7 @@
       "walkW": 50,
       "walkH": 36,
       "originY": 0,
-      "viewNative": 960,
+      "viewNative": 1260,
       "tiles": 221,
       "file": "jian_zhou.jpg",
       "bytes": 797544
@@ -283,7 +283,7 @@
       "walkW": 90,
       "walkH": 85,
       "originY": 0,
-      "viewNative": 960,
+      "viewNative": 1260,
       "tiles": 336,
       "file": "bian_cheng_1.jpg",
       "bytes": 779515
@@ -302,7 +302,7 @@
       "walkW": 24,
       "walkH": 24,
       "originY": 0,
-      "viewNative": 960,
+      "viewNative": 1260,
       "tiles": 18,
       "file": "jing_ji_chang.jpg",
       "bytes": 281558
@@ -321,7 +321,7 @@
       "walkW": 50,
       "walkH": 36,
       "originY": 0,
-      "viewNative": 960,
+      "viewNative": 1260,
       "tiles": 168,
       "file": "bu_yu_er_hai.jpg",
       "bytes": 818750
@@ -340,7 +340,7 @@
       "walkW": 32,
       "walkH": 22,
       "originY": 0,
-      "viewNative": 960,
+      "viewNative": 1260,
       "tiles": 240,
       "file": "shen_gong_die_ying.jpg",
       "bytes": 734991
@@ -359,7 +359,7 @@
       "walkW": 32,
       "walkH": 22,
       "originY": 0,
-      "viewNative": 960,
+      "viewNative": 1260,
       "tiles": 204,
       "file": "bu_bu_jing_xin.jpg",
       "bytes": 870847

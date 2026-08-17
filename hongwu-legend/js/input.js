@@ -30,7 +30,7 @@
       var cx = ev.clientX - cr.left, cy = ev.clientY - cr.top;
       for (var n = 0; n < G.npcs.length; n++) {
         var ns = MapTiles.worldToScreen(G.npcs[n].x, G.npcs[n].y);
-        if (Math.hypot(cx - ns.x, cy - (ns.y - 28)) < 36) { H.talkNpc(G.npcs[n]); return; }
+        if (Math.hypot(cx - ns.x, cy - (ns.y - 20 * ((window.MapTiles && MapTiles.spriteZoom) ? MapTiles.spriteZoom() : 1))) < 28) { H.talkNpc(G.npcs[n]); return; }
       }
     }
     for (var i = 0; i < G.npcs.length; i++) {

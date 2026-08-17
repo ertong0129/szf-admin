@@ -304,14 +304,15 @@
 
   H.drawMonster = function (e) {
     var s = H.worldToScreen(e.x, e.y);
+    var z = (window.Art && Art.worldScale) ? Art.worldScale() : 1;
     if (!(window.Art && Art.ready && Art.drawMob(ctx, e, s, G.time))) {
-      H.drawActor(e.x, e.y, e.color, e.r, e.boss ? '★' : '');
+      H.drawActor(e.x, e.y, e.color, e.r * z, e.boss ? '★' : '');
     }
-    H.drawBar(s.x - 18, s.y - (e.boss ? 78 : 62), 36, e.hp / e.maxHp, '#c8312a');
+    H.drawBar(s.x - 18 * z, s.y - (e.boss ? 78 : 62) * z, 36 * Math.max(0.7, z), e.hp / e.maxHp, '#c8312a');
     ctx.fillStyle = e.boss ? '#ffd36a' : '#f3e6c4';
     ctx.font = '10px "Microsoft YaHei",sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText((e.boss ? '★ ' : '') + e.level + ' ' + e.name, s.x, s.y + 20);
+    ctx.fillText((e.boss ? '★ ' : '') + e.level + ' ' + e.name, s.x, s.y + 20 * z);
   }
 
   H.drawBar = function (x, y, w, ratio, color) {
