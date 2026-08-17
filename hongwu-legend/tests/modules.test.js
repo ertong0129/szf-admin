@@ -115,7 +115,7 @@ assert.ok(art.indexOf('A.npcArt') >= 0, 'NPC 贴图应按 npc_data 对照，不�
 });
 
 var serverJs = fs.readFileSync(path.join(root, 'server.js'), 'utf8');
-assert.ok(serverJs.indexOf("VERSION = '20260816z'") >= 0, 'server.js 版本应为 20260816z');
+assert.ok(serverJs.indexOf("VERSION = '20260817a'") >= 0, 'server.js 版本应为 20260817a');
 assert.ok(serverJs.indexOf("require('./js/store.js')") >= 0, 'server.js 应使用本机数据库');
 assert.ok(core.indexOf('localStorage.setItem(SAVE_KEY') < 0, '角色存档不应再写入 localStorage');
 assert.ok(fs.readFileSync(path.join(root, 'js/api.js'), 'utf8').indexOf('localStorage.setItem(TOKEN_KEY') < 0, '登录令牌不应再写入 localStorage');
@@ -141,10 +141,14 @@ assert.ok(ui.indexOf('INSTANCE_WARPS') >= 0, '地图列表应含副本');
 var input = fs.readFileSync(path.join(root, 'js/input.js'), 'utf8');
 assert.ok(input.indexOf('H.usePortal(pt)') >= 0, '当前地图跳转点应直接传送');
 assert.ok(input.indexOf('寻路至传送点') < 0, '跳转点不应再寻路');
-assert.ok(play.indexOf('id="play-fit"') >= 0, '局内应有等比缩放舞台');
-assert.ok(core.indexOf('H.STAGE_W = 1280') >= 0, '舞台应为 1280×800');
-assert.ok(core.indexOf('H.fitStage') >= 0, 'core.js 应按窗口等比缩放舞台');
-assert.ok(css.indexOf('left top / 100% 72px') < 0, '底栏切图不应横向拉长');
+assert.ok(play.indexOf('id="play-fit"') >= 0, '局内应有等比适配舞台');
+assert.ok(core.indexOf('H.STAGE_W = 1280') < 0, '不应再用 1280×800 的 transform 缩放');
+assert.ok(core.indexOf('H.fitStage') < 0, '不应再用 transform scale 拉舞台');
+assert.ok(core.indexOf('H.sizeCanvas') >= 0, '画布宽高应与显示尺寸一致，避免拉伸');
+assert.ok(css.indexOf('calc(100vh * 16 / 9)') >= 0, '舞台应按 16:9 真实尺寸适配');
+var playFitCss = css.slice(css.indexOf('.play-fit'), css.indexOf('.stage-frame'));
+assert.ok(playFitCss.indexOf('transform') < 0, 'play-fit 不应 transform scale');
+assert.ok(css.indexOf('left top / 100% 72px') < 0, '底栏切图不应只拉宽度');
 assert.ok(css.indexOf('background-size: 100% auto') >= 0, '底栏切图应保持原比例');
 
 console.log('modules.test.js ok');

@@ -118,33 +118,30 @@
     document.getElementById(id).classList.add('active');
   }
 
-  H.STAGE_W = 1280;
-  H.STAGE_H = 800;
-
-  H.fitStage = function () {
-    var play = document.getElementById('play-screen');
-    var fit = document.getElementById('play-fit');
-    if (!play || !fit) return;
-    var aw = play.clientWidth;
-    var ah = play.clientHeight;
-    var s = Math.min(aw / H.STAGE_W, ah / H.STAGE_H);
-    if (!isFinite(s) || s <= 0) s = 1;
-    fit.style.transform = 'scale(' + s + ')';
+  H.sizeCanvas = function (c, w, h) {
+    if (!c) return;
+    c.style.width = w + 'px';
+    c.style.height = h + 'px';
+    if (c.width !== w) c.width = w;
+    if (c.height !== h) c.height = h;
   };
 
   H.resize = function () {
-    H.fitStage();
-    var host = canvas.parentElement || canvas;
-    var w = host.clientWidth || canvas.clientWidth || H.STAGE_W;
-    var h = host.clientHeight || canvas.clientHeight || (H.STAGE_H - 104);
-    if (w < 2) w = H.STAGE_W;
-    if (h < 2) h = H.STAGE_H - 104;
-    canvas.width = w;
-    canvas.height = h;
-    if (canvas3d) {
-      canvas3d.width = w;
-      canvas3d.height = h;
+    var fit = document.getElementById('play-fit');
+    var dock = fit && fit.querySelector('.dock');
+    if (fit && dock) {
+      var barH = Math.round(68 * fit.clientWidth / 978);
+      dock.style.height = Math.max(104, barH + 36) + 'px';
+      var shop = dock.querySelector('.shop-btn');
+      if (shop) shop.style.height = barH + 'px';
     }
+    var host = canvas.parentElement || canvas;
+    var w = host.clientWidth | 0;
+    var h = host.clientHeight | 0;
+    if (w < 2) w = 960;
+    if (h < 2) h = 540;
+    H.sizeCanvas(canvas, w, h);
+    H.sizeCanvas(canvas3d, w, h);
     if (window.World3D) World3D.resize();
   }
 

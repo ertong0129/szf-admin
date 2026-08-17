@@ -110,8 +110,8 @@
   W.resize = function () {
     if (!renderer) return;
     var c = renderer.domElement;
-    var w = c.clientWidth || c.width || 800;
-    var h = c.clientHeight || c.height || 480;
+    var w = c.width || c.clientWidth || 800;
+    var h = c.height || c.clientHeight || 480;
     if (w < 2 || h < 2) return;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
