@@ -118,10 +118,27 @@
     document.getElementById(id).classList.add('active');
   }
 
+  H.STAGE_W = 1280;
+  H.STAGE_H = 800;
+
+  H.fitStage = function () {
+    var play = document.getElementById('play-screen');
+    var fit = document.getElementById('play-fit');
+    if (!play || !fit) return;
+    var aw = play.clientWidth;
+    var ah = play.clientHeight;
+    var s = Math.min(aw / H.STAGE_W, ah / H.STAGE_H);
+    if (!isFinite(s) || s <= 0) s = 1;
+    fit.style.transform = 'scale(' + s + ')';
+  };
+
   H.resize = function () {
+    H.fitStage();
     var host = canvas.parentElement || canvas;
-    var w = host.clientWidth || canvas.clientWidth;
-    var h = host.clientHeight || canvas.clientHeight;
+    var w = host.clientWidth || canvas.clientWidth || H.STAGE_W;
+    var h = host.clientHeight || canvas.clientHeight || (H.STAGE_H - 104);
+    if (w < 2) w = H.STAGE_W;
+    if (h < 2) h = H.STAGE_H - 104;
     canvas.width = w;
     canvas.height = h;
     if (canvas3d) {
@@ -196,5 +213,9 @@
   }
 
   window.addEventListener('resize', function () { H.resize(); });
+  window.addEventListener('orientationchange', function () { setTimeout(H.resize, 50); });
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', function () { H.resize(); });
+  }
 
 })((window.Hongwu = window.Hongwu || {}));

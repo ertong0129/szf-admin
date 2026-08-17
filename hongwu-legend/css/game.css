@@ -159,16 +159,26 @@ html, body {
   width: 200px;
 }
 
-/* —— 游玩层（原作式舞台 + 底栏） —— */
-#play-screen { background: #071214; }
+/* —— 游玩层（固定 16:10 舞台，等比缩放，不拉长） —— */
+#play-screen { background: #05090a; }
 #play-screen.active {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
 }
+.play-fit {
+  width: 1280px;
+  height: 800px;
+  flex: none;
+  position: relative;
+  overflow: hidden;
+  background: #071214;
+  transform-origin: center center;
+}
 .stage-frame {
-  flex: 1;
-  min-height: 0;
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   margin: 0;
@@ -188,8 +198,11 @@ html, body {
   position: relative;
   height: 104px;
   flex: 0 0 104px;
-  background:
-    #071214 url('../assets/ingame/viewui/skillbar.jpg') left top / 100% 72px no-repeat;
+  background-color: #071214;
+  background-image: url('../assets/ingame/viewui/skillbar.jpg');
+  background-repeat: no-repeat;
+  background-position: left top;
+  background-size: 100% auto;
   border-top: 0;
   overflow: hidden;
 }
@@ -197,11 +210,11 @@ html, body {
   position: absolute;
   left: 8px;
   bottom: 8px;
-  width: min(380px, 38vw);
+  width: 380px;
   height: 176px;
   z-index: 4;
   background:
-    url('../assets/official/ui/chat-bar.png') center / 100% 100% no-repeat,
+    url('../assets/official/ui/chat-bar.png') center / 100% auto no-repeat,
     rgba(8, 22, 24, 0.92);
   border: 1px solid #2ec4c8;
   display: flex;
@@ -534,7 +547,7 @@ html, body {
   min-width: 228px;
   padding: 10px 18px 12px;
   background:
-    url('../assets/ingame/viewui/tip.png') center / 100% 100% no-repeat,
+    url('../assets/ingame/viewui/tip.png') center / 100% auto no-repeat,
     rgba(8, 22, 24, 0.9);
   border: 1px solid #2ec4c8;
   box-shadow: 0 0 0 1px #0a1214, 0 8px 18px rgba(0, 0, 0, 0.35);
@@ -685,13 +698,13 @@ html, body {
 .quest-box, .log-box {
   margin-top: 8px;
   background:
-    url('../assets/ingame/viewui/panel-round.png') center / 100% 100% no-repeat,
+    url('../assets/ingame/viewui/panel-round.png') center / 100% auto no-repeat,
     rgba(8, 22, 24, 0.86);
   border: 1px solid #2ec4c8;
   padding: 8px 10px;
   font-size: 12px;
   line-height: 1.55;
-  max-height: 42vh;
+  max-height: 280px;
   overflow: auto;
 }
 .quest-tabs {
@@ -934,8 +947,8 @@ html, body {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -52%);
-  width: min(720px, 92vw);
-  max-height: 78vh;
+  width: min(720px, 92%);
+  max-height: 78%;
   overflow: auto;
   background: rgba(6, 16, 18, 0.9);
   border: 18px solid transparent;
@@ -1110,7 +1123,7 @@ html, body {
   bottom: 142px;
   max-width: 720px;
   background:
-    url('../assets/ingame/viewui/dialog-bar.png') center / 100% 100% no-repeat,
+    url('../assets/ingame/viewui/dialog-bar.png') center / 100% auto no-repeat,
     rgba(8, 16, 18, 0.92);
   border: 0;
   padding: 18px 28px 16px;
@@ -1141,7 +1154,7 @@ html, body {
   left: 50%;
   transform: translateX(-50%);
   background:
-    url('../assets/ingame/viewui/tip.png') center / 100% 100% no-repeat,
+    url('../assets/ingame/viewui/tip.png') center / 100% auto no-repeat,
     rgba(8, 22, 24, 0.92);
   border: 1px solid #2ec4c8;
   padding: 8px 18px;
@@ -1232,21 +1245,6 @@ html, body {
 .server-row:hover { border-color: #d4af37; }
 .portal-foot { text-align: center; color: #8a7350; font-size: 12px; padding: 16px; }
 
-@media (max-width: 1180px) {
-  .skill-slot, .util-slot { height: 36px; }
-  .skill-bar { left: 2%; width: 40%; gap: 0.3%; top: 10px; }
-  .dock-xp { left: 43%; }
-  .chat-box { width: min(280px, 34vw); height: 120px; }
-  .hud-frame { width: 174px; height: 86px; flex-basis: 174px; }
-  .portrait { left: 8px; top: 12px; width: 58px; height: 58px; }
-  .hud-lv { left: 52px; top: 58px; }
-  .hud-bars { left: 72px; top: 24px; width: 94px; }
-  .hud-acts { gap: 0; }
-  .hud-acts button { width: 40px; font-size: 10px; }
-  .hud-acts img { width: 36px; height: 36px; }
-  .hud-acts span { display: none; }
-}
-
 #map-overlay {
   position: absolute;
   inset: 0;
@@ -1257,10 +1255,10 @@ html, body {
 }
 #map-overlay[hidden] { display: none !important; }
 .map-win {
-  width: min(920px, 96vw);
+  width: min(920px, 96%);
   background:
     linear-gradient(180deg, rgba(8, 36, 38, 0.92), rgba(6, 22, 24, 0.96)),
-    url('../assets/ingame/viewui/panel.png') center / 100% 100% no-repeat;
+    url('../assets/ingame/viewui/panel.png') center / 100% auto no-repeat;
   border: 2px solid #2ec4c8;
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
   padding: 8px 14px 14px;

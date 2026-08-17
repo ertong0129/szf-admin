@@ -3,9 +3,11 @@
 body.portal-body {
   font-family: Arial, "Microsoft YaHei", sans-serif;
   background: url('../assets/official/login/bg.jpg') no-repeat center top #cabfa1;
+  background-size: auto;
   font-size: 12px;
   color: #cabfa1;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 ul { margin: 0; padding: 0; }
 li { list-style: none; }
@@ -13,7 +15,10 @@ li { list-style: none; }
 a img { border: 0; }
 a:link, a:visited { text-decoration: none; color: #cabfa1; }
 
-.box { width: 930px; margin: 0 auto; }
+.box { width: 930px; margin: 0 auto; transform-origin: top center; }
+@media (max-width: 940px) {
+  .box { transform: scale(calc(100vw / 930)); }
+}
 .hd1 { background: url('../assets/official/login/hd1.jpg') no-repeat; height: 65px; }
 .hd2 { background: url('../assets/official/login/hd2.jpg') no-repeat; height: 108px; }
 .hd21 { float: left; width: 790px; }
