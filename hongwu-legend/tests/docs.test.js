@@ -82,5 +82,21 @@ var path = require('path');
 var refs = fs.readFileSync(path.join(__dirname, '../docs/REFERENCES.md'), 'utf8');
 assert.ok(refs.indexOf('com/maps/{folder}/{row}_{col}.jpg') >= 0, '应记录场景切片 URL 规则');
 assert.ok(refs.indexOf('12_15.jpg') >= 0, '应举例京城切片');
+assert.ok(refs.indexOf('com/assets/skills/{8位数字}.png') >= 0, '应记录技能图标 URL 规则');
+assert.ok(refs.indexOf('21209001') >= 0 && refs.indexOf('21103002') >= 0, '应记录用户提供的技能图标样例');
+
+var skillIds = [];
+Object.keys(D.SKILLS).forEach(function (cls) {
+  D.SKILLS[cls].forEach(function (sk) {
+    assert.ok(sk.icon && /^\d{8}$/.test(sk.icon), cls + ' ' + sk.id + ' 应有 8 位技能图标编号');
+    var png = path.join(__dirname, '../assets/ingame/skills/' + sk.icon + '.png');
+    assert.ok(fs.existsSync(png), 'missing skill icon ' + sk.icon);
+    skillIds.push(sk.icon);
+  });
+});
+assert.strictEqual(skillIds.length, 24, '四职业应各 6 个技能图标');
+assert.strictEqual(new Set(skillIds).size, 24, '技能图标不应重复');
+assert.ok(skillIds.indexOf('21209001') >= 0, '射手破甲应使用样例 21209001');
+assert.ok(skillIds.indexOf('21103002') >= 0, '战士铁骨应使用样例 21103002');
 
 console.log('docs.test.js ok');

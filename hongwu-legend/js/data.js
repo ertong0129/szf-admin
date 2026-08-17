@@ -81,36 +81,36 @@
 
   D.SKILLS = {
     warrior: [
-      { id: 'w1', name: '破阵斩', key: '1', unlock: 1, cost: 8, cd: 2.2, range: 54, kind: 'melee', mul: 1.35, desc: '向前劈砍，对单体造成外功伤害。' },
-      { id: 'w2', name: '追魂击', key: '2', unlock: 4, cost: 14, cd: 6, range: 110, kind: 'dash', mul: 1.55, desc: '短距离冲锋并重创目标。' },
-      { id: 'w3', name: '雷霆一击', key: '3', unlock: 8, cost: 18, cd: 8, range: 58, kind: 'melee', mul: 2.1, desc: '蓄力重劈，高额单体伤害。' },
-      { id: 'w4', name: '旋风刃', key: '4', unlock: 12, cost: 22, cd: 10, range: 78, kind: 'nova', mul: 1.25, desc: '环身挥砍，打击周围敌人。' },
-      { id: 'w5', name: '血战', key: '5', unlock: 16, cost: 16, cd: 16, range: 0, kind: 'buff', buff: { patk: 0.18, dur: 10 }, desc: '短时间内提升外功攻击。' },
-      { id: 'w6', name: '铁骨', key: '6', unlock: 20, cost: 20, cd: 18, range: 0, kind: 'heal', heal: 0.22, desc: '稳住气息，回复部分生命。' }
+      { id: 'w1', name: '破阵斩', icon: '11101001', key: '1', unlock: 1, cost: 8, cd: 2.2, range: 54, kind: 'melee', mul: 1.35, desc: '向前劈砍，对单体造成外功伤害。' },
+      { id: 'w2', name: '追魂击', icon: '12104001', key: '2', unlock: 4, cost: 14, cd: 6, range: 110, kind: 'dash', mul: 1.55, desc: '短距离冲锋并重创目标。' },
+      { id: 'w3', name: '雷霆一击', icon: '12204001', key: '3', unlock: 8, cost: 18, cd: 8, range: 58, kind: 'melee', mul: 2.1, desc: '蓄力重劈，高额单体伤害。' },
+      { id: 'w4', name: '旋风刃', icon: '61201010', key: '4', unlock: 12, cost: 22, cd: 10, range: 78, kind: 'nova', mul: 1.25, desc: '环身挥砍，打击周围敌人。' },
+      { id: 'w5', name: '血战', icon: '12203001', key: '5', unlock: 16, cost: 16, cd: 16, range: 0, kind: 'buff', buff: { patk: 0.18, dur: 10 }, desc: '短时间内提升外功攻击。' },
+      { id: 'w6', name: '铁骨', icon: '21103002', key: '6', unlock: 20, cost: 20, cd: 18, range: 0, kind: 'heal', heal: 0.22, desc: '稳住气息，回复部分生命。' }
     ],
     archer: [
-      { id: 'a1', name: '追风箭', key: '1', unlock: 1, cost: 7, cd: 1.8, range: 190, kind: 'bolt', mul: 1.2, desc: '快速射出一支外功箭矢。' },
-      { id: 'a2', name: '穿云矢', key: '2', unlock: 4, cost: 12, cd: 5, range: 210, kind: 'pierce', mul: 1.15, desc: '穿透直线上的多个敌人。' },
-      { id: 'a3', name: '爆裂矢', key: '3', unlock: 8, cost: 18, cd: 8, range: 190, kind: 'blast', mul: 1.4, desc: '命中后爆炸，波及周围。' },
-      { id: 'a4', name: '凝神狙击', key: '4', unlock: 12, cost: 20, cd: 11, range: 220, kind: 'bolt', mul: 2.2, crit: 0.25, desc: '高暴击的蓄力一箭。' },
-      { id: 'a5', name: '破甲', key: '5', unlock: 16, cost: 14, cd: 12, range: 190, kind: 'debuff', debuff: { pdef: 0.2, dur: 8 }, desc: '降低目标外防。' },
-      { id: 'a6', name: '轻身', key: '6', unlock: 20, cost: 12, cd: 16, range: 0, kind: 'buff', buff: { speed: 0.28, dur: 8 }, desc: '提升移动与走位能力。' }
+      { id: 'a1', name: '追风箭', icon: '21201001', key: '1', unlock: 1, cost: 7, cd: 1.8, range: 190, kind: 'bolt', mul: 1.2, desc: '快速射出一支外功箭矢。' },
+      { id: 'a2', name: '穿云矢', icon: '21104001', key: '2', unlock: 4, cost: 12, cd: 5, range: 210, kind: 'pierce', mul: 1.15, desc: '穿透直线上的多个敌人。' },
+      { id: 'a3', name: '爆裂矢', icon: '61201020', key: '3', unlock: 8, cost: 18, cd: 8, range: 190, kind: 'blast', mul: 1.4, desc: '命中后爆炸，波及周围。' },
+      { id: 'a4', name: '凝神狙击', icon: '21101001', key: '4', unlock: 12, cost: 20, cd: 11, range: 220, kind: 'bolt', mul: 2.2, crit: 0.25, desc: '高暴击的蓄力一箭。' },
+      { id: 'a5', name: '破甲', icon: '21209001', key: '5', unlock: 16, cost: 14, cd: 12, range: 190, kind: 'debuff', debuff: { pdef: 0.2, dur: 8 }, desc: '降低目标外防。' },
+      { id: 'a6', name: '轻身', icon: '31107001', key: '6', unlock: 20, cost: 12, cd: 16, range: 0, kind: 'buff', buff: { speed: 0.28, dur: 8 }, desc: '提升移动与走位能力。' }
     ],
     wanderer: [
-      { id: 'x1', name: '落雁扇', key: '1', unlock: 1, cost: 9, cd: 2, range: 120, kind: 'bolt', magic: true, mul: 1.3, desc: '以内劲扇出一道气刃。' },
-      { id: 'x2', name: '劈空掌', key: '2', unlock: 4, cost: 14, cd: 5.5, range: 80, kind: 'melee', magic: true, mul: 1.7, desc: '近身爆发内功掌劲。' },
-      { id: 'x3', name: '风沙卷', key: '3', unlock: 8, cost: 20, cd: 9, range: 90, kind: 'nova', magic: true, mul: 1.2, desc: '扬起风沙，群攻周围。' },
-      { id: 'x4', name: '点穴', key: '4', unlock: 12, cost: 16, cd: 12, range: 110, kind: 'stun', magic: true, mul: 0.7, stun: 1.6, desc: '定身目标片刻。' },
-      { id: 'x5', name: '灵智', key: '5', unlock: 16, cost: 16, cd: 16, range: 0, kind: 'buff', buff: { matk: 0.2, dur: 10 }, desc: '短时间提升内功攻击。' },
-      { id: 'x6', name: '移形', key: '6', unlock: 20, cost: 18, cd: 14, range: 0, kind: 'blink', desc: '向鼠标方向短距离闪身。' }
+      { id: 'x1', name: '落雁扇', icon: '61201030', key: '1', unlock: 1, cost: 9, cd: 2, range: 120, kind: 'bolt', magic: true, mul: 1.3, desc: '以内劲扇出一道气刃。' },
+      { id: 'x2', name: '劈空掌', icon: '41102001', key: '2', unlock: 4, cost: 14, cd: 5.5, range: 80, kind: 'melee', magic: true, mul: 1.7, desc: '近身爆发内功掌劲。' },
+      { id: 'x3', name: '风沙卷', icon: '31204001', key: '3', unlock: 8, cost: 20, cd: 9, range: 90, kind: 'nova', magic: true, mul: 1.2, desc: '扬起风沙，群攻周围。' },
+      { id: 'x4', name: '点穴', icon: '41204001', key: '4', unlock: 12, cost: 16, cd: 12, range: 110, kind: 'stun', magic: true, mul: 0.7, stun: 1.6, desc: '定身目标片刻。' },
+      { id: 'x5', name: '灵智', icon: '41108001', key: '5', unlock: 16, cost: 16, cd: 16, range: 0, kind: 'buff', buff: { matk: 0.2, dur: 10 }, desc: '短时间提升内功攻击。' },
+      { id: 'x6', name: '移形', icon: '31201001', key: '6', unlock: 20, cost: 18, cd: 14, range: 0, kind: 'blink', desc: '向鼠标方向短距离闪身。' }
     ],
     healer: [
-      { id: 'h1', name: '灵击', key: '1', unlock: 1, cost: 8, cd: 1.9, range: 160, kind: 'bolt', magic: true, mul: 1.15, desc: '以药杖激出内劲弹。' },
-      { id: 'h2', name: '回春', key: '2', unlock: 4, cost: 14, cd: 5, range: 0, kind: 'heal', heal: 0.32, desc: '为自己回复大量生命。' },
-      { id: 'h3', name: '困咒', key: '3', unlock: 8, cost: 12, cd: 8, range: 160, kind: 'debuff', magic: true, mul: 0.6, debuff: { speed: 0.35, dur: 5 }, desc: '减缓目标行动。' },
-      { id: 'h4', name: '护体', key: '4', unlock: 12, cost: 18, cd: 14, range: 0, kind: 'buff', buff: { pdef: 0.22, mdef: 0.22, dur: 9 }, desc: '提升内外防御。' },
-      { id: 'h5', name: '群疗', key: '5', unlock: 16, cost: 22, cd: 12, range: 0, kind: 'heal', heal: 0.2, pet: true, desc: '同时治疗自己与灵宠。' },
-      { id: 'h6', name: '回灵', key: '6', unlock: 20, cost: 10, cd: 20, range: 0, kind: 'manaburn', mana: 0.25, desc: '凝神回复内力。' }
+      { id: 'h1', name: '灵击', icon: '41205001', key: '1', unlock: 1, cost: 8, cd: 1.9, range: 160, kind: 'bolt', magic: true, mul: 1.15, desc: '以药杖激出内劲弹。' },
+      { id: 'h2', name: '回春', icon: '31104001', key: '2', unlock: 4, cost: 14, cd: 5, range: 0, kind: 'heal', heal: 0.32, desc: '为自己回复大量生命。' },
+      { id: 'h3', name: '困咒', icon: '41101001', key: '3', unlock: 8, cost: 12, cd: 8, range: 160, kind: 'debuff', magic: true, mul: 0.6, debuff: { speed: 0.35, dur: 5 }, desc: '减缓目标行动。' },
+      { id: 'h4', name: '护体', icon: '41103001', key: '4', unlock: 12, cost: 18, cd: 14, range: 0, kind: 'buff', buff: { pdef: 0.22, mdef: 0.22, dur: 9 }, desc: '提升内外防御。' },
+      { id: 'h5', name: '群疗', icon: '63127001', key: '5', unlock: 16, cost: 22, cd: 12, range: 0, kind: 'heal', heal: 0.2, pet: true, desc: '同时治疗自己与灵宠。' },
+      { id: 'h6', name: '回灵', icon: '41201001', key: '6', unlock: 20, cost: 10, cd: 20, range: 0, kind: 'manaburn', mana: 0.25, desc: '凝神回复内力。' }
     ]
   };
 

@@ -381,7 +381,10 @@
         '<p style="margin-bottom:8px">剩余技能点 ' + p.unspentSkill + '</p>' +
         D.SKILLS[p.cls].map(function (sk) {
           var lv = p.skills[sk.id] || 0;
-          return '<div class="stat-line"><span>' + sk.name + ' Lv.' + lv +
+          var src = (window.Art && Art.skillIcon) ? Art.skillIcon(sk) : (sk.icon ? 'assets/ingame/skills/' + sk.icon + '.png' : '');
+          return '<div class="stat-line skill-row">' +
+            (src ? '<img class="skill-ico" src="' + src + '" alt="" />' : '') +
+            '<span class="skill-meta">' + sk.name + ' Lv.' + lv +
             (p.level < sk.unlock ? '（' + sk.unlock + '级）' : '') +
             '<br/><small style="color:#b8a57a">' + sk.desc + '</small></span>' +
             (p.unspentSkill > 0 && p.level >= sk.unlock && lv < 8 ?

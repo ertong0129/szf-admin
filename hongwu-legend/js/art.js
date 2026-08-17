@@ -133,6 +133,12 @@
     ['dao', 'gong', 'shan', 'zhan', 'hongyao', 'lanyao', 'baoguo', 'lingzhi'].forEach(function (stem) {
       add('item_' + stem, 'assets/ingame/items/' + stem + '.png');
     });
+    var skills = D.SKILLS || {};
+    Object.keys(skills).forEach(function (cls) {
+      (skills[cls] || []).forEach(function (sk) {
+        if (sk && sk.icon) add('skill_' + sk.icon, 'assets/ingame/skills/' + sk.icon + '.png');
+      });
+    });
   })();
 
   var TILE_SRC = {
@@ -388,6 +394,10 @@
   A.itemIcon = function (it) {
     var stem = A.itemStem(it);
     return stem ? 'assets/ingame/items/' + stem + '.png' : '';
+  };
+
+  A.skillIcon = function (sk) {
+    return sk && sk.icon ? 'assets/ingame/skills/' + sk.icon + '.png' : '';
   };
 
   A.itemImage = function (it) {

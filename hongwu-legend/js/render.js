@@ -538,7 +538,9 @@
     if (box.dataset.cls === p.cls && box.childElementCount) return;
     box.dataset.cls = p.cls;
     var html = D.SKILLS[p.cls].map(function (sk) {
-      return '<div class="skill-slot" data-skill="' + sk.id + '">' +
+      var src = (window.Art && Art.skillIcon) ? Art.skillIcon(sk) : (sk.icon ? 'assets/ingame/skills/' + sk.icon + '.png' : '');
+      return '<div class="skill-slot" data-skill="' + sk.id + '" title="' + sk.name + '">' +
+        (src ? '<img class="skill-ico" src="' + src + '" alt="' + sk.name + '" />' : '') +
         '<div class="key">' + sk.key + '</div>' +
         '<div class="cd" hidden></div></div>';
     }).join('');

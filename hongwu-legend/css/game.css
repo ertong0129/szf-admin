@@ -1032,6 +1032,20 @@ html, body {
   image-rendering: pixelated;
   pointer-events: none;
 }
+.skill-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.skill-row .skill-ico {
+  width: 32px;
+  height: 32px;
+  margin: 0;
+  flex: 0 0 auto;
+  image-rendering: pixelated;
+  object-fit: contain;
+}
+.skill-row .skill-meta { flex: 1; }
 .skill-slot .name, .util-slot .name { display: none; }
 .skill-slot .key, .util-slot .key {
   position: absolute;

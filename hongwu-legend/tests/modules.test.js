@@ -123,8 +123,11 @@ assert.ok(art.indexOf("assets/ingame/role/body_") >= 0, '应加载原作时装�
   'js/store-mysql.js',
   'store_db.py',
   'tools/fetch-map-tiles.py',
+  'tools/fetch-skill-icons.py',
   'assets/ingame/maptiles/manifest.json',
-  'assets/ingame/maptiles/jing_cheng.jpg'
+  'assets/ingame/maptiles/jing_cheng.jpg',
+  'assets/ingame/skills/21209001.png',
+  'assets/ingame/skills/21103002.png'
 ].forEach(function (f) {
   assert.ok(fs.existsSync(path.join(root, f)), 'missing ' + f);
 });
@@ -138,9 +141,16 @@ assert.ok(fs.statSync(path.join(root, 'assets/ingame/maptiles/jing_cheng.jpg')).
 var fetchPy = fs.readFileSync(path.join(root, 'tools/fetch-map-tiles.py'), 'utf8');
 assert.ok(fetchPy.indexOf('{row}_{col}.jpg') >= 0, '拉取脚本应写明切片文件名规则');
 assert.ok(fetchPy.indexOf('mccq.static.mingchao.com') >= 0);
+var skillFetch = fs.readFileSync(path.join(root, 'tools/fetch-skill-icons.py'), 'utf8');
+assert.ok(skillFetch.indexOf('com/assets/skills/{id}.png') >= 0, '技能图标脚本应写明 CDN 路径规则');
+assert.ok(skillFetch.indexOf('21209001') >= 0 && skillFetch.indexOf('21103002') >= 0, '技能脚本应收录用户提供的两张样例');
+assert.ok(art.indexOf('A.skillIcon') >= 0, 'Art 应提供技能图标路径');
+var render = fs.readFileSync(path.join(root, 'js/render.js'), 'utf8');
+assert.ok(render.indexOf("class=\"skill-ico\"") >= 0, '技能栏应插入 skill-ico');
+assert.ok(render.indexOf('assets/ingame/skills/') >= 0, '技能栏应使用入库技能图');
 
 var serverJs = fs.readFileSync(path.join(root, 'server.js'), 'utf8');
-assert.ok(serverJs.indexOf("VERSION = '20260817h'") >= 0, 'server.js 版本应为 20260817h');
+assert.ok(serverJs.indexOf("VERSION = '20260817i'") >= 0, 'server.js 版本应为 20260817i');
 assert.ok(serverJs.indexOf("require('./js/store.js')") >= 0, 'server.js 应使用本机数据库');
 assert.ok(core.indexOf('localStorage.setItem(SAVE_KEY') < 0, '角色存档不应再写入 localStorage');
 assert.ok(fs.readFileSync(path.join(root, 'js/api.js'), 'utf8').indexOf('localStorage.setItem(TOKEN_KEY') < 0, '登录令牌不应再写入 localStorage');
@@ -159,6 +169,7 @@ assert.ok(fs.readFileSync(path.join(root, 'start.bat'), 'utf8').indexOf('node se
 assert.ok(fs.readFileSync(path.join(root, 'pack-windows.sh'), 'utf8').indexOf('store_db.py') >= 0, 'Windows 包应带上 Python 数据库模块');
 
 var ui = fs.readFileSync(path.join(root, 'js/ui.js'), 'utf8');
+assert.ok(ui.indexOf('skill-row') >= 0, '武学面板应显示技能图标');
 assert.ok(ui.indexOf('H.worldJump') >= 0, 'ui.js 应有世界地图传送');
 assert.ok(ui.indexOf("takeItem(G.player, 'scroll'") < 0, '地图传送不应再消耗传送卷');
 assert.ok(ui.indexOf('H.warpToCoord') >= 0, '当前地图坐标应为瞬移');
