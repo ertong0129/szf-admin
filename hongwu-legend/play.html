@@ -57,6 +57,12 @@
                 <div class="pet-who" id="pet-name">灵宠</div>
                 <div class="bar hp pet-hp"><i id="pet-hp-fill"></i><span id="pet-hp-text"></span></div>
               </div>
+              <div id="target-frame" hidden>
+                <div class="portrait" id="target-portrait"></div>
+                <div class="hud-lv" id="target-lv"></div>
+                <div id="target-name">—</div>
+                <div class="bar hp target-hp"><i id="target-hp"></i><span id="target-hp-text"></span></div>
+              </div>
             </div>
             <button type="button" id="pk-mode" class="pk-mode" title="切换 PK 模式">和平</button>
             <div class="hud-buffs" id="hud-buffs"></div>
@@ -68,19 +74,17 @@
             </div>
           </div>
           <div id="auto-banner" hidden title="自动打怪中"></div>
-          <div id="target-frame" hidden>
-            <div id="target-name">—</div>
-            <div class="bar hp target-hp"><i id="target-hp"></i><span id="target-hp-text"></span></div>
-          </div>
           <div class="side-right">
             <div class="hud-acts" id="hud-acts">
-              <button type="button" class="acts-title" data-panel="achieve" title="传奇目标">传奇目标</button>
+              <button type="button" class="acts-title" data-panel="achieve" title="传奇目标"><img src="assets/ingame/viewui/chrome/acts-title.png" alt="传奇目标" /></button>
               <button type="button" data-act="tower" title="天下英雄"><img src="assets/ingame/viewui/smallicon/hero.png" alt="" /></button>
               <button type="button" class="act-live" data-act="pagoda" title="开封铁塔"><img src="assets/ingame/viewui/smallicon/kftt.png" alt="" /><em>活动进行中</em></button>
               <button type="button" data-panel="daily" title="缤纷活动"><img src="assets/ingame/viewui/smallicon/activityIcon.png" alt="" /></button>
               <button type="button" data-panel="shop" title="藏宝阁"><img src="assets/ingame/viewui/smallicon/mysteryShop.png" alt="" /></button>
+              <button type="button" data-panel="vip" title="每日充值"><img src="assets/ingame/viewui/smallicon/mrcz.png" alt="" /></button>
+              <button type="button" data-panel="daily" title="种花得宝"><img src="assets/ingame/viewui/smallicon/flower.png" alt="" /></button>
             </div>
-            <button type="button" id="btn-fold-acts" class="acts-fold" title="收起活动">›</button>
+            <button type="button" id="btn-fold-acts" class="acts-fold" title="收起活动"><img src="assets/ingame/viewui/chrome/btn-right.png" alt="" /></button>
             <div class="minimap-col">
             <div class="minimap-wrap">
               <canvas id="minimap" width="168" height="168"></canvas>
@@ -106,12 +110,18 @@
                 <span class="on" data-qtab="all">全部</span>
                 <span data-qtab="now">当前任务</span>
                 <span data-qtab="act">当前活动</span>
+                <button type="button" id="btn-quest-min" class="quest-min" title="收起任务"><img src="assets/ingame/viewui/chrome/btn-minus.png" alt="" /></button>
               </div>
               <div id="quest-track"></div>
             </div>
             </div>
           </div>
           <div class="chat-box">
+            <div class="chat-tools">
+              <button type="button" id="btn-chat-loc" title="发送坐标"><img src="assets/ingame/viewui/chrome/chat-loc.png" alt="" /></button>
+              <button type="button" id="btn-chat-min" title="收起"><img src="assets/ingame/viewui/chrome/btn-minus.png" alt="" /></button>
+              <button type="button" id="btn-chat-close" title="关闭"><img src="assets/ingame/viewui/chrome/btn-close.png" alt="" /></button>
+            </div>
             <div class="chat-log" id="chat-log"></div>
             <div class="chat-tabs">
               <span data-chan="world">世界</span>
@@ -125,13 +135,12 @@
             <form id="chat-form">
               <span id="chat-chan">附近</span>
               <input id="chat-input" maxlength="80" placeholder="回车发言　/账号 密聊" autocomplete="off" />
-              <button type="button" id="btn-chat-face" title="表情" aria-label="表情">☺</button>
-              <button type="submit" id="btn-chat-send" title="发送" aria-label="发送">
-                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.2 3.2h8.2v1.7H4.2v6.2h7.4V9.2H13v4.6H2.2zm8.4-2H15v4.4h-1.7V3.8L8.6 8.5 7.4 7.3l4.7-4.7H10.6z"/></svg>
-              </button>
+              <button type="button" id="btn-chat-face" title="表情" aria-label="表情"><img src="assets/ingame/face/f00.jpg" alt="" /></button>
+              <button type="submit" id="btn-chat-send" title="发送" aria-label="发送"><img src="assets/ingame/viewui/chrome/btn-right.png" alt="" /></button>
             </form>
             <div class="chat-faces" id="chat-faces" hidden></div>
           </div>
+          <button type="button" id="btn-chat-reopen" class="chat-reopen" hidden>聊天</button>
           <div class="sys-feed" id="sys-feed"></div>
           <div class="toast" id="toast"></div>
           <div class="dialog" id="dialog"></div>
@@ -174,7 +183,7 @@
         </div>
         <nav class="dock-menu">
           <button type="button" data-panel="char" title="角色"><img src="assets/ingame/viewui/menu-role.png" alt="" /></button>
-          <button type="button" data-panel="skills" title="技能"><img src="assets/ingame/title/skill.png" alt="" /></button>
+          <button type="button" data-panel="skills" title="技能"><img src="assets/ingame/viewui/smallicon/skillIcon.png" alt="" /><img class="dock-skill-label" src="assets/ingame/title/skill.png" alt="" /></button>
           <button type="button" data-panel="bag" title="背包"><img src="assets/ingame/viewui/menu-bag.png" alt="" /></button>
           <button type="button" data-panel="pet" title="宠物"><img src="assets/ingame/viewui/menu-pet.png" alt="" /></button>
           <button type="button" data-panel="char" data-char-open="mount" title="坐骑"><img src="assets/ingame/viewui/menu-mount.png" alt="" /></button>

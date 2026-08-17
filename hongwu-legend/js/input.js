@@ -193,6 +193,53 @@
         el.hidden = !el.hidden;
       });
     }
+    var chatBox = document.querySelector('.chat-box');
+    var chatReopen = document.getElementById('btn-chat-reopen');
+    var chatMin = document.getElementById('btn-chat-min');
+    if (chatMin) {
+      chatMin.addEventListener('click', function (ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        if (!chatBox) return;
+        chatBox.classList.toggle('min');
+        chatBox.classList.remove('off');
+        if (chatReopen) chatReopen.hidden = true;
+      });
+    }
+    var chatClose = document.getElementById('btn-chat-close');
+    if (chatClose) {
+      chatClose.addEventListener('click', function (ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        if (!chatBox) return;
+        chatBox.classList.add('off');
+        chatBox.classList.remove('min');
+        if (chatReopen) chatReopen.hidden = false;
+      });
+    }
+    if (chatReopen) {
+      chatReopen.addEventListener('click', function (ev) {
+        ev.preventDefault();
+        if (!chatBox) return;
+        chatBox.classList.remove('off', 'min');
+        chatReopen.hidden = true;
+      });
+    }
+    var chatLoc = document.getElementById('btn-chat-loc');
+    if (chatLoc) {
+      chatLoc.addEventListener('click', function (ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        var input = document.getElementById('chat-input');
+        if (!input || !G.player) return;
+        var mapId = G.mapId || G.player.map;
+        var mapName = (D.MAP_META[mapId] && D.MAP_META[mapId].name) || mapId || '';
+        var x = Math.round(G.player.x || 0);
+        var y = Math.round(G.player.y || 0);
+        input.value = (input.value || '') + mapName + '[' + x + ',' + y + ']';
+        input.focus();
+      });
+    }
     document.getElementById('skill-bar').addEventListener('click', function (ev) {
       var slot = ev.target.closest('.skill-slot');
       if (slot) {
@@ -264,9 +311,17 @@
         else if (dockBtn.id === 'btn-fold-acts') {
           var side = document.querySelector('.side-right');
           if (side) {
-            side.classList.toggle('acts-off');
-            dockBtn.textContent = side.classList.contains('acts-off') ? '‹' : '›';
+            var off = side.classList.toggle('acts-off');
+            var img = dockBtn.querySelector('img');
+            if (img) {
+              img.src = off
+                ? 'assets/ingame/viewui/chrome/btn-left.png'
+                : 'assets/ingame/viewui/chrome/btn-right.png';
+            }
           }
+        } else if (dockBtn.id === 'btn-quest-min') {
+          var qbox = document.querySelector('.quest-box');
+          if (qbox) qbox.classList.toggle('min');
         }
         else if (dockBtn.id === 'btn-save') H.saveNow();
       }

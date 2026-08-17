@@ -134,6 +134,12 @@ assert.ok(art.indexOf("assets/ingame/role/body_") >= 0, '应加载原作时装�
   'assets/ingame/maptiles/jing_cheng.jpg',
   'assets/ingame/viewui/smallicon/kftt.png',
   'assets/ingame/viewui/smallicon/hero.png',
+  'assets/ingame/viewui/smallicon/flower.png',
+  'assets/ingame/viewui/smallicon/skillIcon.png',
+  'assets/ingame/viewui/chrome/chat-frame.png',
+  'assets/ingame/viewui/chrome/tab.png',
+  'assets/ingame/viewui/chrome/acts-title.png',
+  'assets/ingame/viewui/chrome/slot.png',
   'assets/ingame/skills/21209001.png',
   'assets/ingame/skills/21103002.png'
 ].forEach(function (f) {
@@ -162,7 +168,7 @@ assert.ok(render.indexOf("class=\"skill-ico\"") >= 0, '技能栏应插入 skill-
 assert.ok(render.indexOf('assets/ingame/skills/') >= 0, '技能栏应使用入库技能图');
 
 var serverJs = fs.readFileSync(path.join(root, 'server.js'), 'utf8');
-assert.ok(serverJs.indexOf("VERSION = '20260817p'") >= 0, 'server.js 版本应为 20260817p');
+assert.ok(serverJs.indexOf("VERSION = '20260817q'") >= 0, 'server.js 版本应为 20260817q');
 assert.ok(serverJs.indexOf("require('./js/store.js')") >= 0, 'server.js 应使用本机数据库');
 assert.ok(core.indexOf('localStorage.setItem(SAVE_KEY') < 0, '角色存档不应再写入 localStorage');
 assert.ok(fs.readFileSync(path.join(root, 'js/api.js'), 'utf8').indexOf('localStorage.setItem(TOKEN_KEY') < 0, '登录令牌不应再写入 localStorage');
@@ -238,6 +244,16 @@ assert.ok(play.indexOf('id="btn-chat-face"') >= 0, '聊天应有表情按钮');
 assert.ok(play.indexOf('id="chat-chan"') >= 0, '输入行应显示当前频道');
 assert.ok(play.indexOf('id="chat-faces" hidden') >= 0, '表情选择器默认应收起');
 assert.ok(play.indexOf('data-chan="clan">家族') >= 0, '聊天页签应为家族');
+assert.ok(play.indexOf('assets/ingame/viewui/chrome/acts-title.png') >= 0, '传奇目标应使用原作金标切图');
+assert.ok(play.indexOf('assets/ingame/viewui/chrome/chat-frame.png') < 0 || css.indexOf('chrome/chat-frame.png') >= 0, '聊天框应使用原作切图');
+assert.ok(css.indexOf('chrome/chat-frame.png') >= 0, '聊天框应使用 HAR 抽出的 chat-frame');
+assert.ok(css.indexOf('chrome/tab.png') >= 0, '页签应使用原作 tab 切图');
+assert.ok(css.indexOf('chrome/slot.png') >= 0, '小地图圆钮和打坐格应使用青玉格切图');
+assert.ok(css.indexOf('.dock-skill-label { display: none; }') >= 0 || css.indexOf('.dock-skill-label {display: none;}') >= 0, '技能金标仅作路径占位，可见图标用 skillIcon');
+assert.ok(play.indexOf('assets/ingame/viewui/smallicon/skillIcon.png') >= 0, '底栏技能应显示 HAR 技能图标');
+assert.ok(play.indexOf('assets/ingame/viewui/smallicon/flower.png') >= 0, '活动栏应有种花得宝图标');
+assert.ok(play.indexOf('id="btn-chat-min"') >= 0, '聊天应有收起钮');
+assert.ok(art.indexOf('strokeText') >= 0, '角色名牌应描边');
 assert.ok(core.indexOf('tag-sys') >= 0, '系统消息应变为 [系]');
 assert.ok(core.indexOf('H.sysFeed') >= 0, 'core 应提供右下系统飘字');
 assert.ok(fs.readFileSync(path.join(root, 'js/player.js'), 'utf8').indexOf("获得") >= 0 && fs.readFileSync(path.join(root, 'js/player.js'), 'utf8').indexOf('经验。') >= 0, '获得经验应写入右下飘字');

@@ -489,11 +489,13 @@
     var buffs = document.getElementById('hud-buffs');
     if (buffs) {
       var marks = [];
-      if (p.sit) marks.push('坐');
-      if (p.auto) marks.push('挂');
-      if (p.mount && p.mount.riding) marks.push('骑');
-      if (p.pkMode && p.pkMode !== 'peace') marks.push('战');
-      buffs.innerHTML = marks.map(function (m) { return '<span>' + m + '</span>'; }).join('');
+      if (p.sit) marks.push({ src: 'assets/ingame/viewui/buff/sit.png', title: '打坐' });
+      if (p.auto) marks.push({ src: 'assets/ingame/viewui/buff/auto.png', title: '挂机' });
+      if (p.mount && p.mount.riding) marks.push({ src: 'assets/ingame/viewui/buff/mount.png', title: '骑乘' });
+      if (p.pkMode && p.pkMode !== 'peace') marks.push({ src: 'assets/ingame/viewui/chrome/full.png', title: '战斗' });
+      buffs.innerHTML = marks.map(function (m) {
+        return '<span title="' + m.title + '"><img src="' + m.src + '" alt="' + m.title + '" /></span>';
+      }).join('');
     }
     var sitBtn = document.getElementById('btn-sit');
     if (sitBtn) sitBtn.classList.toggle('on', !!p.sit);
@@ -534,11 +536,24 @@
       var t = p.target;
       if (t && t.hp > 0) {
         tf.hidden = false;
-        document.getElementById('target-name').textContent = (t.boss ? '★ ' : '') + t.name + '  Lv.' + t.level;
+        document.getElementById('target-name').textContent = (t.boss ? '★ ' : '') + t.name;
+        var tlv = document.getElementById('target-lv');
+        if (tlv) tlv.textContent = t.level || '';
         var ratio = t.hp / Math.max(1, t.maxHp);
         document.getElementById('target-hp').style.width = (100 * ratio) + '%';
         var tht = document.getElementById('target-hp-text');
         if (tht) tht.textContent = Math.floor(t.hp) + '/' + Math.floor(t.maxHp);
+        var tp = document.getElementById('target-portrait');
+        if (tp) {
+          var src = '';
+          if (window.Art && Art.imgs) {
+            var key = t.art || t.sprite || (t.boss ? 'boss' : '');
+            var img = (key && Art.imgs[key]) || Art.imgs.tiger || Art.imgs.guard;
+            if (img && img.src) src = img.src;
+          }
+          tp.style.backgroundImage = src ? 'url(' + src + ')' : '';
+          tp.textContent = src ? '' : (t.name || '?').charAt(0);
+        }
       } else {
         tf.hidden = true;
       }

@@ -55,6 +55,7 @@
       incense: 'assets/ingame/sprites/incense.png',
       dmgRed: 'assets/ingame/viewui/dmg-red.png',
       dmgGold: 'assets/ingame/viewui/dmg-gold.png',
+      selectRing: 'assets/ingame/viewui/chrome/select-ring.png',
       roleBg: 'assets/ingame/ui/rolebg.png',
       jiaoseBg: 'assets/ingame/ui/jiaosebg.png',
       forgeBg: 'assets/ingame/ui/forge.jpg',
@@ -566,27 +567,52 @@
   }
 
   A.drawAura = function (ctx, x, y, color, time, scale) {
-    var r = (18 + Math.sin(time * 4) * 2) * (scale || 1);
+    var s = scale || 1;
+    var ring = A.imgs.selectRing;
+    if (ring && ring.width) {
+      var w = 70 * s * 1.35;
+      var h = 28 * s * 1.35;
+      ctx.save();
+      ctx.globalAlpha = 0.82 + Math.sin(time * 4) * 0.08;
+      ctx.drawImage(ring, x - w / 2, y + 2 - h / 2, w, h);
+      ctx.restore();
+      return;
+    }
+    var r = (18 + Math.sin(time * 4) * 2) * s;
+    ctx.save();
+    ctx.globalAlpha = 0.55;
     var g = ctx.createRadialGradient(x, y + 6, 2, x, y + 6, r);
     g.addColorStop(0, color);
     g.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.globalAlpha = 0.55;
     ctx.fillStyle = g;
     ctx.beginPath();
     ctx.ellipse(x, y + 8, r, r * 0.38, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.globalAlpha = 1;
+    ctx.globalAlpha = 0.9;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = Math.max(1.4, 2 * s);
+    ctx.beginPath();
+    ctx.ellipse(x, y + 8, r * 0.92, r * 0.34, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
   };
 
   A.drawNameplate = function (ctx, x, y, title, name, color) {
     var z = A.worldScale();
     var fs = Math.max(9, Math.round(11 * Math.max(0.85, z)));
+    var ty = y - Math.round(13 * Math.max(0.85, z));
     ctx.font = 'bold ' + fs + 'px "Microsoft YaHei","PingFang SC",sans-serif';
     ctx.textAlign = 'center';
+    ctx.lineJoin = 'round';
+    ctx.miterLimit = 2;
+    ctx.lineWidth = Math.max(3, Math.round(fs / 3.2));
+    ctx.strokeStyle = '#000';
     if (title) {
+      ctx.strokeText(title, x, ty);
       ctx.fillStyle = '#c9a227';
-      ctx.fillText(title, x, y - Math.round(13 * Math.max(0.85, z)));
+      ctx.fillText(title, x, ty);
     }
+    ctx.strokeText(name, x, y);
     ctx.fillStyle = color || '#e8f6c8';
     ctx.fillText(name, x, y);
   };
