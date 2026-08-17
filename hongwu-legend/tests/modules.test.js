@@ -52,6 +52,10 @@ assert.ok(css.indexOf('assets/ingame/viewui/panel.png') >= 0, '面板应使用�
 assert.ok(css.indexOf('assets/ingame/viewui/shop.png') >= 0, '商城钮应使用原作红底金字切图');
 assert.ok(play.indexOf('class="hud-frame"') >= 0, 'play.html 应有原作人物框容器');
 assert.ok(play.indexOf('id="hud-lv"') >= 0, '人物框应显示等级');
+assert.ok(play.indexOf('id="hud-pet"') >= 0, '左上应有宠物条');
+assert.ok(play.indexOf('class="hud-acts"') >= 0, '顶栏应有活动图标');
+assert.ok(play.indexOf('class="dock-menu') >= 0, '底栏应有系统菜单');
+assert.ok(css.indexOf('border-radius: 50%') >= 0, '小地图应为圆形');
 
 var art = fs.readFileSync(path.join(root, 'js/art.js'), 'utf8');
 assert.ok(art.indexOf("jingCheng: 'assets/ingame/map/jing_cheng.jpg'") >= 0);
@@ -70,7 +74,7 @@ assert.ok(art.indexOf('A.radarFor') >= 0, '小地图应按场景换原作俯视�
 });
 
 var serverJs = fs.readFileSync(path.join(root, 'server.js'), 'utf8');
-assert.ok(serverJs.indexOf("VERSION = '20260816p'") >= 0, 'server.js 版本应为 20260816p');
+assert.ok(serverJs.indexOf("VERSION = '20260816q'") >= 0, 'server.js 版本应为 20260816q');
 
 function assertWinBat(rel) {
   var buf = fs.readFileSync(path.join(root, rel));

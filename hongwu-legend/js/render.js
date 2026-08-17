@@ -390,7 +390,7 @@
 
   H.drawHud = function () {
     var p = G.player, st = H.stats(p);
-    document.getElementById('who-line').textContent = p.name + ' · ' + D.CLASSES[p.cls].name + '  ' + p.level + '级';
+    document.getElementById('who-line').textContent = p.name + '  ' + p.level + '级';
     var lvEl = document.getElementById('hud-lv');
     if (lvEl) lvEl.textContent = String(p.level);
     var port = document.getElementById('portrait');
@@ -408,6 +408,42 @@
     H.setBar('hp', p.hp, st.maxHp);
     H.setBar('mp', p.mp, st.maxMp);
     H.setBar('xp', p.exp, F.xpToNext(p.level));
+    var petBox = document.getElementById('hud-pet');
+    if (petBox) {
+      var pet = p.pet && p.pet.hp > 0 ? p.pet : null;
+      petBox.hidden = !pet;
+      if (pet) {
+        var pn = document.getElementById('pet-name');
+        var pl = document.getElementById('pet-lv');
+        if (pn) pn.textContent = pet.name || '灵宠';
+        if (pl) pl.textContent = String(pet.level || 1);
+        H.setBar('pet-hp', pet.hp, pet.maxHp || 1);
+        var pp = document.getElementById('pet-portrait');
+        if (pp && window.Art && Art.imgs) {
+          var pk = Art.petKey ? Art.petKey(pet.id) : 'tiger';
+          var img = Art.imgs[pk] || Art.imgs.tiger;
+          if (img && img.src) {
+            pp.style.backgroundImage = 'url(' + img.src + ')';
+            pp.style.backgroundSize = 'cover';
+          }
+        }
+      }
+    }
+    var buffs = document.getElementById('hud-buffs');
+    if (buffs) {
+      var marks = [];
+      if (p.sit) marks.push('坐');
+      if (p.auto) marks.push('挂');
+      if (p.mount && p.mount.riding) marks.push('骑');
+      if (p.pkMode && p.pkMode !== 'peace') marks.push('战');
+      buffs.innerHTML = marks.map(function (m) { return '<span>' + m + '</span>'; }).join('');
+    }
+    var sitBtn = document.getElementById('btn-sit');
+    if (sitBtn) sitBtn.classList.toggle('on', !!p.sit);
+    var auto2 = document.getElementById('btn-auto-2');
+    if (auto2) auto2.classList.toggle('on', !!p.auto);
+    var m2 = document.getElementById('btn-mount-2');
+    if (m2) m2.classList.toggle('on', !!(p.mount && p.mount.riding));
     H.refreshPkMode();
     var en = document.getElementById('energy-line');
     if (en) {

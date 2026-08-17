@@ -125,10 +125,13 @@
     var q = H.currentQuest();
     var nxt = H.nextAcceptQuest();
     var html = '';
+    html += '<div class="q-block" data-qgroup="now">';
     html += '<div class="q-sec">当前任务</div>';
     html += q ? H.questLineHtml(q) : '<div class="q-item muted">暂无进行中的任务。</div>';
     html += '<div class="q-sec">可接任务</div>';
     html += nxt ? H.questLineHtml(nxt) : '<div class="q-item muted">暂无可接。可挂机或挑战试炼。</div>';
+    html += '</div>';
+    html += '<div class="q-block" data-qgroup="act">';
     if (G.player && G.player.merit && G.player.merit.active) {
       var md = D.MONSTERS[G.player.merit.kill];
       html += '<div class="q-sec">循环任务</div>';
@@ -137,7 +140,10 @@
     } else if (G.player && G.player.level >= 10) {
       html += '<div class="q-sec">循环任务</div>';
       html += '<div class="q-item"><div><b>建功立业</b>找京城 <span class="q-link" data-merit-go="1">徐达</span> 领取</div></div>';
+    } else {
+      html += '<div class="q-item muted">暂无活动。打开顶栏「活动」查看日常。</div>';
     }
+    html += '</div>';
     el.innerHTML = html;
   }
 

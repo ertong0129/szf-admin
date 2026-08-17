@@ -143,16 +143,7 @@
 
     var sys = document.querySelector('.sys-btns') || document.querySelector('.menu-left');
     if (sys) {
-      sys.addEventListener('click', function (ev) {
-        var btn = ev.target.closest('button');
-        if (!btn) return;
-        if (btn.id === 'btn-save') H.saveNow();
-        else if (btn.id === 'btn-auto') {
-          G.player.sit = false;
-          G.player.auto = !G.player.auto;
-          H.toast(G.player.auto ? '自动打怪已开启' : '自动打怪已关闭');
-        } else if (btn.dataset.panel) H.openPanel(btn.dataset.panel);
-      });
+      /* 菜单点击由 #play-screen 统一处理，避免 openPanel 连点两次把面板关掉 */
     }
     var chatForm = document.getElementById('chat-form');
     if (chatForm) {
@@ -197,7 +188,45 @@
     });
     document.getElementById('play-screen').addEventListener('click', function (ev) {
       if (ev.target.dataset.close) H.closePanels();
-      if (ev.target.dataset.panel) H.openPanel(ev.target.dataset.panel);
+      var panelEl = ev.target.closest('[data-panel]');
+      if (panelEl && panelEl.dataset.panel) H.openPanel(panelEl.dataset.panel);
+      var charOpen = ev.target.closest('[data-char-open]');
+      if (charOpen && charOpen.dataset.charOpen === 'mount') {
+        H.openPanel('char');
+        setTimeout(function () {
+          var tab = document.querySelector('[data-char-tab="mount"]');
+          if (tab) tab.click();
+        }, 0);
+      }
+      var actEl = ev.target.closest('[data-act]');
+      if (actEl && actEl.dataset.act === 'tower' && H.enterTower) H.enterTower();
+      if (actEl && actEl.dataset.act === 'pagoda' && H.enterPagoda) H.enterPagoda();
+      var qtabEl = ev.target.closest('[data-qtab]');
+      if (qtabEl && qtabEl.dataset.qtab) {
+        var box = document.querySelector('.quest-box');
+        if (box) box.setAttribute('data-qtab', qtabEl.dataset.qtab);
+        document.querySelectorAll('.quest-tabs span').forEach(function (s) {
+          s.classList.toggle('on', s.dataset.qtab === qtabEl.dataset.qtab);
+        });
+      }
+      var dockBtn = ev.target.closest('button');
+      if (dockBtn && G.player) {
+        if (dockBtn.id === 'btn-auto' || dockBtn.id === 'btn-auto-2' || dockBtn.id === 'btn-auto-mini') {
+          G.player.sit = false;
+          G.player.auto = !G.player.auto;
+          H.toast(G.player.auto ? '自动打怪已开启' : '自动打怪已关闭');
+        } else if (dockBtn.id === 'btn-sit') H.toggleSit();
+        else if (dockBtn.id === 'btn-mount' || dockBtn.id === 'btn-mount-2') {
+          if (G.player.mount && G.player.mount.owned) {
+            G.player.mount.riding = !G.player.mount.riding;
+            H.toast(G.player.mount.riding ? '上马' : '下马');
+          } else {
+            H.openPanel('char');
+            H.toast('请先获得坐骑');
+          }
+        } else if (dockBtn.id === 'btn-world-quick') H.openMapOverlay('world');
+        else if (dockBtn.id === 'btn-save') H.saveNow();
+      }
       if (ev.target.dataset.add && G.player.unspentAttr > 0) {
         G.player.added[ev.target.dataset.add] += 1;
         G.player.unspentAttr -= 1;

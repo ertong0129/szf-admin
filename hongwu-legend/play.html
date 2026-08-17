@@ -38,19 +38,37 @@
             <div class="hud-frame">
               <div class="portrait" id="portrait">武</div>
               <div class="hud-lv" id="hud-lv">1</div>
+              <div class="who" id="who-line">—</div>
               <div class="hud-bars">
                 <div class="bar hp"><i id="hp-fill"></i><span id="hp-text"></span></div>
                 <div class="bar mp"><i id="mp-fill"></i><span id="mp-text"></span></div>
               </div>
             </div>
-            <div class="hud-meta">
-              <div class="who" id="who-line">—</div>
-              <button type="button" id="pk-mode" class="pk-mode" title="切换 PK 模式">和平</button>
-              <div id="energy-line">精力 4000/4000</div>
-              <div id="gold-line">元宝 0 / 绑定 0</div>
-              <div id="silver-line">银两 0 / 绑定 0</div>
-              <div id="online-line">在线 —</div>
+            <div class="hud-pet" id="hud-pet" hidden>
+              <div class="pet-portrait" id="pet-portrait"></div>
+              <div class="pet-lv" id="pet-lv">1</div>
+              <div class="pet-who" id="pet-name">灵宠</div>
+              <div class="bar hp pet-hp"><i id="pet-hp-fill"></i><span id="pet-hp-text"></span></div>
             </div>
+            <div class="hud-buffs" id="hud-buffs"></div>
+            <div class="hud-wallet">
+              <button type="button" id="pk-mode" class="pk-mode" title="切换 PK 模式">和平</button>
+              <span id="energy-line">精力 4000/4000</span>
+              <span id="gold-line">元宝 0</span>
+              <span id="silver-line">银两 0</span>
+              <span id="online-line">在线 —</span>
+            </div>
+          </div>
+          <div class="hud-acts" id="hud-acts">
+            <button type="button" data-panel="shop" title="藏宝阁"><img src="assets/ingame/title/market.png" alt="" /><span>藏宝阁</span></button>
+            <button type="button" data-panel="help" title="天星罗盘"><img src="assets/ingame/title/setting.png" alt="" /><span>罗盘</span></button>
+            <button type="button" data-panel="daily" title="种花得宝"><img src="assets/ingame/title/labiao.png" alt="" /><span>种花</span></button>
+            <button type="button" data-panel="daily" title="缤纷活动"><img src="assets/ingame/title/Activity.png" alt="" /><span>活动</span></button>
+            <button type="button" data-panel="vip" title="每日累充"><img src="assets/ingame/title/DailyRecharge.png" alt="" /><span>累充</span></button>
+            <button type="button" data-panel="achieve" title="传奇图鉴"><img src="assets/ingame/title/goal.png" alt="" /><span>图鉴</span></button>
+            <button type="button" data-panel="rank" title="封神台"><img src="assets/ingame/title/rank.png" alt="" /><span>封神</span></button>
+            <button type="button" data-act="pagoda" title="开封铁塔"><img src="assets/ingame/title/tglp.png" alt="" /><span>铁塔</span></button>
+            <button type="button" data-act="tower" title="天下英雄"><img src="assets/ingame/title/role.png" alt="" /><span>英雄</span></button>
           </div>
           <div id="target-frame" hidden>
             <div id="target-name">—</div>
@@ -58,27 +76,37 @@
           </div>
           <div class="side-right">
             <div class="minimap-wrap">
-              <canvas id="minimap" width="196" height="132"></canvas>
+              <canvas id="minimap" width="168" height="168"></canvas>
               <div class="map-name">
                 <span id="map-name">太平村</span>
                 <span id="map-coord">24,17</span>
               </div>
               <div class="map-tools">
-                <button type="button" id="btn-region-map" title="区域地图（M）">区域</button>
-                <button type="button" id="btn-world-map" title="世界地图跳转">地图</button>
+                <button type="button" data-panel="vip" title="充值">充值</button>
+                <button type="button" data-panel="rank" title="排行">排行</button>
+                <button type="button" id="btn-auto-mini" title="挂机">挂机</button>
+                <button type="button" id="btn-world-map" title="世界地图">地图</button>
               </div>
+              <button type="button" id="btn-region-map" class="map-region-btn" title="区域地图（M）">区域</button>
             </div>
-            <div class="quest-box">
-              <h4>任务追踪 <span class="quest-hint">点绿名自动寻路</span></h4>
+            <div class="quest-box" data-qtab="all">
+              <div class="quest-tabs">
+                <span class="on" data-qtab="all">全部</span>
+                <span data-qtab="now">当前任务</span>
+                <span data-qtab="act">当前活动</span>
+              </div>
               <div id="quest-track"></div>
             </div>
           </div>
           <div class="chat-box">
             <div class="chat-tabs">
-              <span class="on" data-chan="near">附近</span>
               <span data-chan="world">世界</span>
-              <span data-chan="party">队伍</span>
+              <span data-chan="nation">国家</span>
               <span data-chan="clan">宗族</span>
+              <span data-chan="party">队伍</span>
+              <span class="on" data-chan="near">附近</span>
+              <span data-chan="horn">喇叭</span>
+              <span data-chan="whisper">私聊</span>
             </div>
             <div class="chat-log" id="chat-log"></div>
             <div class="chat-faces" id="chat-faces"></div>
@@ -86,24 +114,6 @@
               <input id="chat-input" maxlength="80" placeholder="回车发言　/账号 密聊" autocomplete="off" />
               <button type="submit">发送</button>
             </form>
-          </div>
-          <div class="sys-btns">
-            <button data-panel="char">角色</button>
-            <button data-panel="bag">背包</button>
-            <button data-panel="skills">技能</button>
-            <button data-panel="pet">宠物</button>
-            <button data-panel="forge">天工炉</button>
-            <button data-panel="quest">任务</button>
-            <button data-panel="social">社交</button>
-            <button data-panel="mail">信件</button>
-            <button data-panel="achieve">目标</button>
-            <button data-panel="rank">排行</button>
-            <button data-panel="daily">日常</button>
-            <button data-panel="vip">贵族</button>
-            <button id="btn-auto">挂机</button>
-            <button data-panel="help">系统</button>
-            <button id="btn-save">存档</button>
-            <a href="index.html">选服</a>
           </div>
           <div class="toast" id="toast"></div>
           <div class="dialog" id="dialog"></div>
@@ -126,6 +136,33 @@
         </div>
         <div class="dock">
           <div class="skill-bar" id="skill-bar"></div>
+          <div class="dock-quick">
+            <button type="button" id="btn-auto" title="自动打怪">猎</button>
+            <button type="button" id="btn-mount" title="骑乘">驭</button>
+            <button type="button" id="btn-world-quick" title="世界地图">拓</button>
+            <button type="button" data-panel="forge" title="强化">强</button>
+          </div>
+          <div class="dock-utils">
+            <button type="button" id="btn-sit" title="打坐（D）">坐</button>
+            <button type="button" id="btn-auto-2" title="挂机（Z）">挂</button>
+            <button type="button" id="btn-mount-2" title="坐骑">骑</button>
+          </div>
+          <nav class="dock-menu sys-btns">
+            <button type="button" data-panel="char">角色</button>
+            <button type="button" data-panel="skills">技能</button>
+            <button type="button" data-panel="bag">背包</button>
+            <button type="button" data-panel="pet">宠物</button>
+            <button type="button" data-panel="char" data-char-open="mount">坐骑</button>
+            <button type="button" data-panel="social">好友</button>
+            <button type="button" data-panel="social">社会</button>
+            <button type="button" data-panel="forge">天工炉</button>
+            <button type="button" data-panel="shop">市场</button>
+            <button type="button" data-panel="mail">信件</button>
+            <button type="button" data-panel="quest">任务</button>
+            <button type="button" data-panel="help">系统</button>
+            <button type="button" id="btn-save">存档</button>
+            <a href="index.html">选服</a>
+          </nav>
           <div class="dock-xp bar xp"><i id="xp-fill"></i><span id="xp-text"></span></div>
           <button type="button" id="btn-shop" class="shop-btn" title="商城">商</button>
         </div>
