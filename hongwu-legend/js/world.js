@@ -170,6 +170,7 @@
     G.grid = g;
     G.mapId = id;
     H.spawnMapContent(id);
+    if (window.MapTiles && MapTiles.ensure) MapTiles.ensure(id);
     if (window.World3D && World3D.ready) World3D.rebuild(G.grid, G.mapId);
   }
 

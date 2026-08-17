@@ -162,6 +162,11 @@
         canvas.style.display = 'block';
       }
     }
+    if (window.MapTiles && MapTiles.load) {
+      MapTiles.load(function () {
+        if (G.mapId) MapTiles.ensure(G.mapId);
+      });
+    }
     if (window.Art) {
       Art.load(function () {
         H.paintClasses();

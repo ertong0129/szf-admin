@@ -10,18 +10,29 @@
 
   H.screenToWorld = function (clientX, clientY) {
     var r = canvas.getBoundingClientRect();
-    return { x: clientX - r.left + G.cam.x, y: clientY - r.top + G.cam.y };
+    var sx = clientX - r.left, sy = clientY - r.top;
+    if (window.MapTiles && MapTiles.active()) return MapTiles.screenToWorld(sx, sy);
+    return { x: sx + G.cam.x, y: sy + G.cam.y };
   }
 
   H.onPointer = function (ev) {
     if (G.mode !== 'play') return;
-    var wpos = (window.World3D && World3D.enabled)
+    var tiled = window.MapTiles && MapTiles.active();
+    var wpos = (!tiled && window.World3D && World3D.enabled)
       ? World3D.pick(ev.clientX, ev.clientY)
       : H.screenToWorld(ev.clientX, ev.clientY);
     if (!wpos) return;
     G.mouse.wx = wpos.x;
     G.mouse.wy = wpos.y;
     var p = G.player;
+    if (tiled) {
+      var cr = canvas.getBoundingClientRect();
+      var cx = ev.clientX - cr.left, cy = ev.clientY - cr.top;
+      for (var n = 0; n < G.npcs.length; n++) {
+        var ns = MapTiles.worldToScreen(G.npcs[n].x, G.npcs[n].y);
+        if (Math.hypot(cx - ns.x, cy - (ns.y - 28)) < 36) { H.talkNpc(G.npcs[n]); return; }
+      }
+    }
     for (var i = 0; i < G.npcs.length; i++) {
       if (H.dist(wpos, G.npcs[i]) < 28) { H.talkNpc(G.npcs[i]); return; }
     }
@@ -53,7 +64,7 @@
       if (!el) return;
       el.addEventListener('mousedown', H.onPointer);
       el.addEventListener('mousemove', function (ev) {
-        var wpos = (window.World3D && World3D.enabled)
+        var wpos = (!(window.MapTiles && MapTiles.active()) && window.World3D && World3D.enabled)
           ? World3D.pick(ev.clientX, ev.clientY)
           : H.screenToWorld(ev.clientX, ev.clientY);
         if (!wpos) return;

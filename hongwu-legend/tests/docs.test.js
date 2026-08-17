@@ -77,4 +77,10 @@ assert.strictEqual(F.meritBand(5), null);
 assert.ok(F.mountUpgradeChance('white') > F.mountUpgradeChance('purple'));
 assert.strictEqual(F.mountUpgradeChance('orange'), 0);
 
+var fs = require('fs');
+var path = require('path');
+var refs = fs.readFileSync(path.join(__dirname, '../docs/REFERENCES.md'), 'utf8');
+assert.ok(refs.indexOf('com/maps/{folder}/{row}_{col}.jpg') >= 0, '应记录场景切片 URL 规则');
+assert.ok(refs.indexOf('12_15.jpg') >= 0, '应举例京城切片');
+
 console.log('docs.test.js ok');

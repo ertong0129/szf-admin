@@ -77,6 +77,8 @@
 
 局内用的是 `MingGame.swf` 再去拉的公开位图：`com/ui/npc/{id}.swf` 预渲染立绘帧、`com/npcs/` 头像与半身像、`com/maps/world.swf` `country.swf`、`com/assets/headImage/`、`com/assets/role/jiaosebg.png`，以及 `viewUI` / `mingUI` / `smallMap` 里的 JPEG/PNG 切图。没有把 SWF 整包打进仓库，也没有去解协议或加密模块。学习服用到的切图放在 `assets/ingame/viewui/` 与 `assets/ingame/map/`。局内 HUD 对齐公开 `viewUI`：`skillbar.jpg` 整条底栏、`window.png` 青玉圆框做小地图、人物框按 174×86 原尺寸叠、菜单用原作「角色 / 背包 / 宠物」等金标小图。
 
+场景大地图不是一张整图，而是公开 CDN 上的 300×300 JPEG 切片，规则为 `com/maps/{folder}/{row}_{col}.jpg`（例如京城 `jing_cheng/12_15.jpg` 是第 12 行、第 15 列）。按像素 `(col*300, row*300)` 轴对齐即可拼回。`.mcm` 切片表多数 403，所以用 HEAD 探测网格范围。京城为 26×16 块、原生 7800×4800。原 300×300 块只作本地缓存，不入库；拼好后缩到长边 2048，放在 `assets/ingame/maptiles/`。小地图仍用 `com/maps/smallMap` 俯视图，两者不是同一套图。
+
 各图 NPC 对照公开 `com/data/pos.txt`（type=4）与 `npc_data`：三朝共用同一套城拷，学习取洪武 `11xxx` 与开封 `10200`。京城 140×130（明军水兵 [124,63]、车夫 [110,83]），太平村 80×115（车夫 [72,54]、村长 [50,68]），边城蓝玉 [2,71]，开封朱橚 [24,70]。城图铺公开俯视图，不摆假房子。坐标写在 `js/npc-layout.js`，不把 `pos.txt` 整包入库。NPC 头像取公开 `com/npcs/{icon}.png`，世界立绘从公开 `com/ui/npc/{job}.swf` 抽出朝南站立帧（不入库 SWF），对照写在 `js/npc-art.js`。物品图标取公开 `com/assets/items/generals/` 下的 32×32 PNG，背包/掉落不再用色块占位。
 
 从公开 `MingGame.swf` 抽出的界面文案（仅作玩法核对，不入库）包括：`鄱阳湖大战`、`大明英雄副本`、`在副本地图中不能进行地图跳转`、`在副本地图中不能自动寻路`、`立即在原地复活`、`返回入口`、`离开副本`、`暂停挑战`、`自动闯关`、`本关卡尚未开通`、`英雄礼包`。怪物专名如张定边、刀兵等在客户端包里没有完整列表，对照 4399 副本说明补齐。

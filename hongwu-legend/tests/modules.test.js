@@ -31,6 +31,9 @@ assert.ok(play.indexOf('src="js/npc-art.js"') < play.indexOf('src="js/art.js"'),
 assert.ok(play.indexOf('src="js/ground.js"') >= 0, 'play.html 应加载程序地面');
 assert.ok(play.indexOf('src="js/ground.js"') < play.indexOf('src="js/world3d.js"'), 'ground.js 应在 world3d.js 之前');
 assert.ok(play.indexOf('src="js/art.js"') < play.indexOf('src="js/world3d.js"'), 'art.js 应在 world3d.js 之前');
+assert.ok(play.indexOf('src="js/maptiles.js"') >= 0, 'play.html 应加载场景切片拼图');
+assert.ok(play.indexOf('src="js/art.js"') < play.indexOf('src="js/maptiles.js"'), 'maptiles.js 应在 art.js 之后');
+assert.ok(play.indexOf('src="js/maptiles.js"') < play.indexOf('src="js/world3d.js"'), 'maptiles.js 应在 world3d.js 之前');
 assert.ok(play.indexOf('src="js/world3d.js"') >= 0);
 var world3d = fs.readFileSync(path.join(root, 'js/world3d.js'), 'utf8');
 assert.ok(world3d.indexOf('ShaderMaterial') < 0, '3D 水面不应再用自定义 shader，以免卡住 Mac');
@@ -115,15 +118,29 @@ assert.ok(art.indexOf("assets/ingame/role/body_") >= 0, '应加载原作时装�
   'assets/ingame/role/mount_m.png',
   'assets/ingame/role/mount_f.png',
   'js/npc-art.js',
+  'js/maptiles.js',
   'js/store.js',
   'js/store-mysql.js',
-  'store_db.py'
+  'store_db.py',
+  'tools/fetch-map-tiles.py',
+  'assets/ingame/maptiles/manifest.json',
+  'assets/ingame/maptiles/jing_cheng.jpg'
 ].forEach(function (f) {
   assert.ok(fs.existsSync(path.join(root, f)), 'missing ' + f);
 });
 
+var tileMan = JSON.parse(fs.readFileSync(path.join(root, 'assets/ingame/maptiles/manifest.json'), 'utf8'));
+assert.strictEqual(tileMan.tileSize, 300);
+assert.strictEqual(tileMan.maps.jing_cheng.cols, 26);
+assert.strictEqual(tileMan.maps.jing_cheng.rows, 16);
+assert.ok(tileMan.maps.jing_cheng.nativeW > tileMan.maps.jing_cheng.nativeH, '京城拼图应为横向（行_列）');
+assert.ok(fs.statSync(path.join(root, 'assets/ingame/maptiles/jing_cheng.jpg')).size > 200000);
+var fetchPy = fs.readFileSync(path.join(root, 'tools/fetch-map-tiles.py'), 'utf8');
+assert.ok(fetchPy.indexOf('{row}_{col}.jpg') >= 0, '拉取脚本应写明切片文件名规则');
+assert.ok(fetchPy.indexOf('mccq.static.mingchao.com') >= 0);
+
 var serverJs = fs.readFileSync(path.join(root, 'server.js'), 'utf8');
-assert.ok(serverJs.indexOf("VERSION = '20260817f'") >= 0, 'server.js 版本应为 20260817f');
+assert.ok(serverJs.indexOf("VERSION = '20260817g'") >= 0, 'server.js 版本应为 20260817g');
 assert.ok(serverJs.indexOf("require('./js/store.js')") >= 0, 'server.js 应使用本机数据库');
 assert.ok(core.indexOf('localStorage.setItem(SAVE_KEY') < 0, '角色存档不应再写入 localStorage');
 assert.ok(fs.readFileSync(path.join(root, 'js/api.js'), 'utf8').indexOf('localStorage.setItem(TOKEN_KEY') < 0, '登录令牌不应再写入 localStorage');
@@ -147,6 +164,8 @@ assert.ok(ui.indexOf("takeItem(G.player, 'scroll'") < 0, '地图传送不应再�
 assert.ok(ui.indexOf('H.warpToCoord') >= 0, '当前地图坐标应为瞬移');
 assert.ok(ui.indexOf('INSTANCE_WARPS') >= 0, '地图列表应含副本');
 var input = fs.readFileSync(path.join(root, 'js/input.js'), 'utf8');
+assert.ok(input.indexOf('MapTiles.active') >= 0, '点地在切片地图上应按等距反算');
+assert.ok(fs.readFileSync(path.join(root, 'js/render.js'), 'utf8').indexOf('MapTiles.follow') >= 0, '2D 绘制应跟切片镜头');
 assert.ok(input.indexOf('H.usePortal(pt)') >= 0, '当前地图跳转点应直接传送');
 assert.ok(input.indexOf('寻路至传送点') < 0, '跳转点不应再寻路');
 assert.ok(play.indexOf('id="play-fit"') >= 0, '局内应有等比适配舞台');

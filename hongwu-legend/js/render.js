@@ -16,7 +16,9 @@
 
   H.draw = function () {
     H.stampNpcMarks();
-    if (window.World3D && World3D.enabled && G.player && G.grid) {
+    var w = canvas.width, h = canvas.height;
+    var tiled = !!(G.player && window.MapTiles && MapTiles.follow(G.mapId, G.player, w, h));
+    if (!tiled && window.World3D && World3D.enabled && G.player && G.grid) {
       World3D.sync({
         player: G.player,
         maxHp: H.stats(G.player).maxHp,
@@ -44,41 +46,44 @@
         return;
       }
     }
-    var w = canvas.width, h = canvas.height;
     ctx.fillStyle = '#0a0806';
     ctx.fillRect(0, 0, w, h);
     if (!G.grid || !G.player) return;
     var p = G.player;
-    G.cam.x = p.x - w / 2;
-    G.cam.y = p.y - h / 2;
-    var ws = H.worldSize();
-    G.cam.x = H.clamp(G.cam.x, 0, Math.max(0, ws.w - w));
-    G.cam.y = H.clamp(G.cam.y, 0, Math.max(0, ws.h - h));
+    if (tiled) {
+      MapTiles.draw(ctx, w, h);
+    } else {
+      G.cam.x = p.x - w / 2;
+      G.cam.y = p.y - h / 2;
+      var ws = H.worldSize();
+      G.cam.x = H.clamp(G.cam.x, 0, Math.max(0, ws.w - w));
+      G.cam.y = H.clamp(G.cam.y, 0, Math.max(0, ws.h - h));
 
-    var x0 = Math.floor(G.cam.x / TILE), y0 = Math.floor(G.cam.y / TILE);
-    var x1 = Math.ceil((G.cam.x + w) / TILE), y1 = Math.ceil((G.cam.y + h) / TILE);
-    for (var ty = y0; ty < y1; ty++) {
-      for (var tx = x0; tx < x1; tx++) {
-        if (!H.inGrid(G.grid, tx, ty)) continue;
-        var t = G.grid[ty][tx];
-        var sx = tx * TILE - G.cam.x, sy = ty * TILE - G.cam.y;
-        if (window.Art && Art.ready) {
-          Art.drawTile(ctx, t, sx, sy, TILE, G.time, tx, ty, G.grid, G.mapId);
-        } else {
-          var col = TILE_COLOR[t] || '#333';
-          ctx.fillStyle = t === 'water' ? H.shade(col, Math.sin(G.time * 2 + tx) * 8) : H.shade(col, ((tx * 13 + ty * 7) % 9) - 4);
-          ctx.fillRect(sx, sy, TILE + 1, TILE + 1);
+      var x0 = Math.floor(G.cam.x / TILE), y0 = Math.floor(G.cam.y / TILE);
+      var x1 = Math.ceil((G.cam.x + w) / TILE), y1 = Math.ceil((G.cam.y + h) / TILE);
+      for (var ty = y0; ty < y1; ty++) {
+        for (var tx = x0; tx < x1; tx++) {
+          if (!H.inGrid(G.grid, tx, ty)) continue;
+          var t = G.grid[ty][tx];
+          var sx = tx * TILE - G.cam.x, sy = ty * TILE - G.cam.y;
+          if (window.Art && Art.ready) {
+            Art.drawTile(ctx, t, sx, sy, TILE, G.time, tx, ty, G.grid, G.mapId);
+          } else {
+            var col = TILE_COLOR[t] || '#333';
+            ctx.fillStyle = t === 'water' ? H.shade(col, Math.sin(G.time * 2 + tx) * 8) : H.shade(col, ((tx * 13 + ty * 7) % 9) - 4);
+            ctx.fillRect(sx, sy, TILE + 1, TILE + 1);
+          }
         }
       }
-    }
 
-    if (window.Art && Art.ready) {
-      for (ty = y0; ty < y1; ty++) {
-        for (tx = x0; tx < x1; tx++) {
-          if (!H.inGrid(G.grid, tx, ty)) continue;
-          var pt = G.grid[ty][tx];
-          if (pt === 'tree' || pt === 'house' || pt === 'roof') {
-            Art.drawProp(ctx, pt, tx * TILE - G.cam.x, ty * TILE - G.cam.y, TILE, G.mapId, tx, ty);
+      if (window.Art && Art.ready) {
+        for (ty = y0; ty < y1; ty++) {
+          for (tx = x0; tx < x1; tx++) {
+            if (!H.inGrid(G.grid, tx, ty)) continue;
+            var pt = G.grid[ty][tx];
+            if (pt === 'tree' || pt === 'house' || pt === 'roof') {
+              Art.drawProp(ctx, pt, tx * TILE - G.cam.x, ty * TILE - G.cam.y, TILE, G.mapId, tx, ty);
+            }
           }
         }
       }
@@ -209,9 +214,11 @@
       ctx.globalAlpha = 1;
     });
 
-    var tint = D.MAP_META[G.mapId].tint;
-    ctx.fillStyle = 'rgba(' + Math.floor(tint[0] * 255) + ',' + Math.floor(tint[1] * 255) + ',' + Math.floor(tint[2] * 255) + ',0.16)';
-    ctx.fillRect(0, 0, w, h);
+    if (!tiled) {
+      var tint = D.MAP_META[G.mapId].tint;
+      ctx.fillStyle = 'rgba(' + Math.floor(tint[0] * 255) + ',' + Math.floor(tint[1] * 255) + ',' + Math.floor(tint[2] * 255) + ',0.16)';
+      ctx.fillRect(0, 0, w, h);
+    }
     H.drawMinimap();
     H.drawHud();
   }
@@ -224,7 +231,10 @@
     return 'rgb(' + r + ',' + g + ',' + b + ')';
   }
 
-  H.worldToScreen = function (x, y) { return { x: x - G.cam.x, y: y - G.cam.y }; }
+  H.worldToScreen = function (x, y) {
+    if (window.MapTiles && MapTiles.active()) return MapTiles.worldToScreen(x, y);
+    return { x: x - G.cam.x, y: y - G.cam.y };
+  }
 
   H.drawActor = function (x, y, color, r, mark) {
     var s = H.worldToScreen(x, y);
